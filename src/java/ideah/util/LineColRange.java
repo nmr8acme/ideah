@@ -8,19 +8,19 @@ import com.intellij.psi.PsiFile;
 public final class LineColRange {
 
     /**
-     * Номер строки, от 1
+     * 1-based line number
      */
     public final int startLine;
     /**
-     * Номер столбца, от 1
+     * 1-based linme number
      */
     public final int endLine;
     /**
-     * Номер строки, от 1
+     * 1-based column number
      */
     public final int startColumn;
     /**
-     * Номер столбца, от 1
+     * 1-based column number
      */
     public final int endColumn;
 
@@ -34,9 +34,9 @@ public final class LineColRange {
     public LineColRange(String str) {
         String[] lineColumnStrings = str.split("[-:]");
         startLine = parseInt(lineColumnStrings[0]);
-        startColumn = column(parseInt(lineColumnStrings[1]));
+        startColumn = parseInt(lineColumnStrings[1]);
         endLine = parseInt(lineColumnStrings[2]);
-        endColumn = column(parseInt(lineColumnStrings[3]));
+        endColumn = parseInt(lineColumnStrings[3]);
     }
 
     private static int parseInt(String str) {
@@ -46,17 +46,15 @@ public final class LineColRange {
         return Integer.parseInt(str);
     }
 
-    private static int column(int value) {
-        return value <= 0 ? 1 : value + 1;
-    }
-
     public TextRange getRange(PsiFile file) {
         return new TextRange(getOffset(file, startLine, startColumn), getOffset(file, endLine, endColumn));
     }
 
     private static int getOffset(PsiFile file, int line, int col) {
         LazyRangeMarkerFactory factory = LazyRangeMarkerFactory.getInstance(file.getProject());
-        RangeMarker rangeMarker = factory.createRangeMarker(file.getVirtualFile(), line - 1, Math.max(0, col - 1), false);
+        RangeMarker rangeMarker = factory.createRangeMarker(
+            file.getVirtualFile(), Math.max(0, line - 1), Math.max(0, col - 1), false
+        );
         return rangeMarker.getStartOffset();
     }
 

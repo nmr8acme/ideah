@@ -84,7 +84,7 @@ doWalk cmdFlags skipOut files = do
 
 locStr :: SrcLoc -> String
 locStr loc = if isGoodSrcLoc loc then 
-                 show (srcLocLine loc) ++ ":" ++ show (srcLocCol loc) 
+                 show (lineFromGhc $ srcLocLine loc) ++ ":" ++ show (colFromGhc $ srcLocCol loc) 
                  else "?"
 
 spanStr :: SrcSpan -> String

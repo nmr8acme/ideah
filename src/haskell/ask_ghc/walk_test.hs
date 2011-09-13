@@ -20,7 +20,7 @@ isDefinition x = x == WTyDecl || x == WConDecl || x == WFunDecl || x == WFunDecl
 
 extractId :: Name -> SrcSpan -> Where -> Ghc ()
 extractId var loc w = do
-    trace ((if isDefinition w then "!" else " ") ++ " " ++ toString loc ++ "\t\t" ++ (show $ modName var) ++ " \"" ++ (toString $ nameOccName var) ++ "\" @ " ++ (toString $ nameUnique var)) $ return ()
+    trace ((if isDefinition w then "!" else " ") ++ " " ++ toString loc ++ "\t\t" ++ (show $ modName var) ++ " \"" ++ (toString $ nameOccName var) ++ "\" @ " ++ (toString $ nameUnique var) ++ "\t" ++ show w) $ return ()
 
 extractTypes :: PprStyle -> Id -> SrcSpan -> Where -> Ghc ()
 extractTypes style var loc WFunDecl2 = do
@@ -40,8 +40,8 @@ doExtractIds checked = do
 
 doWalk :: Ghc ()
 doWalk = do
-    let file = "D:\\TEMP\\untitled\\src\\test.hs"
-    setupFlags True ["-iD:\\TEMP\\untitled\\src"]
+    let file = "test.hs"
+    setupFlags True ["-i."]
     addTarget' file
     load LoadAllTargets
     mods <- loadHsFile file

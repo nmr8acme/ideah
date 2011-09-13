@@ -41,13 +41,14 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         Project project = file.getProject();
         VirtualFile virtualFile = file.getVirtualFile();
         SortedMap<Integer, Block> map = new TreeMap<Integer, Block>();
-        SortedSet<TextRange> functionRanges = new TreeSet<TextRange>(new Comparator<TextRange>() {
-            public int compare(TextRange o1, TextRange o2) {
-                return o1.getStartOffset() - o2.getStartOffset();
-            }
-        });
-        String text = file.getText();
+        String text;
         if (virtualFile != null) {
+            SortedSet<TextRange> functionRanges = new TreeSet<TextRange>(new Comparator<TextRange>() {
+                public int compare(TextRange o1, TextRange o2) {
+                    return o1.getStartOffset() - o2.getStartOffset();
+                }
+            });
+            text = file.getText();
             HaskellLexer lexer = new HaskellLexer();
             lexer.start(text);
             BitSet nonSpace = new BitSet();
@@ -105,6 +106,8 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
                     }
                 }
             }
+        } else {
+            text = "";
         }
         List<Block> blocks = new ArrayList<Block>(map.values());
         for (Block block : blocks) {

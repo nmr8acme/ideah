@@ -316,7 +316,7 @@ walkValD f loc (AbsBinds _ _ exps _ binds) = do
 #else
 walkValD f loc (AbsBinds _ _ exps binds) = do
 #endif
-    mapM (\id -> (generic f) id loc WFunDecl2) ids
+    mapM_ (\id -> (generic f) id loc WFunDecl2) ids
     walkLBinds f binds
     where ids = [x | (_, x, _, _) <- exps]
 

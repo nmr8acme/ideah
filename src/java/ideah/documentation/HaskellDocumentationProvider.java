@@ -57,7 +57,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     "-m", "GetIdType",
                     "-g", compiler.libPath,
                     "-s", CompilerLocation.rootsToString(ModuleRootManager.getInstance(module).getSourceRoots(false)),
-                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col),
+                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
                     file.getPath()
                 );
                 String stdOut = launcher.getStdOut();

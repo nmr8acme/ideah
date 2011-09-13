@@ -38,3 +38,19 @@ loadHsFile file = do
           absoluteFile    <- liftIO $ canonicalizePath file
           return $ equalFilePath absoluteFile absoluteSummary)
         summaries
+
+lineToGhc line = line
+
+lineFromGhc line = line
+
+#if __GLASGOW_HASKELL__ >= 700
+colToGhc col = col
+
+colFromGhc col = col
+#else
+-- from 1-based to 0-based (in GHC 6)
+colToGhc col = col - 1
+
+-- from 0-based (in GHC 6) to 1-based
+colFromGhc col = col + 1
+#endif

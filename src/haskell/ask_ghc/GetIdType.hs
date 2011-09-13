@@ -18,7 +18,7 @@ unForall t = t
 
 -- todo: find nearest id
 extractTypes :: PprStyle -> Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
-extractTypes style line col var loc WFunDecl2 = 
+extractTypes style line col var loc WFunDecl2 =
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let ts = show $ pprType (unForall $ varType var) style
         liftIO $ putStrLn ts
@@ -41,5 +41,5 @@ doWalk srcPath srcFile line col = do
     doExtractTypes line col checked
 
 getIdType srcPath ghcPath srcFile (line, col) = do
-    runGhc (Just ghcPath) (doWalk srcPath srcFile line col)
+    runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
     return ()
