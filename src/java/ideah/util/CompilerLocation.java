@@ -106,6 +106,7 @@ public final class CompilerLocation {
     }
 
     private static boolean compileHs(File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException, URISyntaxException {
+        exe.delete();
         VirtualFile ghcBin = ghcHome.findChild("bin");
         if (ghcBin == null)
             return false;
