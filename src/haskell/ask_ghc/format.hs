@@ -1,6 +1,9 @@
 import System.Environment
+
 import MonadUtils
 import GHC
+
+import HUtil
 
 locStr :: SrcLoc -> String
 locStr loc = if isGoodSrcLoc loc then show (srcLocLine loc) ++ ":" ++ show (srcLocCol loc) else "?"
@@ -12,11 +15,9 @@ prLoc :: (MonadIO m) => String -> Located a -> m ()
 prLoc what loc = liftIO $ putStrLn $ what ++ ": " ++ (spanStr $ getLoc loc)
 
 doWalk :: [String] -> Ghc ()
-doWalk files = do
-    flg <- getSessionDynFlags
-    --(flg, _, _) <- parseDynamicFlags flg (map noLoc ["--make"])
-    setSessionDynFlags (flg { hscTarget = HscNothing, ghcLink = NoLink })
-    mapM_ (\file -> addTarget Target { targetId = TargetFile file Nothing, targetAllowObjCode = False, targetContents = Nothing }) files
+doWalk src = do
+    setupFlags True ["-i."]
+    addTarget Target { targetId = TargetFile "" Nothing, targetAllowObjCode = False, targetContents = Just src }
     g <- depanal [] True
     parsed <- parseModule $ head g
     let md = unLoc $ pm_parsed_source parsed

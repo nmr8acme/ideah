@@ -1,8 +1,12 @@
+import Data.IORef
+
 import Outputable
 import GHC
+import MonadUtils
 import Var
 import Name
 import TypeRep
+
 import HUtil
 import Walker
 
@@ -23,20 +27,34 @@ extractId var loc w = do
     trace ((if isDefinition w then "!" else " ") ++ " " ++ toString loc ++ "\t\t" ++ (show $ modName var) ++ " \"" ++ (toString $ nameOccName var) ++ "\" @ " ++ (toString $ nameUnique var) ++ "\t" ++ show w) $ return ()
 
 extractTypes :: PprStyle -> Id -> SrcSpan -> Where -> Ghc ()
-extractTypes style var loc WFunDecl2 = do
+extractTypes style var loc _ = do
     let ts = show $ pprType (unForall $ varType var) style
-    trace ((toString $ Var.varName var) ++ ": " ++ ts) $ return ()
-extractTypes _ _ _ _ = return ()
+    trace (spanStr loc ++ " " ++ (toString $ Var.varName var) ++ ": " ++ ts) $ return ()
+--extractTypes _ _ _ _ = return ()
 
 doExtractTypes checked = do
     let info = tm_checked_module_info checked
     (Just unqual) <- mkPrintUnqualifiedForModule info
     let style = mkUserStyle unqual AllTheWay
-    walkLBinds CB { generic = extractTypes style, name = (\_ _ _ -> return ()) } (typecheckedSource checked)
+    walkLBinds (defWalkCallback { generic = extractTypes style }) (typecheckedSource checked)
 
 doExtractIds checked = do
     let (Just (grp, _, _, _)) = renamedSource checked
-    walkGroup CB { generic = extractId, name = extractId } grp
+    walkGroup (defWalkCallback { generic = extractId, name = extractId }) grp
+
+doPrintOut parsed = do
+    indent <- liftIO $ newIORef ""
+    let prt1 loc what = liftIO $ do
+        i <- readIORef indent
+        putStrLn (i ++ what ++ " " ++ spanStr loc ++ " {")
+        writeIORef indent (i ++ "    ")
+    let prt2 = liftIO $ do
+        i <- readIORef indent
+        let newi = take (length i - 4) i;
+        writeIORef indent newi
+        putStrLn (newi ++ "}")
+    let f = defWalkCallback { braceOpen = prt1, braceClose = prt2 }
+    mapM_ (walk f) (hsmodDecls $ unLoc $ pm_parsed_source parsed)
 
 doWalk :: Ghc ()
 doWalk = do
@@ -46,9 +64,10 @@ doWalk = do
     load LoadAllTargets
     mods <- loadHsFile file
     parsed <- parseModule $ head mods
-    checked <- typecheckModule parsed
-    doExtractTypes checked
+    --checked <- typecheckModule parsed
+    --doExtractTypes checked
     --doExtractIds checked
+    doPrintOut parsed
 
 main = do
     runGhc (Just "C:\\Haskell\\lib") doWalk

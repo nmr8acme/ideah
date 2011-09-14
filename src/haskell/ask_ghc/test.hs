@@ -11,6 +11,6 @@ l (x:xs) = 3 + l xs
 
 --test (D x y) = x + y
 
-main = P relude.print $ test "x"
+main = Prelude.print $ test "x"
   where test :: Prelude.String -> Int
         test str = l str

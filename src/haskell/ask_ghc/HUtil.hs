@@ -54,3 +54,11 @@ colToGhc col = col - 1
 -- from 0-based (in GHC 6) to 1-based
 colFromGhc col = col + 1
 #endif
+
+locStr :: SrcLoc -> String
+locStr loc = if isGoodSrcLoc loc then 
+                 show (lineFromGhc $ srcLocLine loc) ++ ":" ++ show (colFromGhc $ srcLocCol loc) 
+                 else "?"
+
+spanStr :: SrcSpan -> String
+spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)

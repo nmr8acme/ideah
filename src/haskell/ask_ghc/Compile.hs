@@ -82,14 +82,6 @@ doWalk cmdFlags skipOut files = do
     outputBag warns
     return ()
 
-locStr :: SrcLoc -> String
-locStr loc = if isGoodSrcLoc loc then 
-                 show (lineFromGhc $ srcLocLine loc) ++ ":" ++ show (colFromGhc $ srcLocCol loc) 
-                 else "?"
-
-spanStr :: SrcSpan -> String
-spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
-
 msgStr :: Message -> PrintUnqualified -> String
 msgStr msg unqual = show $ msg (mkErrStyle unqual)
 

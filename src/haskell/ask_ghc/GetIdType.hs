@@ -18,18 +18,17 @@ unForall t = t
 
 -- todo: find nearest id
 extractTypes :: PprStyle -> Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
-extractTypes style line col var loc WFunDecl2 =
+extractTypes style line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let ts = show $ pprType (unForall $ varType var) style
-        liftIO $ putStrLn ts
-        liftIO $ exitSuccess
-extractTypes _ _ _ _ _ _ = return ()
+        putStrLn ts
+        exitSuccess
 
 doExtractTypes line col checked = do
     let info = tm_checked_module_info checked
     (Just unqual) <- mkPrintUnqualifiedForModule info
     let style = mkUserStyle unqual AllTheWay
-    walkLBinds CB { generic = extractTypes style line col, name = (\_ _ _ -> return ()) } (typecheckedSource checked)
+    walkLBinds (defWalkCallback { generic = extractTypes style line col }) (typecheckedSource checked)
 
 doWalk srcPath srcFile line col = do
     setupFlags True ["-i" ++ srcPath]
