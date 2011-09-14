@@ -96,11 +96,19 @@ walkType f loc (HsParTy typ) = brace f loc "HsParTy" $ walkLType f typ
 walkType f loc (HsNumTy _) = brace f loc "HsNumTy" $ return ()
 walkType f loc (HsPredTy _) = brace f loc "HsPredTy" $ return ()
 walkType f loc (HsKindSig typ _) = brace f loc "HsKindSig" $ walkLType f typ
-walkType f loc (HsSpliceTy _) = brace f loc "HsSpliceTy" $ return ()
 walkType f loc (HsDocTy typ _) = brace f loc "HsDocTy" $ walkLType f typ
+#if __GLASGOW_HASKELL__ >= 700
+walkType f loc (HsSpliceTy _ _ _) = brace f loc "HsSpliceTy" $ return ()
+#else
+walkType f loc (HsSpliceTy _) = brace f loc "HsSpliceTy" $ return ()
 walkType f loc (HsSpliceTyOut _) = brace f loc "HsSpliceTyOut" $ return ()
+#endif
 walkType f loc (HsBangTy _ typ) = brace f loc "HsBangTy" $ walkLType f typ
 walkType f loc (HsRecTy _) = brace f loc "HsRecTy" $ return () -- todo
+#if __GLASGOW_HASKELL__ >= 700
+walkType f loc (HsQuasiQuoteTy _) = brace f loc "HsQuasiQuoteTy" $ return ()
+walkType f loc (HsCoreTy _) = brace f loc "HsCoreTy" $ return ()
+#endif
 
 ----------------------------------------------------------------------------------------------
 -- Statements
@@ -473,7 +481,7 @@ walkDecl f loc (SpliceD spliceD) = brace f loc "SpliceD" $ walkSpliceD f loc spl
 walkDecl f loc (AnnD annD) = brace f loc "AnnD" $ walkAnnD f loc annD
 walkDecl f loc (DocD docD) = brace f loc "DocD" $ walkDocD f loc docD
 #if __GLASGOW_HASKELL__ >= 700
-walkDecl _f _loc (QuasiQuoteD _) = brace f loc "QuasiQuote" $ return ()
+walkDecl f loc (QuasiQuoteD _) = brace f loc "QuasiQuote" $ return ()
 #endif
 
 
