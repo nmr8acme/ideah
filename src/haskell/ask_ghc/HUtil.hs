@@ -7,16 +7,13 @@ import Control.Monad (filterM)
 import GHC
 import Outputable
 import MonadUtils
-import PprTyThing
+import Parser
+import Lexer
+import StringBuffer
+import FastString
 
 toString :: (Outputable a) => a -> String
 toString x = show $ ppr x defaultUserStyle
-
-toStringT :: Type -> String
-toStringT t = show $ pprTypeForUser True t defaultUserStyle
-
-unsupported :: String -> a -> a
-unsupported str x = error str `seq` x
 
 setupFlags skipOut cmdFlags = do
     flg <- getSessionDynFlags
@@ -24,7 +21,6 @@ setupFlags skipOut cmdFlags = do
     setSessionDynFlags $ if skipOut
        then flg { hscTarget = HscNothing, ghcLink = NoLink }
        else flg
-
 
 addTarget' file = 
     addTarget Target { targetId           = TargetFile file Nothing
@@ -62,3 +58,12 @@ locStr loc = if isGoodSrcLoc loc then
 
 spanStr :: SrcSpan -> String
 spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
+
+parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
+parseHsFile buffer fileName = do
+    flags <- getSessionDynFlags
+    let state = mkPState flags buffer (mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1))
+    let result = unP Parser.parseModule state
+    case result of
+        POk _ parsed -> return $ Right parsed
+        PFailed loc msg -> return $ Left (loc, show $ msg defaultUserStyle)

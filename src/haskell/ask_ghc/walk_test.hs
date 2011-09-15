@@ -1,8 +1,5 @@
-import Data.IORef
-
 import Outputable
 import GHC
-import MonadUtils
 import Var
 import Name
 import TypeRep
@@ -42,20 +39,6 @@ doExtractIds checked = do
     let (Just (grp, _, _, _)) = renamedSource checked
     walkGroup (defWalkCallback { generic = extractId, name = extractId }) grp
 
-doPrintOut parsed = do
-    indent <- liftIO $ newIORef ""
-    let prt1 loc what = liftIO $ do
-        i <- readIORef indent
-        putStrLn (i ++ what ++ " " ++ spanStr loc ++ " {")
-        writeIORef indent (i ++ "    ")
-    let prt2 = liftIO $ do
-        i <- readIORef indent
-        let newi = take (length i - 4) i;
-        writeIORef indent newi
-        putStrLn (newi ++ "}")
-    let f = defWalkCallback { braceOpen = prt1, braceClose = prt2 }
-    mapM_ (walk f) (hsmodDecls $ unLoc $ pm_parsed_source parsed)
-
 doWalk :: Ghc ()
 doWalk = do
     let file = "test.hs"
@@ -64,10 +47,9 @@ doWalk = do
     load LoadAllTargets
     mods <- loadHsFile file
     parsed <- parseModule $ head mods
-    --checked <- typecheckModule parsed
-    --doExtractTypes checked
+    checked <- typecheckModule parsed
+    doExtractTypes checked
     --doExtractIds checked
-    doPrintOut parsed
 
 main = do
     runGhc (Just "C:\\Haskell\\lib") doWalk
