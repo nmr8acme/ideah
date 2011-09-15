@@ -61,5 +61,5 @@ main = do
         srcpath = sourcePath opts
     case mode opts of
         Compile  -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
-        CheckMain -> runGhc (Just ghcpath) $ checkMain srcpath $ head files
+        CheckMain -> runGhc (Just ghcpath) $ checkMain $ head files
         GetIdType -> getIdType srcpath ghcpath (head files) (position opts)

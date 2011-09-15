@@ -22,11 +22,17 @@ setupFlags skipOut cmdFlags = do
        then flg { hscTarget = HscNothing, ghcLink = NoLink }
        else flg
 
-addTarget' file = 
+addTargetFile file = 
     addTarget Target { targetId           = TargetFile file Nothing
                      , targetAllowObjCode = False
                      , targetContents     = Nothing }
 
+loadStdin = getContents >>= stringToStringBuffer
+
+-- todo: should be removed, use only loadStdin
+loadFile file = hGetStringBuffer file
+
+loadHsFile :: FilePath -> Ghc [ModSummary]
 loadHsFile file = do
     summaries <- depanal [] False
     filterM (\sum -> do
@@ -34,6 +40,15 @@ loadHsFile file = do
           absoluteFile    <- liftIO $ canonicalizePath file
           return $ equalFilePath absoluteFile absoluteSummary)
         summaries
+
+parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
+parseHsFile buffer fileName = do
+    flags <- getSessionDynFlags
+    let state = mkPState flags buffer (mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1))
+    let result = unP Parser.parseModule state
+    case result of
+        POk _ parsed -> return $ Right parsed
+        PFailed loc msg -> return $ Left (loc, show $ msg defaultUserStyle)
 
 lineToGhc line = line
 
@@ -58,12 +73,3 @@ locStr loc = if isGoodSrcLoc loc then
 
 spanStr :: SrcSpan -> String
 spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
-
-parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
-parseHsFile buffer fileName = do
-    flags <- getSessionDynFlags
-    let state = mkPState flags buffer (mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1))
-    let result = unP Parser.parseModule state
-    case result of
-        POk _ parsed -> return $ Right parsed
-        PFailed loc msg -> return $ Left (loc, show $ msg defaultUserStyle)

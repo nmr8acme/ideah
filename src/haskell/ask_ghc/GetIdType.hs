@@ -32,7 +32,7 @@ doExtractTypes line col checked = do
 
 doWalk srcPath srcFile line col = do
     setupFlags True ["-i" ++ srcPath]
-    addTarget' srcFile
+    addTargetFile srcFile
     load LoadAllTargets
     mods <- loadHsFile srcFile
     parsed <- parseModule $ head mods

@@ -5,14 +5,15 @@ import MonadUtils
 
 import HUtil
 
-checkMain srcpath file = do
-    setupFlags True ["-i" ++ srcpath]
-    addTarget' file
-    summy <- loadHsFile file
-    parsedMod      <- parseModule $ head summy
-    let decls      = hsmodDecls $ unLoc $ parsedSource parsedMod
-        hasMain    = any isMain $ map unLoc decls
-    liftIO $ putStrLn $ if hasMain then "t" else "f"
+checkMain file = do
+    setupFlags True []
+    buffer <- liftIO $ loadFile file -- todo: get from stdin
+    result <- parseHsFile buffer file
+    liftIO $ putStrLn $ if hasMain result then "t" else "f"
+
+hasMain result = case result of
+    Right parsed -> any isMain $ map unLoc (hsmodDecls $ unLoc parsed)
+    Left _ -> False
 
 isMain (ValD (FunBind funid _ _ _ _ _)) = toString (unLoc funid) == "main"
 isMain _                                = False

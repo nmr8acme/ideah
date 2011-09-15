@@ -14,6 +14,7 @@ Refactoring:
 2. rename
 3. Add/remove parameter
 4. case <-> multi-pattern function
+5. Auto-add type signature
 
 REPL: auto-reload, show errors as in editor, multi-line expressions (Ctrl+Enter to execute),
 separators between code and output, save history

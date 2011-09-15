@@ -2,7 +2,6 @@ import Data.IORef
 
 import GHC
 import MonadUtils
-import StringBuffer
 
 import Walker
 import HUtil
@@ -23,8 +22,8 @@ doPrintOut parsed = do
 
 doWalk :: Ghc ()
 doWalk = do
-    setupFlags True ["-i."]
-    buffer <- liftIO $ hGetStringBuffer "test.hs"
+    setupFlags True []
+    buffer <- liftIO $ loadFile "test.hs"
     result <- parseHsFile buffer "test.hs"
     case result of
         Right parsed -> doPrintOut (unLoc parsed)

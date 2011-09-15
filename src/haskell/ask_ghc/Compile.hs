@@ -76,7 +76,7 @@ compile outPath srcPath ghcPath compilerOptions files =
 doWalk :: [String] -> Bool -> [String] -> Ghc ()
 doWalk cmdFlags skipOut files = do
     setupFlags skipOut cmdFlags
-    mapM_ addTarget' files
+    mapM_ addTargetFile files
     loadWithLogger logger LoadAllTargets `gcatch` catcher
     warns <- getWarnings
     outputBag warns
