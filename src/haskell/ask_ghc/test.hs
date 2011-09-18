@@ -1,6 +1,7 @@
 module Test where
 
 import Control.Monad
+--import Testitesti
 
 --data D = D Int Int
 data String = Int
@@ -11,7 +12,9 @@ print x = show x
 l [] = 0
 l (x:xs) = 3 + l xs
 
---test (D x y) = x + y
+-- |test (D x y) = x + y
+tutu :: Int
+tutu=4
 
 main = Prelude.print $ test "x"
   where test :: Prelude.String -> Int

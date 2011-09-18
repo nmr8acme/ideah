@@ -67,4 +67,4 @@ main = do
        Compile   -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
        CheckMain -> runGhc (Just ghcpath) $ checkMain singleFile
        GetIdType -> getIdType srcpath ghcpath (head files) (position opts)
-       GetDocu   -> runGhc (Just ghcpath) $ getDocu singleFile $ function opts
+       GetDocu   -> getDocu singleFile $ function opts
