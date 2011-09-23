@@ -12,6 +12,8 @@ import Lexer
 import StringBuffer
 import FastString
 
+newMsgIndicator = "\f"
+
 toString :: (Outputable a) => a -> String
 toString x = show $ ppr x defaultUserStyle
 

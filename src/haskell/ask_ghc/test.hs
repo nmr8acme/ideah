@@ -1,7 +1,7 @@
 module Test where
 
 import Control.Monad
---import Testitesti
+import Testitesti
 
 --data D = D Int Int
 data String = Int

@@ -85,8 +85,6 @@ doWalk cmdFlags skipOut files = do
 msgStr :: Message -> PrintUnqualified -> String
 msgStr msg unqual = show $ msg (mkErrStyle unqual)
 
-newMsgIndicator = "\f"
-
 output1 :: (MonadIO m) => ErrMsg -> m ()
 output1 msg = do
     let span   = head $ errMsgSpans msg

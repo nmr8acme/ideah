@@ -51,7 +51,8 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 return null;
             }
             try {
-                ProcessLauncher launcher = new ProcessLauncher(
+                StringBuffer stdOut = new StringBuffer();
+                ProcessLauncher idLauncher= new ProcessLauncher(
                     false,
                     compiler.exe,
                     "-m", "GetIdType",
@@ -60,8 +61,16 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
                     file.getPath()
                 );
-                String stdOut = launcher.getStdOut();
-                if (stdOut.trim().isEmpty())
+                stdOut.append(idLauncher.getStdOut());
+                ProcessLauncher docuLauncher = new ProcessLauncher(
+                    false,
+                    compiler.exe,
+                    "-m", "GetDocu",
+                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
+                    file.getPath()
+                );
+                stdOut.append(docuLauncher.getStdOut());
+                if (stdOut.toString().trim().isEmpty())
                     return null;
                 return stdOut + "<br>";
             } catch (Exception ex) {

@@ -20,6 +20,8 @@ data Mode = Compile | CheckMain | GetIdType | GetDocu
 --    -o <path>           # output path
 --    -s <path>           # source path
 --    -c "<options>"      # compiler options
+--    -l <line>           # line number
+--    -r <column>         # column number
 --    <files>             # files to be compiled
 
 data Options = Options
@@ -67,4 +69,4 @@ main = do
        Compile   -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
        CheckMain -> runGhc (Just ghcpath) $ checkMain singleFile
        GetIdType -> getIdType srcpath ghcpath (head files) (position opts)
-       GetDocu   -> getDocu singleFile $ function opts
+       GetDocu   -> getDocu singleFile srcpath $ position opts
