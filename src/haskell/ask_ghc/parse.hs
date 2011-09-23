@@ -5,19 +5,10 @@ import MonadUtils
 
 import Walker
 import HUtil
+import HDebugUtil
 
 doPrintOut parsed = do
-    indent <- liftIO $ newIORef ""
-    let prt1 loc what = liftIO $ do
-        i <- readIORef indent
-        putStrLn (i ++ what ++ " " ++ spanStr loc ++ " {")
-        writeIORef indent (i ++ "    ")
-    let prt2 = liftIO $ do
-        i <- readIORef indent
-        let newi = take (length i - 4) i;
-        writeIORef indent newi
-        putStrLn (newi ++ "}")
-    let f = defWalkCallback { braceOpen = prt1, braceClose = prt2 }
+    f <- printCallback defWalkCallback
     mapM_ (walk f) (hsmodDecls parsed)
 
 doWalk :: Ghc ()
