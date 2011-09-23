@@ -43,10 +43,8 @@ doWalk :: Ghc ()
 doWalk = do
     let file = "test.hs"
     setupFlags True ["-i."]
-    addTargetFile file
-    load LoadAllTargets
-    mods <- loadHsFile file
-    parsed <- parseModule $ head mods
+    mod <- loadHsFile file
+    parsed <- parseModule mod
     checked <- typecheckModule parsed
     doExtractTypes checked
     --doExtractIds checked

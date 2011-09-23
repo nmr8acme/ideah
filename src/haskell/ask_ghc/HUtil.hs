@@ -34,14 +34,17 @@ loadStdin = getContents >>= stringToStringBuffer
 -- todo: should be removed, use only loadStdin
 loadFile file = hGetStringBuffer file
 
-loadHsFile :: FilePath -> Ghc [ModSummary]
+loadHsFile :: FilePath -> Ghc ModSummary
 loadHsFile file = do
+    addTargetFile file
+    load LoadAllTargets
     summaries <- depanal [] False
-    filterM (\sum -> do
+    mods <- filterM (\sum -> do
           absoluteSummary <- liftIO $ canonicalizePath $ ms_hspp_file sum
           absoluteFile    <- liftIO $ canonicalizePath file
           return $ equalFilePath absoluteFile absoluteSummary)
         summaries
+    return $ head mods
 
 parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
 parseHsFile buffer fileName = do
