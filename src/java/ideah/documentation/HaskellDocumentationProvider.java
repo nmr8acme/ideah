@@ -5,7 +5,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -42,6 +41,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             Document doc = fdm.getCachedDocument(file);
             if (doc == null)
                 return null;
+            fdm.saveAllDocuments();
             int offset = range.getStartOffset();
             int line = doc.getLineNumber(offset);
             int col = offset - doc.getLineStartOffset(line);
@@ -51,28 +51,38 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 return null;
             }
             try {
-                StringBuffer stdOut = new StringBuffer();
                 ProcessLauncher idLauncher= new ProcessLauncher(
-                    false,
+                    false, null,
                     compiler.exe,
                     "-m", "GetIdType",
                     "-g", compiler.libPath,
-                    "-s", CompilerLocation.rootsToString(ModuleRootManager.getInstance(module).getSourceRoots(false)),
+                    "-s", CompilerLocation.rootsAsString(module, false),
                     "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
                     file.getPath()
                 );
-                stdOut.append(idLauncher.getStdOut());
-                ProcessLauncher docuLauncher = new ProcessLauncher(
-                    false,
-                    compiler.exe,
-                    "-m", "GetDocu",
-                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
-                    file.getPath()
-                );
-                stdOut.append(docuLauncher.getStdOut());
-                if (stdOut.toString().trim().isEmpty())
+                String stdOut = idLauncher.getStdOut();
+                if (stdOut.trim().isEmpty())
                     return null;
-                return stdOut + "<br>";
+                int p = stdOut.indexOf('\f');
+                String modName;
+                String type;
+                if (p >= 0) {
+                    modName = stdOut.substring(0, p).trim();
+                    type = stdOut.substring(p + 1).trim();
+                } else {
+                    modName = "?";
+                    type = "?";
+                }
+                // todo: temporarily removed
+//                ProcessLauncher docuLauncher = new ProcessLauncher(
+//                    false, null,
+//                    compiler.exe,
+//                    "-m", "GetDocu",
+//                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
+//                    file.getPath()
+//                );
+//                String docs = docuLauncher.getStdOut();
+                return "Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>";
             } catch (Exception ex) {
                 LOG.error(ex);
                 return null;

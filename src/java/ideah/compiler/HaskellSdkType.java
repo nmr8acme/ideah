@@ -135,9 +135,8 @@ public final class HaskellSdkType extends SdkType {
             return null;
         }
         try {
-            // todo: check for Linux
             String output = new ProcessLauncher(
-                false,
+                false, null,
                 homePath + File.separator + "bin" + File.separator + "ghc",
                 "--numeric-version"
             ).getStdOut();

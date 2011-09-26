@@ -12,7 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkType;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
 import ideah.compiler.HaskellSdkType;
 import ideah.util.CompilerLocation;
@@ -92,8 +91,7 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         commandLine.setWorkDirectory(parameters.getWorkingDirectory());
 
-                        commandLine.addParameter("-i" + CompilerLocation.rootsToString(
-                                ModuleRootManager.getInstance(configuration.getModule()).getSourceRoots(false)));
+                        commandLine.addParameter("-i" + CompilerLocation.rootsAsString(configuration.getModule(), false));
                         commandLine.addParameter(mainFile); // todo
 
                         // todo: set other parameters/rt flags

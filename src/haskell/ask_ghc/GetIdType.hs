@@ -42,6 +42,5 @@ doWalk srcPath srcFile line col = do
     checked <- typecheckModule parsed
     doExtractTypes line col checked
 
-getIdType srcPath ghcPath srcFile (line, col) = do
+getIdType srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
-    return ()

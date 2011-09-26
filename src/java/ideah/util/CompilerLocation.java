@@ -2,11 +2,13 @@ package ideah.util;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.StatusBar;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -83,7 +85,7 @@ public final class CompilerLocation {
             pluginPath.mkdirs();
             File compilerExe = new File(pluginPath, getExeName(MAIN_FILE));
             if (needRecompile(compilerExe)) {
-                if (!compileHs(pluginPath, ghcHome, compilerExe))
+                if (!compileHs(module.getProject(), pluginPath, ghcHome, compilerExe))
                     return null;
             }
             if (compilerExe.exists()) {
@@ -97,39 +99,45 @@ public final class CompilerLocation {
         }
     }
 
-    public static String rootsToString(VirtualFile[] roots) {
-        StringBuilder sourceRoots = new StringBuilder();
-        for (VirtualFile root : roots) {
-            sourceRoots.append(":").append(root.getPath());
+    public static String rootsAsString(Module module, boolean tests) {
+        VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(tests);
+        StringBuilder buf = new StringBuilder();
+        for (VirtualFile root : sourceRoots) {
+            buf.append(':').append(root.getPath());
         }
-        return sourceRoots.substring(1);
+        return buf.substring(1);
     }
 
-    private static boolean compileHs(File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException, URISyntaxException {
+    private static boolean compileHs(Project project, File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException, URISyntaxException {
         exe.delete();
         VirtualFile ghcBin = ghcHome.findChild("bin");
         if (ghcBin == null)
             return false;
-        File[] haskellSources = listHaskellSources();
-        for (File file : haskellSources) {
-            File outFile = new File(pluginPath, file.getName());
-            FileUtil.copy(file, outFile);
+        StatusBar.Info.set("Compiling " + MAIN_FILE + "...", project);
+        try {
+            File[] haskellSources = listHaskellSources();
+            for (File file : haskellSources) {
+                File outFile = new File(pluginPath, file.getName());
+                FileUtil.copy(file, outFile);
+            }
+            String mainHs = MAIN_FILE + ".hs";
+            ProcessLauncher launcher = new ProcessLauncher(
+                true, null,
+                new File(ghcBin.getPath(), "ghc").getAbsolutePath(),
+                "--make", "-cpp", "-O", "-package", "ghc",
+                "-i" + pluginPath.getAbsolutePath(),
+                new File(pluginPath, mainHs).getAbsolutePath()
+            );
+            for (int i = 0; i < 3; i++) {
+                if (exe.exists())
+                    return true;
+                Thread.sleep(100);
+            }
+            String stdErr = launcher.getStdErr();
+            LOG.error("Compiling " + mainHs + ":\n" + stdErr);
+            return false;
+        } finally {
+            StatusBar.Info.set("Done compiling " + MAIN_FILE, project);
         }
-        String mainHs = MAIN_FILE + ".hs";
-        ProcessLauncher launcher = new ProcessLauncher(
-            true,
-            new File(ghcBin.getPath(), "ghc").getAbsolutePath(),
-            "--make", "-cpp", "-O", "-package", "ghc",
-            "-i" + pluginPath.getAbsolutePath(),
-            new File(pluginPath, mainHs).getAbsolutePath()
-        );
-        for (int i = 0; i < 3; i++) {
-            if (exe.exists())
-                return true;
-            Thread.sleep(100);
-        }
-        String stdErr = launcher.getStdErr();
-        LOG.error("Compiling " + mainHs + ":\n" + stdErr);
-        return false;
     }
 }
