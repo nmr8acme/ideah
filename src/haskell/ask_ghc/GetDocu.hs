@@ -1,5 +1,7 @@
 module GetDocu (getDocu) where
 
+#if 0
+
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
 import Data.Graph.Inductive.Query.Monad ((><))
@@ -75,3 +77,9 @@ docToStr d =
         DocPic s            -> s -- todo: ???
         DocAName s          -> s -- todo: ???
         DocExamples es      -> docUnlines $ map (\e -> mono (exampleExpression e) ++ "<br>" ++ docUnlines (exampleResult e)) es
+
+#else
+
+getDocu _ _ _ = return ()
+
+#endif

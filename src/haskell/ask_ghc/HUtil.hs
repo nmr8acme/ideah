@@ -49,7 +49,13 @@ loadHsFile file = do
 parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
 parseHsFile buffer fileName = do
     flags <- getSessionDynFlags
-    let state = mkPState flags buffer (mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1))
+    let loc = mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1)
+    let state =
+#if __GLASGOW_HASKELL__ >= 700
+           mkPState flags buffer loc
+#else
+           mkPState buffer loc flags
+#endif
     let result = unP Parser.parseModule state
     case result of
         POk _ parsed -> return $ Right parsed
