@@ -54,8 +54,8 @@
         <copy todir="${classes.dir}">
             <fileset dir="${src.dir}" includes="**/*.png"/>
         </copy>
-        <mkdir dir="${distr.dir}/lib"/>
-        <jar destfile="${distr.dir}/lib/ideah.jar">
+        <mkdir dir="${distr.dir}/ideah/lib"/>
+        <jar destfile="${distr.dir}/ideah/lib/ideah.jar">
             <fileset dir="${classes.dir}"/>
         </jar>
         <zip destfile="ideah-bin-${project.version}.zip" basedir="${distr.dir}"/>
