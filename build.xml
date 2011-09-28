@@ -46,7 +46,18 @@
         </javac>
     </target>
 
-    <target name="build" depends="compile, pack_hs">
+    <target name="src">
+        <zip destfile="ideah-src-${project.version}.zip" basedir="."
+             includes="src/java/**,
+                       src/haskell/**/*.hs,
+                       build.xml,
+                       build.properties,
+                       META-INF/**,
+                       .idea/**,
+                       ideah.iml"/>
+    </target>
+
+    <target name="build" depends="compile, pack_hs, src">
         <copy todir="${classes.dir}/META-INF">
             <fileset dir="./META-INF"/>
         </copy>
@@ -59,13 +70,5 @@
             <fileset dir="${classes.dir}"/>
         </jar>
         <zip destfile="ideah-bin-${project.version}.zip" basedir="${distr.dir}"/>
-        <zip destfile="ideah-src-${project.version}.zip" basedir="."
-             includes="src/java/**,
-                       src/haskell/**/*.hs,
-                       build.xml,
-                       build.properties,
-                       META-INF/**,
-                       .idea/**,
-                       ideah.iml"/>
     </target>
 </project>
