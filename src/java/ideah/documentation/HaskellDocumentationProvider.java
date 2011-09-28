@@ -30,50 +30,52 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
     }
 
     public String generateDoc(PsiElement element, PsiElement originalElement) {
-        if (element instanceof HPIdent) {
-            HPIdent ident = (HPIdent) element;
-            TextRange range = ident.getTextRange();
-            PsiFile psiFile = element.getContainingFile();
-            VirtualFile file = psiFile.getVirtualFile();
-            if (file == null)
+        if (!(element instanceof HPIdent))
+            return null;
+        HPIdent ident = (HPIdent) element;
+        TextRange range = ident.getTextRange();
+        PsiFile psiFile = element.getContainingFile();
+        VirtualFile file = psiFile.getVirtualFile();
+        if (file == null)
+            return null;
+        FileDocumentManager fdm = FileDocumentManager.getInstance();
+        Document doc = fdm.getCachedDocument(file);
+        if (doc == null)
+            return null;
+        // todo: run in event-dispatch thread
+        //fdm.saveAllDocuments();
+        int offset = range.getStartOffset();
+        int line = doc.getLineNumber(offset);
+        int col = offset - doc.getLineStartOffset(line);
+        Module module = ProjectRootManager.getInstance(psiFile.getProject()).getFileIndex().getModuleForFile(file);
+        CompilerLocation compiler = CompilerLocation.get(module);
+        if (compiler == null) {
+            return null;
+        }
+        try {
+            ProcessLauncher idLauncher= new ProcessLauncher(
+                false, null,
+                compiler.exe,
+                "-m", "GetIdType",
+                "-g", compiler.libPath,
+                "-s", CompilerLocation.rootsAsString(module, false),
+                "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
+                file.getPath()
+            );
+            String stdOut = idLauncher.getStdOut();
+            if (stdOut.trim().isEmpty())
                 return null;
-            FileDocumentManager fdm = FileDocumentManager.getInstance();
-            Document doc = fdm.getCachedDocument(file);
-            if (doc == null)
-                return null;
-            fdm.saveAllDocuments();
-            int offset = range.getStartOffset();
-            int line = doc.getLineNumber(offset);
-            int col = offset - doc.getLineStartOffset(line);
-            Module module = ProjectRootManager.getInstance(psiFile.getProject()).getFileIndex().getModuleForFile(file);
-            CompilerLocation compiler = CompilerLocation.get(module);
-            if (compiler == null) {
-                return null;
+            int p = stdOut.indexOf('\f');
+            String modName;
+            String type;
+            if (p >= 0) {
+                modName = stdOut.substring(0, p).trim();
+                type = stdOut.substring(p + 1).trim();
+            } else {
+                modName = "?";
+                type = "?";
             }
-            try {
-                ProcessLauncher idLauncher= new ProcessLauncher(
-                    false, null,
-                    compiler.exe,
-                    "-m", "GetIdType",
-                    "-g", compiler.libPath,
-                    "-s", CompilerLocation.rootsAsString(module, false),
-                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
-                    file.getPath()
-                );
-                String stdOut = idLauncher.getStdOut();
-                if (stdOut.trim().isEmpty())
-                    return null;
-                int p = stdOut.indexOf('\f');
-                String modName;
-                String type;
-                if (p >= 0) {
-                    modName = stdOut.substring(0, p).trim();
-                    type = stdOut.substring(p + 1).trim();
-                } else {
-                    modName = "?";
-                    type = "?";
-                }
-                // todo: temporarily removed
+            // todo: temporarily removed
 //                ProcessLauncher docuLauncher = new ProcessLauncher(
 //                    false, null,
 //                    compiler.exe,
@@ -82,13 +84,11 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
 //                    file.getPath()
 //                );
 //                String docs = docuLauncher.getStdOut();
-                return "Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>";
-            } catch (Exception ex) {
-                LOG.error(ex);
-                return null;
-            }
+            return "Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>";
+        } catch (Exception ex) {
+            LOG.error(ex);
+            return null;
         }
-        return null;
     }
 
     public PsiElement getDocumentationElementForLookupItem(PsiManager psiManager, Object object, PsiElement element) {
