@@ -32,11 +32,25 @@ public final class LineColRange {
     }
 
     public LineColRange(String str) {
-        String[] lineColumnStrings = str.split("[-:]");
-        startLine = parseInt(lineColumnStrings[0]);
-        startColumn = parseInt(lineColumnStrings[1]);
-        endLine = parseInt(lineColumnStrings[2]);
-        endColumn = parseInt(lineColumnStrings[3]);
+        int p = str.indexOf('-');
+        String start = str.substring(0, p);
+        String end = str.substring(p + 1);
+        int[] starts = parsePair(start);
+        int[] ends = parsePair(end);
+        startLine = starts[0];
+        startColumn = starts[1];
+        endLine = ends[0];
+        endColumn = ends[1];
+    }
+
+    private static int[] parsePair(String str) {
+        str = str.trim();
+        if ("?".equals(str))
+            return new int[] {0, 0};
+        int p = str.indexOf(':');
+        String from = str.substring(0, p);
+        String to = str.substring(p + 1);
+        return new int[] {parseInt(from), parseInt(to)};
     }
 
     private static int parseInt(String str) {

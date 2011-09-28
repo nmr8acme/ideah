@@ -75,7 +75,7 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
         KEY_SYM_ID, SyntaxHighlighterColors.KEYWORD.getDefaultAttributes() // todo: ???
     );
     static final TextAttributesKey CON_ATTR = TextAttributesKey.createTextAttributesKey(
-        TYCON_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.MAGENTA.darker())
+        TYCON_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.MAGENTA.darker()) // todo: ???
     );
     static final TextAttributesKey SYM_ATTR = TextAttributesKey.createTextAttributesKey(
         SYM_ID, SyntaxHighlighterColors.OPERATION_SIGN.getDefaultAttributes()

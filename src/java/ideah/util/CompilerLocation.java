@@ -6,14 +6,13 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public final class CompilerLocation {
 
@@ -36,29 +35,39 @@ public final class CompilerLocation {
                 : file;
     }
 
-    private static File[] listHaskellSources() throws URISyntaxException {
-        File pluginHaskellDir = new File(CompilerLocation.class.getResource("/ask_ghc/").toURI());
-        return pluginHaskellDir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".hs");
-            }
-        });
+    private interface HsCallback {
+
+        void run(ZipInputStream zis, ZipEntry entry) throws IOException;
     }
 
-    private static boolean needRecompile(File compilerExe) throws URISyntaxException {
+    private static void listHaskellSources(HsCallback callback) throws IOException {
+        InputStream is = CompilerLocation.class.getResourceAsStream("/ask_ghc.jar");
+        ZipInputStream zis = new ZipInputStream(is);
+        while (true) {
+            ZipEntry entry = zis.getNextEntry();
+            if (entry == null)
+                break;
+            callback.run(zis, entry);
+            zis.closeEntry();
+        }
+        zis.close();
+    }
+
+    private static boolean needRecompile(File compilerExe) throws IOException {
         if (compilerExe.exists()) {
             if (sourcesLastModified == null) {
-                Long maxModified = null;
-                File[] haskellSources = listHaskellSources();
-                for (File file : haskellSources) {
-                    long lastModified = file.lastModified();
-                    if (maxModified == null) {
-                        maxModified = lastModified;
-                    } else {
-                        maxModified = Math.max(maxModified.longValue(), lastModified);
+                final Long[] maxModified = new Long[1];
+                listHaskellSources(new HsCallback() {
+                    public void run(ZipInputStream zis, ZipEntry entry) {
+                        long lastModified = entry.getTime();
+                        if (maxModified[0] == null) {
+                            maxModified[0] = lastModified;
+                        } else {
+                            maxModified[0] = Math.max(maxModified[0].longValue(), lastModified);
+                        }
                     }
-                }
-                sourcesLastModified = maxModified;
+                });
+                sourcesLastModified = maxModified[0];
             }
             return sourcesLastModified != null && sourcesLastModified.longValue() > compilerExe.lastModified();
         } else {
@@ -108,18 +117,24 @@ public final class CompilerLocation {
         return buf.substring(1);
     }
 
-    private static boolean compileHs(Project project, File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException, URISyntaxException {
+    private static boolean compileHs(Project project, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
         exe.delete();
         VirtualFile ghcBin = ghcHome.findChild("bin");
         if (ghcBin == null)
             return false;
         StatusBar.Info.set("Compiling " + MAIN_FILE + "...", project);
         try {
-            File[] haskellSources = listHaskellSources();
-            for (File file : haskellSources) {
-                File outFile = new File(pluginPath, file.getName());
-                FileUtil.copy(file, outFile);
-            }
+            listHaskellSources(new HsCallback() {
+                public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
+                    File outFile = new File(pluginPath, entry.getName());
+                    OutputStream os = new FileOutputStream(outFile);
+                    try {
+                        StreamUtil.copyStreamContent(zis, os);
+                    } finally {
+                        os.close();
+                    }
+                }
+            });
             String mainHs = MAIN_FILE + ".hs";
             ProcessLauncher launcher = new ProcessLauncher(
                 true, null,

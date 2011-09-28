@@ -1,9 +1,11 @@
-<idea-plugin version="2">
-    <name>Haskell plugin</name>
+<idea-plugin version="2" url="http://code.google.com/p/ideah/">
+    <id>ideah</id>
+    <name>Haskell</name>
     <description>Support for Haskell language</description>
-    <version>1.0</version>
-    <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/">IDEAH</vendor>
-    <idea-version since-build="8000"/>
+    <category>Custom Languages</category>
+    <version>VERSION</version>
+    <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">ideah.plugin@gmail.com</vendor>
+    <idea-version since-build="99.18"/>
 
     <application-components>
         <component>

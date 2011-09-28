@@ -6,10 +6,12 @@
 
     <property file="build.properties"/>
 
+    <property name="project.version" value="0.1"/>
+
     <property name="src.dir" location="src/java"/>
-    <property name="build.dir" location="build"/>
-    <property name="classes.dir" location="${build.dir}/classes"/>
-    <property name="distr.dir" location="."/>
+    <property name="hs.dir" location="src/haskell/ask_ghc"/>
+    <property name="classes.dir" location="out/production/ideah"/>
+    <property name="distr.dir" location="distr"/>
 
     <path id="project.classpath">
         <pathelement path="${lib.dir}/annotations.jar"/>
@@ -24,14 +26,17 @@
         <echo message="Building ${ant.project.name} with JDK ${java.version}"/>
         <!-- Create the time stamp -->
         <tstamp/>
-        <mkdir dir="${distr.dir}"/>
-        <mkdir dir="${build.dir}"/>
         <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${distr.dir}"/>
     </target>
 
     <target name="clean">
-        <delete dir="${build.dir}"/>
-        <delete file="ideah.jar"/>
+        <delete dir="${classes.dir}"/>
+        <delete dir="${distr.dir}"/>
+    </target>
+
+    <target name="pack_hs" depends="init">
+        <zip destfile="${classes.dir}/ask_ghc.jar" basedir="${hs.dir}" includes="**/*.hs"/>
     </target>
 
     <target name="compile" depends="init">
@@ -41,18 +46,26 @@
         </javac>
     </target>
 
-    <target name="build" depends="compile">
+    <target name="build" depends="compile, pack_hs">
         <copy todir="${classes.dir}/META-INF">
             <fileset dir="./META-INF"/>
         </copy>
+        <replace file="${classes.dir}/META-INF/plugin.xml" token="VERSION" value="${project.version}"/>
         <copy todir="${classes.dir}">
             <fileset dir="${src.dir}" includes="**/*.png"/>
         </copy>
-        <copy todir="${classes.dir}">
-            <fileset dir="src/haskell" includes="**/*.hs"/>
-        </copy>
-        <jar destfile="${distr.dir}/ideah.jar">
+        <mkdir dir="${distr.dir}/lib"/>
+        <jar destfile="${distr.dir}/lib/ideah.jar">
             <fileset dir="${classes.dir}"/>
         </jar>
+        <zip destfile="ideah-bin-${project.version}.zip" basedir="${distr.dir}"/>
+        <zip destfile="ideah-src-${project.version}.zip" basedir="."
+             includes="src/java/**,
+                       src/haskell/**/*.hs,
+                       build.xml,
+                       build.properties,
+                       META-INF/**,
+                       .idea/**,
+                       ideah.iml"/>
     </target>
 </project>
