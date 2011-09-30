@@ -37,6 +37,7 @@
                            implementationClass="ideah.highlighter.HaskellBraceMatcher"/>
         <lang.commenter language="Haskell" implementationClass="ideah.highlighter.HaskellCommenter"/>
         <lang.parserDefinition language="Haskell" implementationClass="ideah.parser.HaskellParserDefinition"/>
+        <indexPatternBuilder implementation="ideah.highlighter.HaskellIndexPatternBuilder"/>
         <!--<lang.formatter language="Haskell"-->
                         <!--implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>-->
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->
