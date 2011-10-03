@@ -47,9 +47,10 @@ public final class HaskellSdkType extends SdkType {
                 return progFiles;
             ghcDirs = haskellProgDir.list();
         }
-        return haskellProgDir == null
+        String latestVersion = getLatestVersion(ghcDirs);
+        return haskellProgDir == null || latestVersion == null
             ? null
-            : new File(haskellProgDir, getLatestVersion(ghcDirs)).getAbsolutePath();
+            : new File(haskellProgDir, latestVersion).getAbsolutePath();
     }
 
     private static String getLatestVersion(String[] names) {
