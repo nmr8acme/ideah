@@ -55,7 +55,7 @@ public final class LaunchGHC {
         StringBuilder tmpBuffer = new StringBuilder();
         String line = ghcErrorReader.readLine();
         while (line != null) {
-            if (line.startsWith("\f")) {
+            if (line.startsWith(ProcessLauncher.NEW_MSG_INDICATOR)) {
                 tmpBuffer = new StringBuilder();
                 buffers.add(tmpBuffer);
             } else {

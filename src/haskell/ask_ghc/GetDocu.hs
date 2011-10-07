@@ -1,13 +1,12 @@
 module GetDocu (getDocu) where
 
-#if 0
+#if 1
 
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
 import Data.Graph.Inductive.Query.Monad ((><))
+import System.FilePath
 
-import OccName
-import Unique
 import Name
 import SrcLoc
 
@@ -15,42 +14,24 @@ import HUtil
 
 import Documentation.Haddock
 
-getDocu file srcPath loc = do
-    (iface : _) <- createInterfaces [ Flag_SourceBaseURL srcPath
-                                    , Flag_UseIndex srcPath
-                                    , Flag_Heading srcPath
-                                    , Flag_Lib srcPath
-                                    , Flag_Prologue srcPath
-                                    , Flag_SourceModuleURL srcPath
-                                    , Flag_SourceEntityURL srcPath
-                                    , Flag_UseContents srcPath] [file]
-    let ifaceMap          = ifaceDeclMap iface
+getDocu file srcPath ghcPath loc = do
+    ifaces <- createInterfaces [ Flag_GhcLibDir ghcPath
+                               , Flag_OptGhc ("-i " ++ srcPath)] [file]
+    let (iface : _)       = filter (equalFilePath file . ifaceOrigFilename) ifaces
+        ifaceMap          = ifaceDeclMap iface
         ifaceKeys         = Data.Map.keys ifaceMap
         ifaceLocs         = map nameSrcLoc ifaceKeys
         ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
     case lookup loc ifaceLocsWithKeys of
          Just name -> case Data.Map.lookup name ifaceMap of
                          Just (_, (maybeDoc, fnArgsDoc), _) -> case maybeDoc of
-                             Just doc -> putStrLn $ docToStr doc
-                             Nothing  -> return ()
-                         Nothing -> putStrLn ":\"("
-                             -- todo: fnArgsdoc!
-         Nothing       -> putStrLn ":-("
-
-{-getDocuByFunctionName file function = do
-    (iface : _) <- createInterfaces [] [file]
-    let ifaceMap           = ifaceDeclMap iface
-        ifaceKeys          = Data.Map.keys ifaceMap
-        ifaceNamesWithKeys = zip (map (toString . nameOccName) ifaceKeys) ifaceKeys
-        funOcc             = mkOccName srcDataName function
-    case lookup function ifaceNamesWithKeys of
-       Just name -> putStrLn $ docToStr $ case Data.Map.lookup name ifaceMap of
-                         Just (_, (maybeDoc, fnArgsDoc), _) -> case maybeDoc of
-                             Just doc -> putStrLn $ docToStr doc
+                             Just doc -> do
+                              putStrLn newMsgIndicator
+                              putStrLn $ docToStr doc
                              Nothing  -> return ()
                          Nothing -> return ()
                              -- todo: fnArgsdoc!
-       Nothing       -> putStrLn ":-("-}
+         Nothing       -> return ()
 
 docToStr :: Doc id -> String
 docToStr d =
@@ -58,7 +39,7 @@ docToStr d =
         mono s          = "<tt>" ++ s ++ "</tt>"
         monoDoc         = mono . docToStr
         docUnlines      = concat . intersperse "<br>"
-    in newMsgIndicator ++ case d of
+    in case d of
         DocEmpty            -> ""
         DocAppend d1 d2     -> docUnlines [docToStr d1, docToStr d2]
         DocString s         -> s
@@ -80,6 +61,7 @@ docToStr d =
 
 #else
 
-getDocu _ _ _ = return ()
+getDocu :: String -> String -> String -> (Int, Int) -> IO ()
+getDocu _ _ _ _ = return ()
 
 #endif

@@ -27,6 +27,7 @@ extractTypes style line col var loc _ = liftIO $
         putStrLn ts
         exitSuccess
 
+doExtractTypes :: Int -> Int -> TypecheckedModule -> Ghc ()
 doExtractTypes line col checked = do
     let info = tm_checked_module_info checked
     (Just unqual) <- mkPrintUnqualifiedForModule info
@@ -35,6 +36,7 @@ doExtractTypes line col checked = do
     --cb <- printCallback defWalkCallback
     walkDeclarations cb (typecheckedSource checked)
 
+doWalk :: String -> FilePath -> Int -> Int -> Ghc ()
 doWalk srcPath srcFile line col = do
     setupFlags True ["-i" ++ srcPath]
     mod <- loadHsFile srcFile
@@ -42,5 +44,6 @@ doWalk srcPath srcFile line col = do
     checked <- typecheckModule parsed
     doExtractTypes line col checked
 
+getIdType :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
 getIdType srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))

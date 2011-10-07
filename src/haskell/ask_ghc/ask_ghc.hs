@@ -8,8 +8,9 @@ import Compile
 import CheckMain
 import GetIdType
 import GetDocu
+import GetDeclPos
 
-data Mode = Compile | CheckMain | GetIdType | GetDocu
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu
     deriving Read
 
 -- ./ask_ghc
@@ -63,8 +64,10 @@ main = do
         ghcpath    = ghcPath opts
         srcpath    = sourcePath opts
         singleFile = head files
+        pos        = position opts
     case mode opts of
-         Compile   -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
-         CheckMain -> checkMain ghcpath singleFile
-         GetIdType -> getIdType srcpath ghcpath singleFile $ position opts
-         GetDocu   -> getDocu singleFile srcpath $ position opts
+         Compile    -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
+         CheckMain  -> checkMain ghcpath singleFile
+         GetIdType  -> getIdType srcpath ghcpath singleFile pos
+         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
+         GetDocu    -> getDocu singleFile srcpath ghcpath pos

@@ -13,8 +13,11 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import ideah.psi.api.HPIdent;
 import ideah.util.CompilerLocation;
+import ideah.util.DeclarationPosition;
 import ideah.util.ProcessLauncher;
 
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.util.List;
 
 public final class HaskellDocumentationProvider implements DocumentationProvider {
@@ -53,19 +56,21 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             return null;
         }
         try {
+            String sourcePath = CompilerLocation.rootsAsString(module, false);
             ProcessLauncher idLauncher= new ProcessLauncher(
                 false, null,
                 compiler.exe,
                 "-m", "GetIdType",
                 "-g", compiler.libPath,
-                "-s", CompilerLocation.rootsAsString(module, false),
+                "-s", sourcePath,
                 "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
                 file.getPath()
             );
             String stdOut = idLauncher.getStdOut();
             if (stdOut.trim().isEmpty())
                 return null;
-            int p = stdOut.indexOf('\f');
+            String newMsgIndicator = ProcessLauncher.NEW_MSG_INDICATOR;
+            int p = stdOut.indexOf(newMsgIndicator);
             String modName;
             String type;
             if (p >= 0) {
@@ -75,16 +80,32 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 modName = "?";
                 type = "?";
             }
-            // todo: temporarily removed
-//                ProcessLauncher docuLauncher = new ProcessLauncher(
-//                    false, null,
-//                    compiler.exe,
-//                    "-m", "GetDocu",
-//                    "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
-//                    file.getPath()
-//                );
-//                String docs = docuLauncher.getStdOut();
-            return "Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>";
+            StringBuilder documentation = new StringBuilder("Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>");
+            DeclarationPosition declaration = new DeclarationPosition(line, col, psiFile);
+            ProcessLauncher documentationLauncher = new ProcessLauncher(
+                false, null,
+                compiler.exe,
+                "-m", "GetDocu",
+                "-g", compiler.libPath,
+                "-s", sourcePath,
+                "--line-number",
+                String.valueOf(declaration.startLine),
+                "--column-number", String.valueOf(declaration.startCol),
+                file.getPath()
+            );
+            BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
+            String l = reader.readLine();
+            while (l != null && !l.startsWith(newMsgIndicator)) {
+                l = reader.readLine();
+            }
+            if (l != null && l.startsWith(newMsgIndicator)) {
+                l = reader.readLine();
+                while (l != null) {
+                    documentation.append("<br>").append(l);
+                    l = reader.readLine();
+                }
+            }
+            return documentation.toString();
         } catch (Exception ex) {
             LOG.error(ex);
             return null;

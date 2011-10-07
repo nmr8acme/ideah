@@ -9,6 +9,8 @@ import java.util.List;
 
 public final class ProcessLauncher {
 
+    public static final String NEW_MSG_INDICATOR = "\f";
+
     private final String stdOut;
     private final String stdErr;
 
