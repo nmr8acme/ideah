@@ -14,10 +14,10 @@ import HUtil
 
 import Documentation.Haddock
 
-getDocu file srcPath ghcPath loc = do
+getDocu srcPath ghcPath loc modFile = do
     ifaces <- createInterfaces [ Flag_GhcLibDir ghcPath
-                               , Flag_OptGhc ("-i " ++ srcPath)] [file]
-    let (iface : _)       = filter (equalFilePath file . ifaceOrigFilename) ifaces
+                               , Flag_OptGhc ("-i " ++ srcPath)] [modFile]
+    let (iface : _)       = filter (equalFilePath modFile . ifaceOrigFilename) ifaces
         ifaceMap          = ifaceDeclMap iface
         ifaceKeys         = Data.Map.keys ifaceMap
         ifaceLocs         = map nameSrcLoc ifaceKeys

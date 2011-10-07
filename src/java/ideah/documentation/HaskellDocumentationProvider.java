@@ -91,7 +91,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 "--line-number",
                 String.valueOf(declaration.startLine),
                 "--column-number", String.valueOf(declaration.startCol),
-                file.getPath()
+                "--module", declaration.module
             );
             BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
             String l = reader.readLine();

@@ -13,6 +13,7 @@ public final class DeclarationPosition {
 
     public final int startLine;
     public final int startCol;
+    public final String module;
 
     public DeclarationPosition(int line, int col, PsiFile psiFile) throws InterruptedException, IOException {
         VirtualFile file = psiFile.getVirtualFile();
@@ -38,5 +39,6 @@ public final class DeclarationPosition {
             startLine = -1;
             startCol = -1;
         }
+        this.module = reader.readLine();
     }
 }
