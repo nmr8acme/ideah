@@ -24,14 +24,29 @@ getDocu srcPath ghcPath loc modFile = do
         ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
     case lookup loc ifaceLocsWithKeys of
          Just name -> case Data.Map.lookup name ifaceMap of
-                         Just (_, (maybeDoc, fnArgsDoc), _) -> case maybeDoc of
-                             Just doc -> do
-                              putStrLn newMsgIndicator
-                              putStrLn $ docToStr doc
-                             Nothing  -> return ()
+                         Just (LHsDecl name, (maybeDoc, fnArgsDoc), _) -> do
+                            putStrLn newMsgIndicator
+                            when (length (keys fnArgsDoc) > 0) $ print $ argsDocToStr (unLoc name) fnArgsDoc
+                            case maybeDoc of
+                                 Just doc -> do
+                                  putStrLn $ docToStr doc
+                                 Nothing  -> return ()
                          Nothing -> return ()
-                             -- todo: fnArgsdoc!
          Nothing       -> return ()
+
+argsDocToStr (ValD (HsBind id _)) = 
+argsDocToStr (TyClD (TyClDecl id)) = 
+argsDocToStr (InstD (InstDecl id)) = 
+argsDocToStr (DerivD (DerivDecl id) = 
+argsDocToStr (SigD (Sig id)) = 
+argsDocToStr (DefD (DefaultDecl id)) = 
+argsDocToStr (ForD (ForeignDecl id)) = 
+argsDocToStr (WarningD (WarnDecl id)) =  
+argsDocToStr (AnnD (AnnDecl id)) = 
+argsDocToStr (RuleD (RuleDecl id)) = 
+argsDocToStr (SpliceD (SpliceDecl id)) = 
+argsDocToStr (DocD DocDecl) = 
+argsDocToStr (QuasiQuoteD (HsQuasiQuote id)) = 
 
 docToStr :: Doc id -> String
 docToStr d =
