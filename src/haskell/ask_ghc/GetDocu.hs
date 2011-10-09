@@ -5,6 +5,7 @@ module GetDocu (getDocu) where
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
 import Data.Graph.Inductive.Query.Monad ((><))
+import Control.Monad (when)
 import System.FilePath
 
 import Name
@@ -24,9 +25,10 @@ getDocu srcPath ghcPath loc modFile = do
         ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
     case lookup loc ifaceLocsWithKeys of
          Just name -> case Data.Map.lookup name ifaceMap of
-                         Just (LHsDecl name, (maybeDoc, fnArgsDoc), _) -> do
+                         Just (lhsDecl, (maybeDoc, fnArgsDoc), _) -> do
                             putStrLn newMsgIndicator
-                            when (length (keys fnArgsDoc) > 0) $ print $ argsDocToStr (unLoc name) fnArgsDoc
+                            let name = unLoc lhsDecl
+                            when (length (Data.Map.keys fnArgsDoc) > 0) $ print $ argsDocToStr name fnArgsDoc
                             case maybeDoc of
                                  Just doc -> do
                                   putStrLn $ docToStr doc
@@ -34,7 +36,9 @@ getDocu srcPath ghcPath loc modFile = do
                          Nothing -> return ()
          Nothing       -> return ()
 
-argsDocToStr (ValD (HsBind id _)) = 
+argsDocToStr _ _ = "argsDocToStr"
+
+{-argsDocToStr (ValD (HsBind id _)) = 
 argsDocToStr (TyClD (TyClDecl id)) = 
 argsDocToStr (InstD (InstDecl id)) = 
 argsDocToStr (DerivD (DerivDecl id) = 
@@ -46,7 +50,7 @@ argsDocToStr (AnnD (AnnDecl id)) =
 argsDocToStr (RuleD (RuleDecl id)) = 
 argsDocToStr (SpliceD (SpliceDecl id)) = 
 argsDocToStr (DocD DocDecl) = 
-argsDocToStr (QuasiQuoteD (HsQuasiQuote id)) = 
+argsDocToStr (QuasiQuoteD (HsQuasiQuote id)) = -}
 
 docToStr :: Doc id -> String
 docToStr d =
