@@ -33,8 +33,7 @@ getDocu srcPath ghcPath loc modFile = do
           case Data.Map.lookup name ifaceMap of
                Just (lhsDecl, (maybeDoc, _), _) -> do
                   putStrLn newMsgIndicator
-                  print $ argsDocToStr $ unLoc lhsDecl
-                  putStrLn newMsgIndicator
+                  putStrLn $ argsDocToStr $ unLoc lhsDecl
                   case maybeDoc of
                        Just doc -> do
                         putStrLn $ docToStr doc
@@ -42,29 +41,29 @@ getDocu srcPath ghcPath loc modFile = do
                Nothing -> return ()
          Nothing       -> return ()
 
-argsDocToStr (SigD (TypeSig locName typeName)) = showName (unLoc locName) ++ " :: " ++ hsDeclToStr typeName
+argsDocToStr (SigD (TypeSig locName typeName)) = mono (showName (unLoc locName) ++ " :: ") ++ hsDeclToStr typeName
 argsDocToStr _                                 = ""
 
 showName name = show $ (pprOccName $ nameOccName name) defaultUserStyle
 
 hsDeclToStr decl =
   case unLoc decl of
-        HsForAllTy _ _ _ lhsType -> hsDeclToStr lhsType
-        HsTyVar name         -> showName name
+        HsForAllTy _ _ _ dec -> hsDeclToStr dec
+        HsTyVar name         -> mono $ showName name
         HsAppTy decl1 decl2  -> hsDeclToStr decl1 ++ " " ++ hsDeclToStr decl2
-        HsFunTy arg rest     -> "(" ++ hsDeclToStr arg ++ "<br><pre>-> " ++ hsDeclToStr rest ++ ")"
+        HsFunTy arg rest     -> hsDeclToStr arg ++ mono "-> " ++ hsDeclToStr rest
         HsListTy _           -> "list"
         HsPArrTy _           -> "parr"
         HsTupleTy _ _        -> "tuple"
         HsOpTy _ _ _         -> "op"
-        HsParTy _            -> "par"
+        HsParTy dec          -> mono "(" ++ hsDeclToStr dec ++ mono ")"
         HsNumTy _            -> "num"
         HsPredTy _           -> "pred"
         HsKindSig _ _        -> "kindsig"
         HsQuasiQuoteTy _     -> "quasi"
         HsSpliceTy _ _ _     -> "splice"
         HsDocTy lhsType name -> let (HsDocString str) = unLoc name
-          in mono (hsDeclToStr lhsType) ++ " " ++ unpackFS str ++ "</pre>"
+          in hsDeclToStr lhsType ++ " <i>" ++ unpackFS str ++ "</i>"
         HsBangTy _ _         -> "bang"
         HsRecTy _            -> "rec"
         HsCoreTy _           -> "core"
