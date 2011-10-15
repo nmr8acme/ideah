@@ -80,7 +80,12 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 modName = "?";
                 type = "?";
             }
-            StringBuilder documentation = new StringBuilder("Module: <code>" + modName + "</code><br>Type: <code>" + type + "</code><br>");
+
+            StringBuilder documentation = new StringBuilder(
+                (modName.length() == 0
+                    ? ""
+                    : "Module: <code>" + modName + "</code><br>")
+                + "Type: <code>" + type + "</code><br>");
             DeclarationPosition declaration = new DeclarationPosition(line, col, psiFile);
             ProcessLauncher documentationLauncher = new ProcessLauncher(
                 false, null,
