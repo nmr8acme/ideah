@@ -1,4 +1,4 @@
-module GetDocu  where
+module GetDocu (getDocu) where
 
 #if 1
 
