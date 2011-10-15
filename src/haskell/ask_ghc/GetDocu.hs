@@ -47,32 +47,34 @@ argsDocToStr _                                 = ""
 showName name = show $ (pprOccName $ nameOccName name) defaultUserStyle
 
 hsDeclToStr decl =
-  case unLoc decl of
-        HsForAllTy _ _ _ dec -> hsDeclToStr dec
-        HsTyVar name         -> mono $ showName name
-        HsAppTy decl1 decl2  -> hsDeclToStr decl1 ++ " " ++ hsDeclToStr decl2
-        HsFunTy arg rest     -> hsDeclToStr arg ++ mono "-> " ++ hsDeclToStr rest
-        HsListTy _           -> "list"
-        HsPArrTy _           -> "parr"
-        HsTupleTy _ _        -> "tuple"
-        HsOpTy _ _ _         -> "op"
-        HsParTy dec          -> mono "(" ++ hsDeclToStr dec ++ mono ")"
-        HsNumTy _            -> "num"
-        HsPredTy _           -> "pred"
-        HsKindSig _ _        -> "kindsig"
-        HsQuasiQuoteTy _     -> "quasi"
-        HsSpliceTy _ _ _     -> "splice"
-        HsDocTy lhsType name -> let (HsDocString str) = unLoc name
-          in hsDeclToStr lhsType ++ " <i>" ++ unpackFS str ++ "</i>"
-        HsBangTy _ _         -> "bang"
-        HsRecTy _            -> "rec"
-        HsCoreTy _           -> "core"
+  let surroundMono str open close = mono open ++ str ++ mono close
+      surroundMonoDec dec         = surroundMono (hsDeclToStr dec)
+  in case unLoc decl of
+          HsForAllTy _ _ _ dec -> hsDeclToStr dec
+          HsTyVar name         -> mono $ showName name
+          HsAppTy decl1 decl2  -> hsDeclToStr decl1 ++ " " ++ hsDeclToStr decl2
+          HsFunTy arg rest     -> hsDeclToStr arg ++ mono " -> " ++ hsDeclToStr rest
+          HsListTy dec         -> surroundMonoDec dec "[" "]"
+          HsPArrTy dec         -> surroundMonoDec dec "[:" ":]"
+          HsTupleTy _ decs     -> surroundMono (concat $ intersperse (mono ", ") $ map hsDeclToStr decs) "(" ")"
+          HsOpTy _ _ _         -> "op" -- todo: ???
+          HsParTy dec          -> surroundMonoDec dec "(" ")"
+          HsNumTy _            -> "num" -- todo: ???
+          HsPredTy _           -> "pred" -- todo: ???
+          HsKindSig _ _        -> "kindsig" -- todo: compile with appropriate option?
+          HsQuasiQuoteTy _     -> "quasi" -- todo: ???
+          HsSpliceTy _ _ _     -> "splice" -- todo: ???
+          HsDocTy lhsType name -> let (HsDocString str) = unLoc name
+            in hsDeclToStr lhsType ++ " " ++ unpackFS str
+          HsBangTy _ _         -> "bang" -- todo: ???
+          HsRecTy _            -> "rec"
+          HsCoreTy _           -> "core" -- todo: ???
 
 mono s = "<tt>" ++ s ++ "</tt>"
 
 docToStr :: Doc id -> String
 docToStr d =
-    let list listType l = concat $ ["<", listType, "><li>", concat (intersperse "<li>" $ map docToStr l), "</", listType, ">"]
+    let list listType l = concat ["<", listType, "><li>", concat (intersperse "<li>" $ map docToStr l), "</", listType, ">"]
         monoDoc         = mono . docToStr
         docUnlines      = concat . intersperse "<br>"
     in case d of
@@ -94,6 +96,7 @@ docToStr d =
         DocPic s            -> s -- todo: ???
         DocAName s          -> s -- todo: ???
         DocExamples es      -> docUnlines $ map (\e -> mono (exampleExpression e) ++ "<br>" ++ docUnlines (exampleResult e)) es
+-- todo: check if documentation is present
 
 #else
 
