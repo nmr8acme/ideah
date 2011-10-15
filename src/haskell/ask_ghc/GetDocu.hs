@@ -5,11 +5,16 @@ module GetDocu (getDocu) where
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
 import Data.Graph.Inductive.Query.Monad ((><))
-import Control.Monad (when)
 import System.FilePath
+import FastString (unpackFS)
 
 import Name
 import SrcLoc
+import HsBinds
+import HsTypes
+import HsDecls
+import HsDoc
+import Outputable
 
 import HUtil
 
@@ -24,38 +29,51 @@ getDocu srcPath ghcPath loc modFile = do
         ifaceLocs         = map nameSrcLoc ifaceKeys
         ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
     case lookup loc ifaceLocsWithKeys of
-         Just name -> case Data.Map.lookup name ifaceMap of
-                         Just (lhsDecl, (maybeDoc, fnArgsDoc), _) -> do
-                            putStrLn newMsgIndicator
-                            let name = unLoc lhsDecl
-                            when (length (Data.Map.keys fnArgsDoc) > 0) $ print $ argsDocToStr name fnArgsDoc
-                            case maybeDoc of
-                                 Just doc -> do
-                                  putStrLn $ docToStr doc
-                                 Nothing  -> return ()
-                         Nothing -> return ()
+         Just name ->
+          case Data.Map.lookup name ifaceMap of
+               Just (lhsDecl, (maybeDoc, _), _) -> do
+                  putStrLn newMsgIndicator
+                  print $ argsDocToStr $ unLoc lhsDecl
+                  putStrLn newMsgIndicator
+                  case maybeDoc of
+                       Just doc -> do
+                        putStrLn $ docToStr doc
+                       Nothing  -> return ()
+               Nothing -> return ()
          Nothing       -> return ()
 
-argsDocToStr _ _ = "argsDocToStr"
+argsDocToStr (SigD (TypeSig locName typeName)) = showName (unLoc locName) ++ " :: " ++ hsDeclToStr typeName
+argsDocToStr _                                 = ""
 
-{-argsDocToStr (ValD (HsBind id _)) = 
-argsDocToStr (TyClD (TyClDecl id)) = 
-argsDocToStr (InstD (InstDecl id)) = 
-argsDocToStr (DerivD (DerivDecl id) = 
-argsDocToStr (SigD (Sig id)) = 
-argsDocToStr (DefD (DefaultDecl id)) = 
-argsDocToStr (ForD (ForeignDecl id)) = 
-argsDocToStr (WarningD (WarnDecl id)) =  
-argsDocToStr (AnnD (AnnDecl id)) = 
-argsDocToStr (RuleD (RuleDecl id)) = 
-argsDocToStr (SpliceD (SpliceDecl id)) = 
-argsDocToStr (DocD DocDecl) = 
-argsDocToStr (QuasiQuoteD (HsQuasiQuote id)) = -}
+showName name = show $ (pprOccName $ nameOccName name) defaultUserStyle
+
+hsDeclToStr decl =
+  case unLoc decl of
+        HsForAllTy _ _ _ lhsType -> hsDeclToStr lhsType
+        HsTyVar name         -> showName name
+        HsAppTy decl1 decl2  -> hsDeclToStr decl1 ++ " " ++ hsDeclToStr decl2
+        HsFunTy arg rest     -> "(" ++ hsDeclToStr arg ++ "<br><pre>-> " ++ hsDeclToStr rest ++ ")"
+        HsListTy _           -> "list"
+        HsPArrTy _           -> "parr"
+        HsTupleTy _ _        -> "tuple"
+        HsOpTy _ _ _         -> "op"
+        HsParTy _            -> "par"
+        HsNumTy _            -> "num"
+        HsPredTy _           -> "pred"
+        HsKindSig _ _        -> "kindsig"
+        HsQuasiQuoteTy _     -> "quasi"
+        HsSpliceTy _ _ _     -> "splice"
+        HsDocTy lhsType name -> let (HsDocString str) = unLoc name
+          in mono (hsDeclToStr lhsType) ++ " " ++ unpackFS str ++ "</pre>"
+        HsBangTy _ _         -> "bang"
+        HsRecTy _            -> "rec"
+        HsCoreTy _           -> "core"
+
+mono s = "<tt>" ++ s ++ "</tt>"
 
 docToStr :: Doc id -> String
 docToStr d =
     let list listType l = concat $ ["<", listType, "><li>", concat (intersperse "<li>" $ map docToStr l), "</", listType, ">"]
-        mono s          = "<tt>" ++ s ++ "</tt>"
         monoDoc         = mono . docToStr
         docUnlines      = concat . intersperse "<br>"
     in case d of
