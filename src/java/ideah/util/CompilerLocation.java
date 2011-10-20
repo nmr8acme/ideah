@@ -76,6 +76,8 @@ public final class CompilerLocation {
     }
 
     public static synchronized CompilerLocation get(Module module) {
+        if (module == null)
+            return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         if (sdk == null)
             return null;
