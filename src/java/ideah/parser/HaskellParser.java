@@ -17,7 +17,7 @@ public final class HaskellParser implements PsiParser, HaskellElementTypes {
             IElementType type = builder.getTokenType();
             if (type == null)
                 break;
-            if (type == HaskellTokenTypes.VAR_ID) {
+            if (HaskellTokenTypes.IDS.contains(type)) {
                 PsiBuilder.Marker idMark = builder.mark();
                 builder.advanceLexer();
                 idMark.done(type);

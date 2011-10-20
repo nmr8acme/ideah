@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import ideah.HaskellFileType;
@@ -52,9 +53,10 @@ public final class HaskellParserDefinition implements ParserDefinition, HaskellT
 
     @NotNull
     public PsiElement createElement(ASTNode node) {
-        if (node.getElementType() == HaskellElementTypes.MODULE) {
+        IElementType type = node.getElementType();
+        if (type == HaskellElementTypes.MODULE) {
             return new HPModuleImpl(node);
-        } else if (node.getElementType() == VAR_ID) {
+        } else if (HaskellTokenTypes.IDS.contains(type)) {
             return new HPIdentImpl(node);
         } else {
             return new HPOtherImpl(node);
