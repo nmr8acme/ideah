@@ -21,7 +21,7 @@ extractTypes line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let loc = nameSrcLoc $ idName var
         print $ srcLocLine loc
-        print $ srcLocCol loc
+        print $ colFromGhc $ srcLocCol loc
         print $ srcLocFile $ nameSrcLoc $ varName var
         exitSuccess
 

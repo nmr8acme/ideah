@@ -39,6 +39,9 @@ public final class DeclarationPosition {
             startLine = -1;
             startCol = -1;
         }
-        this.module = reader.readLine();
+        String moduleLine = reader.readLine();
+        this.module = moduleLine == null
+            ? null
+            : moduleLine.replaceAll("\"", "");
     }
 }
