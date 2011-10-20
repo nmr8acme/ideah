@@ -136,6 +136,6 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
         Module module = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(dir.getVirtualFile());
         if (module == null)
             return false;
-        return HaskellModuleType.INSTANCE.equals(module.getModuleType());
+        return HaskellModuleType.INSTANCE.equals(HaskellModuleType.get(module));
     }
 }

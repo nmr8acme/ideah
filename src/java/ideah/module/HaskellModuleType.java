@@ -40,4 +40,8 @@ public final class HaskellModuleType extends ModuleType<HaskellModuleBuilder> {
     public boolean isValidSdk(Module module, Sdk projectSdk) {
         return true; // todo
     }
+
+    public static ModuleType<?> get(Module module) {
+        return module.getModuleType();
+    }
 }

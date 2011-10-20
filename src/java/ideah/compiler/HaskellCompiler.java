@@ -8,7 +8,6 @@ import com.intellij.openapi.compiler.TranslatingCompiler;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleFileIndex;
@@ -58,7 +57,7 @@ public final class HaskellCompiler implements TranslatingCompiler {
             List<VirtualFile> toCompileTests = new ArrayList<VirtualFile>();
             CompilerConfiguration configuration = CompilerConfiguration.getInstance(project);
 
-            if (isAcceptableModuleType(module.getModuleType())) {
+            if (isAcceptableModuleType(module)) {
                 for (VirtualFile file : moduleFiles) {
                     if (shouldCompile(file, configuration)) {
                         (index.isInTestSourceContent(file) ? toCompileTests : toCompile).add(file);
@@ -106,8 +105,8 @@ public final class HaskellCompiler implements TranslatingCompiler {
         return !configuration.isResourceFile(file);
     }
 
-    private static boolean isAcceptableModuleType(ModuleType<?> moduleType) {
-        return moduleType instanceof HaskellModuleType;
+    private static boolean isAcceptableModuleType(Module module) {
+        return HaskellModuleType.get(module) instanceof HaskellModuleType;
     }
 
     @NotNull
@@ -131,7 +130,7 @@ public final class HaskellCompiler implements TranslatingCompiler {
 
         Set<Module> noGhcModules = new HashSet<Module>();
         for (Module module : modules) {
-            if (!isAcceptableModuleType(module.getModuleType()))
+            if (!isAcceptableModuleType(module))
                 continue;
             Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
             if (sdk == null || !(sdk.getSdkType() instanceof HaskellSdkType)) {
