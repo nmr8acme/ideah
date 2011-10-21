@@ -13,7 +13,7 @@ import HUtil
 import Walker
 
 getDeclPos :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
-getDeclPos srcPath ghcPath srcFile (line, col) = do
+getDeclPos srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
 
 extractTypes :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
