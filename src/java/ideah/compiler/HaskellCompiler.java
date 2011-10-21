@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleFileIndex;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -21,6 +20,8 @@ import com.intellij.util.Chunk;
 import ideah.HaskellFileType;
 import ideah.module.HaskellModuleType;
 import ideah.util.CompilerLocation;
+import ideah.util.DeclarationPosition;
+import ideah.util.LineCol;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
@@ -91,10 +92,11 @@ public final class HaskellCompiler implements TranslatingCompiler {
             for (GHCMessage message : LaunchGHC.getGHCMessages(outputDir, file.getPath(), module, tests)) {
                 VirtualFile errFile = LocalFileSystem.getInstance().findFileByPath(message.getFileName());
                 String url = errFile == null ? message.getFileName() : errFile.getUrl();
+                LineCol coord = message.getRange().start;
                 context.addMessage(
                     message.getCategory(), message.getErrorMessage(),
                     url,
-                    message.getRange().startLine, message.getRange().startColumn
+                    coord.line, coord.column
                 );
             }
         }
@@ -121,8 +123,7 @@ public final class HaskellCompiler implements TranslatingCompiler {
 
         Set<Module> modules = new HashSet<Module>();
         for (VirtualFile file : files) {
-            ProjectRootManager rootManager = ProjectRootManager.getInstance(project);
-            Module module = rootManager.getFileIndex().getModuleForFile(file);
+            Module module = DeclarationPosition.getModule(project, file);
             if (module != null) {
                 modules.add(module);
             }

@@ -19,6 +19,7 @@ import com.intellij.psi.PsiFileFactory;
 import com.intellij.util.IncorrectOperationException;
 import ideah.HaskellFileType;
 import ideah.module.HaskellModuleType;
+import ideah.util.DeclarationPosition;
 import org.jetbrains.annotations.NotNull;
 
 public final class NewHaskellFileAction extends CreateElementActionBase {
@@ -133,7 +134,7 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
     }
 
     private static boolean isHaskellModule(Project project, PsiDirectory dir) {
-        Module module = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(dir.getVirtualFile());
+        Module module = DeclarationPosition.getModule(project, dir);
         if (module == null)
             return false;
         return HaskellModuleType.INSTANCE.equals(HaskellModuleType.get(module));

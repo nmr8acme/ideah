@@ -1,9 +1,11 @@
 package ideah.util;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiFileSystemItem;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,14 +13,22 @@ import java.io.StringReader;
 
 public final class DeclarationPosition {
 
-    public final int startLine;
-    public final int startCol;
+    public final LineCol coord;
     public final String module;
 
-    public DeclarationPosition(int line, int col, PsiFile psiFile) throws InterruptedException, IOException {
+    private DeclarationPosition(LineCol coord, String module) {
+        this.coord = coord;
+        this.module = module;
+    }
+
+    public static DeclarationPosition get(PsiFile psiFile, LineCol coord) throws IOException, InterruptedException {
         VirtualFile file = psiFile.getVirtualFile();
-        Module module = ProjectRootManager.getInstance(psiFile.getProject()).getFileIndex().getModuleForFile(file);
+        if (file == null)
+            return null;
+        Module module = getModule(psiFile);
         CompilerLocation compiler = CompilerLocation.get(module);
+        if (compiler == null)
+            return null;
         String sourcePath = CompilerLocation.rootsAsString(module, false);
         ProcessLauncher launcher = new ProcessLauncher(
             false, null,
@@ -26,22 +36,34 @@ public final class DeclarationPosition {
             "-m", "GetDeclPos",
             "-g", compiler.libPath,
             "-s", sourcePath,
-            "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
+            "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
             file.getPath()
         );
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
         String l = reader.readLine();
         String c = reader.readLine();
-        if (l != null && c != null) {
-            startLine = Integer.parseInt(l);
-            startCol = Integer.parseInt(c);
-        } else {
-            startLine = -1;
-            startCol = -1;
-        }
         String moduleLine = reader.readLine();
-        this.module = moduleLine == null
-            ? null
-            : moduleLine.replaceAll("\"", "");
+        if (l != null && c != null && moduleLine != null) {
+            LineCol declCoord = new LineCol(Integer.parseInt(l), Integer.parseInt(c));
+            String moduleName = moduleLine.replaceAll("\"", "");
+            return new DeclarationPosition(declCoord, moduleName);
+        } else {
+            return null;
+        }
+    }
+
+    public static Module getModule(PsiFile psiFile) {
+        return getModule(psiFile.getProject(), psiFile);
+    }
+
+    public static Module getModule(Project project, PsiFileSystemItem psiFile) {
+        VirtualFile file = psiFile.getVirtualFile();
+        if (file == null)
+            return null;
+        return getModule(project, file);
+    }
+
+    public static Module getModule(Project project, VirtualFile file) {
+        return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file);
     }
 }

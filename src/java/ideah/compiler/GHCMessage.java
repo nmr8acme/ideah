@@ -34,7 +34,7 @@ public final class GHCMessage {
     }
 
     GHCMessage(String errorMessage, String fileName) {
-        this.range = new LineColRange(1, 1, 1, 1);
+        this.range = LineColRange.getFake();
         this.errorMessage = errorMessage;
         this.category = CompilerMessageCategory.ERROR;
         this.fileName = fileName;

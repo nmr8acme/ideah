@@ -4,13 +4,12 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import ideah.compiler.GHCMessage;
 import ideah.compiler.LaunchGHC;
+import ideah.util.DeclarationPosition;
 import ideah.util.LineColRange;
 
 import java.io.File;
@@ -20,9 +19,9 @@ public final class GHCMessageHighlighter implements ExternalAnnotator {
 
     public void annotate(PsiFile psiFile, AnnotationHolder annotationHolder) {
         VirtualFile file = psiFile.getVirtualFile();
-        Project project = psiFile.getProject();
-        ProjectRootManager rootManager = ProjectRootManager.getInstance(project);
-        Module module = rootManager.getFileIndex().getModuleForFile(file);
+        if (file == null)
+            return;
+        Module module = DeclarationPosition.getModule(psiFile);
         List<GHCMessage> ghcMessages = LaunchGHC.getGHCMessages(null, file.getPath(), module, true);
         File mainFile = new File(file.getPath());
         for (GHCMessage ghcMessage : ghcMessages) {

@@ -1,34 +1,20 @@
 package ideah.util;
 
-import com.intellij.openapi.editor.LazyRangeMarkerFactory;
-import com.intellij.openapi.editor.RangeMarker;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
 
 public final class LineColRange {
 
-    /**
-     * 1-based line number
-     */
-    public final int startLine;
-    /**
-     * 1-based linme number
-     */
-    public final int endLine;
-    /**
-     * 1-based column number
-     */
-    public final int startColumn;
-    /**
-     * 1-based column number
-     */
-    public final int endColumn;
+    public final LineCol start;
+    public final LineCol end;
 
-    public LineColRange(int startLine, int endLine, int startColumn, int endColumn) {
-        this.startLine = startLine;
-        this.endLine = endLine;
-        this.startColumn = startColumn;
-        this.endColumn = endColumn;
+    private LineColRange(int startLine, int endLine, int startColumn, int endColumn) {
+        this.start = new LineCol(startLine, startColumn);
+        this.end = new LineCol(endLine, endColumn);
+    }
+
+    public static LineColRange getFake() {
+        return new LineColRange(1, 1, 1, 1);
     }
 
     public LineColRange(String str) {
@@ -37,10 +23,8 @@ public final class LineColRange {
         String end = str.substring(p + 1);
         int[] starts = parsePair(start);
         int[] ends = parsePair(end);
-        startLine = starts[0];
-        startColumn = starts[1];
-        endLine = ends[0];
-        endColumn = ends[1];
+        this.start = new LineCol(starts[0], starts[1]);
+        this.end = new LineCol(ends[0], ends[1]);
     }
 
     private static int[] parsePair(String str) {
@@ -61,18 +45,10 @@ public final class LineColRange {
     }
 
     public TextRange getRange(PsiFile file) {
-        return new TextRange(getOffset(file, startLine, startColumn), getOffset(file, endLine, endColumn));
-    }
-
-    private static int getOffset(PsiFile file, int line, int col) {
-        LazyRangeMarkerFactory factory = LazyRangeMarkerFactory.getInstance(file.getProject());
-        RangeMarker rangeMarker = factory.createRangeMarker(
-            file.getVirtualFile(), Math.max(0, line - 1), Math.max(0, col - 1), false
-        );
-        return rangeMarker.getStartOffset();
+        return new TextRange(start.getOffset(file), end.getOffset(file));
     }
 
     public String toString() {
-        return startLine + ":" + startColumn + " - " + endLine + ":" + endColumn;
+        return start + " - " + end;
     }
 }

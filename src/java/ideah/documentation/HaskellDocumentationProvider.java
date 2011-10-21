@@ -2,10 +2,7 @@ package ideah.documentation;
 
 import com.intellij.lang.documentation.DocumentationProvider;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -14,6 +11,7 @@ import com.intellij.psi.PsiManager;
 import ideah.psi.api.HPIdent;
 import ideah.util.CompilerLocation;
 import ideah.util.DeclarationPosition;
+import ideah.util.LineCol;
 import ideah.util.ProcessLauncher;
 
 import java.io.BufferedReader;
@@ -41,16 +39,11 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;
-        FileDocumentManager fdm = FileDocumentManager.getInstance();
-        Document doc = fdm.getCachedDocument(file);
-        if (doc == null)
-            return null;
         // todo: run in event-dispatch thread
         //fdm.saveAllDocuments();
         int offset = range.getStartOffset();
-        int line = doc.getLineNumber(offset);
-        int col = offset - doc.getLineStartOffset(line);
-        Module module = ProjectRootManager.getInstance(psiFile.getProject()).getFileIndex().getModuleForFile(file);
+        LineCol coord = LineCol.fromOffset(psiFile, offset);
+        Module module = DeclarationPosition.getModule(psiFile);
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null) {
             return null;
@@ -63,7 +56,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 "-m", "GetIdType",
                 "-g", compiler.libPath,
                 "-s", sourcePath,
-                "--line-number", String.valueOf(line + 1), "--column-number", String.valueOf(col + 1),
+                "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
                 file.getPath()
             );
             String stdOut = idLauncher.getStdOut();
@@ -86,28 +79,30 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     ? ""
                     : "Module: <code>" + modName + "</code><br>")
                 + "Type: <code>" + type + "</code><br>");
-            DeclarationPosition declaration = new DeclarationPosition(line, col, psiFile);
-            ProcessLauncher documentationLauncher = new ProcessLauncher(
-                false, null,
-                compiler.exe,
-                "-m", "GetDocu",
-                "-g", compiler.libPath,
-                "-s", sourcePath,
-                "--line-number",
-                String.valueOf(declaration.startLine),
-                "--column-number", String.valueOf(declaration.startCol),
-                "--module", declaration.module
-            );
-            BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
-            String l = reader.readLine();
-            while (l != null && !l.startsWith(newMsgIndicator)) {
-                l = reader.readLine();
-            }
-            if (l != null && l.startsWith(newMsgIndicator)) {
-                l = reader.readLine();
-                while (l != null) {
-                    documentation.append("<br>").append(l);
+            DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
+            if (declaration != null) {
+                ProcessLauncher documentationLauncher = new ProcessLauncher(
+                    false, null,
+                    compiler.exe,
+                    "-m", "GetDocu",
+                    "-g", compiler.libPath,
+                    "-s", sourcePath,
+                    "--line-number",
+                    String.valueOf(declaration.coord.line),
+                    "--column-number", String.valueOf(declaration.coord.column),
+                    "--module", declaration.module
+                );
+                BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
+                String l = reader.readLine();
+                while (l != null && !l.startsWith(newMsgIndicator)) {
                     l = reader.readLine();
+                }
+                if (l != null && l.startsWith(newMsgIndicator)) {
+                    l = reader.readLine();
+                    while (l != null) {
+                        documentation.append("<br>").append(l);
+                        l = reader.readLine();
+                    }
                 }
             }
             return documentation.toString();

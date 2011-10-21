@@ -10,13 +10,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.JDOMExternalizer;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import ideah.parser.HaskellFile;
+import ideah.util.DeclarationPosition;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -120,7 +120,7 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
         VirtualFile file = mainFile.getVirtualFile();
         if (file != null) {
             this.mainFile = file.getPath();
-            Module module = ProjectRootManager.getInstance(mainFile.getProject()).getFileIndex().getModuleForFile(file);
+            Module module = DeclarationPosition.getModule(mainFile);
             setModule(module);
         }
     }
