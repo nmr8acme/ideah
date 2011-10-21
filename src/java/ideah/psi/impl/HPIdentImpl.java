@@ -2,6 +2,7 @@ package ideah.psi.impl;
 
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -64,6 +65,8 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
             if (elementAt == null)
                 return null;
             return new HPIdentImpl(elementAt.getNode());
+        } catch (ProcessCanceledException ex) {
+            return null;
         } catch (Exception e) {
             LOG.error(e);
             return null;
