@@ -1,6 +1,6 @@
 module GetDocu (getDocu) where
 
-#if 1
+#if __GLASGOW_HASKELL__ >= 700
 
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
@@ -130,7 +130,7 @@ docToStr d =
 
 #else
 
-getDocu :: String -> String -> String -> (Int, Int) -> IO ()
+getDocu :: FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
 getDocu _ _ _ _ = return ()
 
 #endif
