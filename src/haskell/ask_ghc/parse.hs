@@ -1,5 +1,3 @@
-import Data.IORef
-
 import GHC
 import MonadUtils
 

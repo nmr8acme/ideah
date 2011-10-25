@@ -5,12 +5,6 @@ import GHC
 
 import HUtil
 
-locStr :: SrcLoc -> String
-locStr loc = if isGoodSrcLoc loc then show (srcLocLine loc) ++ ":" ++ show (srcLocCol loc) else "?"
-
-spanStr :: SrcSpan -> String
-spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
-
 prLoc :: (MonadIO m) => String -> Located a -> m ()
 prLoc what loc = liftIO $ putStrLn $ what ++ ": " ++ (spanStr $ getLoc loc)
 

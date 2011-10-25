@@ -26,7 +26,7 @@ public class HaskellFindUsagesProvider implements FindUsagesProvider {
 
     @NotNull
     public String getType(@NotNull PsiElement psiElement) {
-        return "type"; // todo
+        return "symbol"; // todo
     }
 
     @NotNull
