@@ -46,6 +46,8 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
         PsiFile psiFile = getContainingFile();
         int startOffset = getTextOffset();
         LineCol coord = LineCol.fromOffset(psiFile, startOffset);
+        if (coord == null)
+            return null;
         try {
             DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
             if (declaration == null)

@@ -43,6 +43,7 @@
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->
                               <!--order="before EnterBetweenBracesHandler"/>-->
         <externalAnnotator implementationClass="ideah.annotator.GHCMessageHighlighter" language="Haskell"/>
+        <lang.findUsagesProvider language="Haskell" implementationClass="ideah.findUsages.HaskellFindUsagesProvider"/>
         <lang.documentationProvider language="Haskell" implementationClass="ideah.documentation.HaskellDocumentationProvider"/>
 
         <sdkType id="GHC" implementation="ideah.compiler.HaskellSdkType"/>

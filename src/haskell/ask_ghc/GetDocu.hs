@@ -34,66 +34,66 @@ getDocu srcPath ghcPath loc modFile = do
          Just name ->
           case Data.Map.lookup name ifaceMap of
                Just (lhsDecl, (maybeDoc, _), _) -> do
-                  putStrLn newMsgIndicator
-                  putStrLn $ argsDocToStr $ unLoc lhsDecl
-                  case maybeDoc of
-                       Just doc -> do
-                        putStrLn $ docToStr doc
-                       Nothing  -> return ()
+                    putStrLn newMsgIndicator
+                    putStrLn $ argsDocToStr $ unLoc lhsDecl
+                    case maybeDoc of
+                         Just doc -> do
+                              putStrLn $ docToStr doc
+                         Nothing  -> return ()
                Nothing -> return ()
          Nothing       -> return ()
 
 argsDocToStr :: HsDecl Name -> String
 argsDocToStr (SigD (TypeSig locName typeName)) = let (argDoc, hasArgDoc) = runState (hsDeclToStr typeName) False
-  in if hasArgDoc then mono (showName (unLoc locName) ++ " :: " ++ argDoc) else ""
+    in if hasArgDoc then mono (showName (unLoc locName) ++ " :: " ++ argDoc) else ""
 argsDocToStr _                                 = ""
 
 showName name = show $ (pprOccName $ nameOccName name) defaultUserStyle
 
 hsDeclToStr :: Located (HsType Name) -> State Bool String
 hsDeclToStr ldecl = do
-  let surroundMono str open close    = mono open ++ str ++ mono close
-      surroundMonoDec dec open close = do
-        dec' <- hsDeclToStr dec
-        return $ surroundMono dec' open close
-  case unLoc ldecl of
-          HsForAllTy _ _ _ dec -> hsDeclToStr dec
-          HsTyVar name         -> return $ mono $ showName name
-          HsAppTy decl1 decl2  -> do
-            decl1' <- hsDeclToStr decl1
-            decl2' <- hsDeclToStr decl2
-            return $ decl1' ++ " " ++ decl2'
-          HsFunTy arg rest     -> do
-            arg'  <- hsDeclToStr arg
-            rest' <- hsDeclToStr rest
-            return $ arg' ++ mono " -> " ++ rest'
-          HsListTy dec         -> surroundMonoDec dec "[" "]"
-          HsPArrTy dec         -> surroundMonoDec dec "[:" ":]"
-          HsTupleTy _ decs     -> do
-            decs' <- mapM hsDeclToStr decs
-            return $ surroundMono (concat $ intersperse (mono ", ") decs') "(" ")"
-          HsOpTy _ _ _         -> return "op" -- todo: ???
-          HsParTy dec          -> surroundMonoDec dec "(" ")"
-          HsNumTy _            -> return "num" -- todo: ???
-          HsPredTy _           -> return "pred" -- todo: ???
-          HsKindSig _ _        -> return "kindsig" -- todo: compile with appropriate option?
-          HsQuasiQuoteTy _     -> return "quasi" -- todo: ???
-          HsSpliceTy _ _ _     -> return "splice" -- todo: ???
-          HsDocTy lhsType name -> do
-            let HsDocString str = unLoc name
-            put True
-            lhsType' <- hsDeclToStr lhsType
-            return $ lhsType' ++ " " ++ unpackFS str
-          HsBangTy _ _         -> return "bang" -- todo: ???
-          HsRecTy conFields    -> do
-            fields <- mapM (\c -> do
-              fldType <- hsDeclToStr $ cd_fld_type c
-              return $ nl ++ monobold (showName $ unLoc $ cd_fld_name c)
-                      ++ " :: " ++ fldType
-                      ++ show ((ppr_mbDoc $ cd_fld_doc c) defaultUserStyle))
-                conFields
-            return $ concat fields -- todo: test?!
-          HsCoreTy _           -> return "core" -- todo: ???
+    let surroundMono str open close    = mono open ++ str ++ mono close
+        surroundMonoDec dec open close = do
+            dec' <- hsDeclToStr dec
+            return $ surroundMono dec' open close
+    case unLoc ldecl of
+              HsForAllTy _ _ _ dec -> hsDeclToStr dec
+              HsTyVar name         -> return $ mono $ showName name
+              HsAppTy decl1 decl2  -> do
+                  decl1' <- hsDeclToStr decl1
+                  decl2' <- hsDeclToStr decl2
+                  return $ decl1' ++ " " ++ decl2'
+              HsFunTy arg rest     -> do
+                  arg'  <- hsDeclToStr arg
+                  rest' <- hsDeclToStr rest
+                  return $ arg' ++ mono " -> " ++ rest'
+              HsListTy dec         -> surroundMonoDec dec "[" "]"
+              HsPArrTy dec         -> surroundMonoDec dec "[:" ":]"
+              HsTupleTy _ decs     -> do
+                  decs' <- mapM hsDeclToStr decs
+                  return $ surroundMono (concat $ intersperse (mono ", ") decs') "(" ")"
+              HsOpTy _ _ _         -> return "op" -- todo: ???
+              HsParTy dec          -> surroundMonoDec dec "(" ")"
+              HsNumTy _            -> return "num" -- todo: ???
+              HsPredTy _           -> return "pred" -- todo: ???
+              HsKindSig _ _        -> return "kindsig" -- todo: compile with appropriate option?
+              HsQuasiQuoteTy _     -> return "quasi" -- todo: ???
+              HsSpliceTy _ _ _     -> return "splice" -- todo: ???
+              HsDocTy lhsType name -> do
+                  let HsDocString str = unLoc name
+                  put True
+                  lhsType' <- hsDeclToStr lhsType
+                  return $ lhsType' ++ " " ++ unpackFS str
+              HsBangTy _ _         -> return "bang" -- todo: ???
+              HsRecTy conFields    -> do
+                  fields <- mapM (\c -> do
+                      fldType <- hsDeclToStr $ cd_fld_type c
+                      return $ nl ++ monobold (showName $ unLoc $ cd_fld_name c)
+                              ++ " :: " ++ fldType
+                              ++ show ((ppr_mbDoc $ cd_fld_doc c) defaultUserStyle))
+                        conFields
+                  return $ concat fields -- todo: test?!
+              HsCoreTy _           -> return "core" -- todo: ???
 
 mono s = "<tt>" ++ s ++ "</tt>"
 
