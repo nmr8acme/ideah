@@ -34,8 +34,11 @@ walkLoc :: b -> (b -> SrcSpan -> a -> m ()) -> Located a -> m ()
 walkLoc cb walker node = walker cb (getLoc node) (unLoc node)
 
 
+walkId' :: (Monad m) => Callback a m -> a -> SrcSpan -> Where -> m ()
+walkId' f name loc definition = brace f loc "Id" $ (generic f) name loc definition
+
 walkId :: (Monad m) => Callback a m -> Located a -> Where -> m ()
-walkId f name definition = (generic f) (unLoc name) (getLoc name) definition
+walkId f name definition = walkId' f (unLoc name) (getLoc name) definition
 
 
 walkBinds :: (Monad m) => Callback a m -> Maybe a -> HsValBindsLR a a -> m ()
@@ -49,7 +52,7 @@ walkLocals :: (Monad m) => Callback a m -> HsLocalBinds a -> m ()
 walkLocals f (HsValBinds binds) = walkBinds f Nothing binds
 walkLocals f (HsIPBinds (IPBinds binds _)) = mapM_ walkIP binds
     where walkIP lip = do
-              (generic f) id (getLoc lip) WParam
+              walkId' f id (getLoc lip) WParam
               walkLExpr f expr
               where (IPBind (IPName id) expr) = unLoc lip
 walkLocals _f EmptyLocalBinds = return ()
@@ -65,7 +68,7 @@ walkRHSs f (GRHSs grhs locals) = do
 walkMatchGroup :: (Monad m) => Callback a m -> Maybe a -> MatchGroup a -> m ()
 walkMatchGroup f outer (MatchGroup matches _) = mapM_ (walkLoc f walkMatch) matches
     where walkMatch f loc (Match pats _ rhss) = brace f loc "Match" $ do
-              maybe (return ()) (\outerFunc -> (generic f) outerFunc loc WMatch) outer
+              maybe (return ()) (\outerFunc -> walkId' f outerFunc loc WMatch) outer
               mapM_ (walkLPattern f) pats
               walkRHSs f rhss
 
@@ -81,7 +84,7 @@ walkType f loc (HsForAllTy fa _ _ctx typ) = case fa of
         Explicit -> brace f loc "HsForAllTy" $ walkDown
         Implicit -> walkDown
     where walkDown = walkLType f typ
-walkType f loc (HsTyVar name) = brace f loc "HsTyVar" $ (generic f) name loc WType
+walkType f loc (HsTyVar name) = brace f loc "HsTyVar" $ walkId' f name loc WType
 walkType f loc (HsAppTy typ1 typ2) = brace f loc "HsAppTy" $ do
     walkLType f typ1
     walkLType f typ2
@@ -126,7 +129,7 @@ walkStmt f loc (BindStmt pat expr _ _) = brace f loc "BindStmt" $ do
     walkLPattern f pat
     walkLExpr f expr
 -- expr in do
-walkStmt f loc (ExprStmt expr _ _) = brace f loc "ExprStmt" $ walkLExpr f expr -- todo: has type
+walkStmt f loc (ExprStmt expr _ _) = brace f loc "ExprStmt" $ walkLExpr f expr
 -- let in do
 walkStmt f loc (LetStmt binds) = brace f loc "LetStmt" $ walkLocals f binds
 -- ???
@@ -152,11 +155,11 @@ walkLPattern f lpat = walkPattern f (getLoc lpat) (unLoc lpat)
 
 walkPattern :: (Monad m) => Callback a m -> SrcSpan -> Pat a -> m ()
 -- wildcard pattern (_)
-walkPattern f loc (WildPat _) = brace f loc "WildPat" $ return () -- todo: has type
+walkPattern f loc (WildPat _) = brace f loc "WildPat" $ return ()
 -- variable pattern (matches any value)
-walkPattern f loc (VarPat id) = brace f loc "VarPat" $ (generic f) id loc WParam
+walkPattern f loc (VarPat id) = brace f loc "VarPat" $ walkId' f id loc WParam
 -- ???
-walkPattern f loc (VarPatOut id _) = brace f loc "VarPatOut" $ (generic f) id loc WParam
+walkPattern f loc (VarPatOut id _) = brace f loc "VarPatOut" $ walkId' f id loc WParam
 -- lazy pattern
 walkPattern f loc (LazyPat pat) = brace f loc "LazyPat" $ walkLPattern f pat
 -- as pattern (@)
@@ -168,11 +171,11 @@ walkPattern f loc (ParPat pat) = brace f loc "ParPat" $ walkLPattern f pat
 -- bang pattern
 walkPattern f loc (BangPat pat) = brace f loc "BangPat" $ walkLPattern f pat
 -- list pattern [a,b,c]
-walkPattern f loc (ListPat pats _) = brace f loc "ListPat" $ mapM_ (walkLPattern f) pats -- todo: has type
+walkPattern f loc (ListPat pats _) = brace f loc "ListPat" $ mapM_ (walkLPattern f) pats
 -- tuple pattern (x, y, z)
-walkPattern f loc (TuplePat pats _ _) = brace f loc "TuplePat" $ mapM_ (walkLPattern f) pats -- todo: has type
+walkPattern f loc (TuplePat pats _ _) = brace f loc "TuplePat" $ mapM_ (walkLPattern f) pats
 -- parallel array pattern 
-walkPattern f loc (PArrPat pats _) = brace f loc "PArrPat" $ mapM_ (walkLPattern f) pats -- todo: has type
+walkPattern f loc (PArrPat pats _) = brace f loc "PArrPat" $ mapM_ (walkLPattern f) pats
 -- constructor pattern
 walkPattern f loc (ConPatIn id details) = brace f loc "ConPatIn" $ do
     walkId f id WCon
@@ -189,7 +192,7 @@ walkPattern f loc (QuasiQuotePat _) = brace f loc "QuasiQuotePat" $ return ()
 -- literal pattern ("string")
 walkPattern f loc (LitPat _) = brace f loc "LitPat" $ return ()
 -- numeric (or any overloaded literal) pattern
-walkPattern f loc (NPat _ _ _) = brace f loc "NPat" $ return () -- todo: has type
+walkPattern f loc (NPat _ _ _) = brace f loc "NPat" $ return ()
 -- n+k pattern
 walkPattern f loc (NPlusKPat _ _ _ _) = brace f loc "NPlusKPat" $ return ()
 walkPattern f loc (TypePat typ) = brace f loc "TypePat" $ walkLType f typ
@@ -206,11 +209,11 @@ walkLExpr f lexpr = walkExpr f (getLoc lexpr) (unLoc lexpr)
 
 walkExpr :: (Monad m) => Callback a m -> SrcSpan -> HsExpr a -> m ()
 -- named reference
-walkExpr f loc (HsVar var) = brace f loc "HsVar" $ (generic f) var loc WVal
+walkExpr f loc (HsVar var) = brace f loc "HsVar" $ walkId' f var loc WVal
 -- implicit parameter
-walkExpr f loc (HsIPVar (IPName id)) = brace f loc "HsIPVar" $ (generic f) id loc WVal
+walkExpr f loc (HsIPVar (IPName id)) = brace f loc "HsIPVar" $ walkId' f id loc WVal
 -- overloaded literal (number)
-walkExpr f loc (HsOverLit _) = brace f loc "HsOverLit" $ return () -- todo: has type
+walkExpr f loc (HsOverLit _) = brace f loc "HsOverLit" $ return ()
 -- simple literal ("string", etc)
 walkExpr f loc (HsLit _) = brace f loc "HsLit" $ return ()
 -- lambda expression (\pattern -> body)
@@ -255,13 +258,13 @@ walkExpr f loc (HsLet locals expr) = brace f loc "HsLet" $ do
     walkLocals f locals
     walkLExpr f expr
 -- do expression (incl. list comprehensions)
-walkExpr f loc (HsDo _ stmts expr _) = brace f loc "HsDo" $ do -- todo: has type
+walkExpr f loc (HsDo _ stmts expr _) = brace f loc "HsDo" $ do
     mapM_ (walkLStmt f) stmts
     walkLExpr f expr
 -- list [a,b,c]
-walkExpr f loc (ExplicitList _ vals) = brace f loc "ExplicitList" $ mapM_ (walkLExpr f) vals -- todo: has type
+walkExpr f loc (ExplicitList _ vals) = brace f loc "ExplicitList" $ mapM_ (walkLExpr f) vals
 -- parallel array [:a,b,c:]
-walkExpr f loc (ExplicitPArr _ vals) = brace f loc "ExplicitPArr" $ mapM_ (walkLExpr f) vals -- todo: has type
+walkExpr f loc (ExplicitPArr _ vals) = brace f loc "ExplicitPArr" $ mapM_ (walkLExpr f) vals
 -- tuple (a, b, c)
 walkExpr f loc (ExplicitTuple args _) = brace f loc "ExplicitTuple" $ mapM_ (walkLExpr f) (concatMap toExpr args)
     where toExpr (Present expr) = [expr]
@@ -276,10 +279,10 @@ walkExpr f loc (RecordUpd expr binds _ _ _) = brace f loc "RecordUpd" $ do
     walkRecord f binds
 -- expr::Type
 walkExpr f loc (ExprWithTySig expr typ) = brace f loc "ExprWithTySig" $ do
-    walkLExpr f expr -- todo: has type
+    walkLExpr f expr
     walkLType f typ
 -- expr::Type after typecheck
-walkExpr f loc (ExprWithTySigOut expr _) = brace f loc "ExprWithTySigOut" $ walkLExpr f expr -- todo: has type
+walkExpr f loc (ExprWithTySigOut expr _) = brace f loc "ExprWithTySigOut" $ walkLExpr f expr
 -- list [a..b], [a..], [a,b..], [a,b..c]
 walkExpr f loc (ArithSeq _ si) = brace f loc "ArithSeq" $ walkSeq f si
 -- parallel array [:a..b:] or [:a,b..c:]
@@ -348,7 +351,7 @@ walkValD f outer loc (FunBind funId _ mg _ _ _) = brace f loc "FunBind" $ do
     walkId f funId WFunDecl
     walkMatchGroup f (case outer of { Nothing -> Just $ unLoc funId; outerFunc -> outerFunc }) mg
 -- pattern declaration
-walkValD f _ loc (PatBind lhs rhss _ _) = brace f loc "PatBind" $ do -- todo: has type
+walkValD f _ loc (PatBind lhs rhss _ _) = brace f loc "PatBind" $ do
     walkLPattern f lhs
     walkRHSs f rhss
 -- ???
@@ -360,7 +363,7 @@ walkValD f _ loc (VarBind _ _) =
      brace f loc "VarBind" $ return ()
 {-
 walkValD f _ loc (VarBind var expr) = brace f loc "VarBind" $ do
-    (generic f) var loc WFunDecl
+    walkId' f var loc WFunDecl
     walkLExpr f expr
 -}
 -- ???
@@ -370,7 +373,7 @@ walkValD f _ loc (AbsBinds _ _ exps _ binds) =
 walkValD f _ loc (AbsBinds _ _ exps binds) =
 #endif
     brace f loc "AbsBinds" $ do
-        mapM_ (\id -> (generic f) id loc WFunDecl2) ids
+        mapM_ (\id -> walkId' f id loc WFunDecl2) ids
         walkLBinds f (listToMaybe ids) binds
         where ids = [x | (_, x, _, _) <- exps]
 
@@ -385,15 +388,20 @@ walkTyClD f loc (TyFamily _ name _ _) = brace f loc "TyFamily" $ walkId f name W
 walkTyClD f loc (TyData _ _ name _ _ _ cons _) = brace f loc "TyData" $ do
     walkId f name WTyDecl
     mapM_ walkCons cons
-    where walkCons lcon = walkId f cname WConDecl
-              where (ConDecl cname _ _ _ _ _ _ _) = unLoc lcon
+    where walkCons lcon = brace f (getLoc lcon) "ConDecl" $ do
+              walkId f cname WConDecl
+              walkConDecl details
+              where (ConDecl cname _ _ _ details _ _ _) = unLoc lcon -- todo
+                    walkConDecl details = mapM_ (walkLType f) (hsConDeclArgTys details)
 -- type synonym declaration
 walkTyClD f loc (TySynonym name _ _ typ) = brace f loc "TySynonym" $ do
     walkId f name WTyDecl
     walkLType f typ
 -- type class declaration
-walkTyClD f loc (ClassDecl _ name _ _ _ _ _ _) = brace f loc "ClassDecl" $ walkId f name WTyDecl
-
+walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _) = brace f loc "ClassDecl" $ do
+    walkId f name WTyDecl
+    mapM_ (walkLSig f) sigs
+    walkLBinds f Nothing defs
 
 -- Instance declarations
 walkInstD :: (Monad m) => Callback a m -> SrcSpan -> InstDecl a -> m ()
@@ -407,7 +415,7 @@ walkDerivD f loc (DerivDecl _) = brace f loc "DerivDecl" $ return ()
 
 -- Fixity declarations
 walkFixD :: (Monad m) => Callback a m -> SrcSpan -> FixitySig a -> m ()
-walkFixD f loc _ = brace f loc "" $ return ()
+walkFixD f loc _ = brace f loc "FixitySig" $ return ()
 
 
 -- Signature declarations

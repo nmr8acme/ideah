@@ -4,7 +4,7 @@ import ideah.tree.GRHSs;
 import ideah.tree.pat.Pat;
 import ideah.util.LineColRange;
 
-public final class PatternDecl extends Declaration {
+public final class PatternDecl extends Bind {
 
     public final Pat pattern;
     public final GRHSs rightHand;

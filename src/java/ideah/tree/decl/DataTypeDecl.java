@@ -5,17 +5,15 @@ import ideah.util.LineColRange;
 
 import java.util.List;
 
-public final class TypeDecl extends Declaration {
+public final class DataTypeDecl extends TyClDecl {
 
     public final Ident name;
-    public final List<Ident> params;
     public final List<ConDecl> constructors;
     // todo: other
 
-    public TypeDecl(LineColRange location, Ident name, List<Ident> params, List<ConDecl> constructors) {
+    public DataTypeDecl(LineColRange location, Ident name, List<ConDecl> constructors) {
         super(location);
         this.name = name;
-        this.params = params;
         this.constructors = constructors;
     }
 }

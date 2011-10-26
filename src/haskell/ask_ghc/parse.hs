@@ -9,15 +9,15 @@ doPrintOut parsed = do
     f <- printCallback defWalkCallback
     mapM_ (walk f) (hsmodDecls parsed)
 
-doWalk :: Ghc ()
-doWalk = do
+doWalk :: String -> Ghc ()
+doWalk file = do
     setupFlags True []
-    buffer <- liftIO $ loadFile "test.hs"
-    result <- parseHsFile buffer "test.hs"
+    buffer <- liftIO $ loadFile file
+    result <- parseHsFile buffer file
     case result of
         Right parsed -> doPrintOut (unLoc parsed)
         Left _ -> return ()
 
 main = do
-    runGhc (Just "C:\\Haskell\\lib") doWalk
+    runGhc (Just "C:\\Haskell\\lib") $ doWalk "test.hs"
     return ()
