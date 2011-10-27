@@ -2,16 +2,19 @@ package ideah.formatter;
 
 import com.intellij.formatting.*;
 import com.intellij.openapi.util.TextRange;
+import ideah.tree.Located;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 final class HaskellBlock implements Block {
 
+    private final Located node;
     private final TextRange range;
     private final List<Block> subBlocks;
 
-    HaskellBlock(TextRange range, List<Block> subBlocks) {
+    HaskellBlock(Located node, TextRange range, List<Block> subBlocks) {
+        this.node = node;
         this.range = range;
         this.subBlocks = subBlocks;
     }
@@ -58,6 +61,6 @@ final class HaskellBlock implements Block {
 
     @Override
     public String toString() {
-        return range.toString();
+        return node.getClass().getSimpleName() + " " + range.toString();
     }
 }

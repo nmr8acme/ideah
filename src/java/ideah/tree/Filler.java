@@ -6,8 +6,11 @@ import java.util.Collections;
 
 public final class Filler extends Located {
 
-    public Filler(LineColRange location) {
+    public final String text;
+
+    public Filler(LineColRange location, String text) {
         super(location);
+        this.text = text;
     }
 
     protected Iterable<? extends Located> getChildren() {

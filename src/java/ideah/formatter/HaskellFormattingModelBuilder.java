@@ -15,10 +15,7 @@ import com.intellij.psi.formatter.DocumentBasedFormattingModel;
 import com.intellij.psi.tree.IElementType;
 import ideah.lexer.HaskellLexer;
 import ideah.lexer.HaskellTokenTypes;
-import ideah.tree.Located;
-import ideah.tree.ModuleTree;
-import ideah.tree.NoMatchException;
-import ideah.tree.TreeParser;
+import ideah.tree.*;
 import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,7 +68,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         TreeParser parser = new TreeParser(new BufferedReader(new StringReader(stdOut)));
         ModuleTree moduleTree = parser.readTree(LineColRange.fromTextRange(file, file.getTextRange()));
 
-        SortedMap<LineCol, LineColRange> ranges = new TreeMap<LineCol, LineColRange>();
+        SortedMap<LineCol, Filler> ranges = new TreeMap<LineCol, Filler>();
         String text = file.getText();
         HaskellLexer lexer = new HaskellLexer();
         lexer.start(text);
@@ -82,7 +79,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
             if (!HaskellTokenTypes.WHITESPACES.contains(type)) {
                 TextRange textRange = new TextRange(lexer.getTokenStart(), lexer.getTokenEnd());
                 LineColRange range = LineColRange.fromTextRange(file, textRange);
-                ranges.put(range.start, range);
+                ranges.put(range.start, new Filler(range, lexer.getTokenText()));
             }
             lexer.advance();
         }
@@ -97,7 +94,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         for (Located child : children) {
             subBlocks.add(toBlock(file, child));
         }
-        return new HaskellBlock(located.location.getRange(file), subBlocks);
+        return new HaskellBlock(located, located.location.getRange(file), subBlocks);
     }
 
     public TextRange getRangeAffectingIndent(PsiFile file, int offset, ASTNode elementAtOffset) {

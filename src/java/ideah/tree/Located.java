@@ -17,29 +17,29 @@ public abstract class Located {
 
     protected abstract Iterable<? extends Located> getChildren();
 
-    public final void fillGaps(SortedMap<LineCol, LineColRange> tokens) {
+    public final void fillGaps(SortedMap<LineCol, Filler> tokens) {
         Iterable<? extends Located> children = getChildren();
         for (Located child : children) {
             child.fillGaps(tokens);
         }
-        LineColRange range = tokens.get(location.start);
-        if (range != null && range.equals(location)) {
+        Filler range = tokens.get(location.start);
+        if (range != null && range.location.equals(location)) {
             tokens.remove(location.start);
         }
         setGaps(tokens);
     }
 
-    private void setGaps(SortedMap<LineCol, LineColRange> rest) {
-        SortedMap<LineCol, LineColRange> tail = rest.tailMap(location.start);
-        for (Iterator<Map.Entry<LineCol, LineColRange>> i = tail.entrySet().iterator(); i.hasNext(); ) {
-            Map.Entry<LineCol, LineColRange> entry = i.next();
+    private void setGaps(SortedMap<LineCol, Filler> rest) {
+        SortedMap<LineCol, Filler> tail = rest.tailMap(location.start);
+        for (Iterator<Map.Entry<LineCol, Filler>> i = tail.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry<LineCol, Filler> entry = i.next();
             LineCol pos = entry.getKey();
             if (pos.compareTo(location.end) >= 0)
                 break;
             if (filler == null) {
                 filler = new ArrayList<Filler>();
             }
-            filler.add(new Filler(entry.getValue()));
+            filler.add(entry.getValue());
             i.remove();
         }
     }
