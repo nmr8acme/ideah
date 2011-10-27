@@ -31,7 +31,8 @@ public abstract class Located {
 
     private void setGaps(SortedMap<LineCol, LineColRange> rest) {
         SortedMap<LineCol, LineColRange> tail = rest.tailMap(location.start);
-        for (Map.Entry<LineCol, LineColRange> entry : tail.entrySet()) {
+        for (Iterator<Map.Entry<LineCol, LineColRange>> i = tail.entrySet().iterator(); i.hasNext(); ) {
+            Map.Entry<LineCol, LineColRange> entry = i.next();
             LineCol pos = entry.getKey();
             if (pos.compareTo(location.end) >= 0)
                 break;
@@ -39,6 +40,7 @@ public abstract class Located {
                 filler = new ArrayList<Filler>();
             }
             filler.add(new Filler(entry.getValue()));
+            i.remove();
         }
     }
 
@@ -54,5 +56,10 @@ public abstract class Located {
             }
         });
         return list;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + " " + location;
     }
 }

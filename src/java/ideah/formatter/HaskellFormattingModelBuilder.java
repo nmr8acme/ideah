@@ -34,115 +34,22 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
 
     private static final Logger LOG = Logger.getInstance("ideah.formatter.HaskellFormattingModelBuilder");
 
-//    private static int prevSetBit(BitSet set, int from) {
-//        for (int i = from; i >= 0; i--) {
-//            if (set.get(i))
-//                return i;
-//        }
-//        return -1;
-//    }
-//
-//    @NotNull
-//    public FormattingModel createModel(PsiElement element, CodeStyleSettings settings) {
-//        PsiFile file = element.getContainingFile();
-//        Project project = file.getProject();
-//        VirtualFile virtualFile = file.getVirtualFile();
-//        SortedMap<Integer, Block> map = new TreeMap<Integer, Block>();
-//        String text;
-//        if (virtualFile != null) {
-//            SortedSet<TextRange> functionRanges = new TreeSet<TextRange>(new Comparator<TextRange>() {
-//                public int compare(TextRange o1, TextRange o2) {
-//                    return o1.getStartOffset() - o2.getStartOffset();
-//                }
-//            });
-//            text = file.getText();
-//            HaskellLexer lexer = new HaskellLexer();
-//            lexer.start(text);
-//            BitSet nonSpace = new BitSet();
-//            while (true) {
-//                IElementType type = lexer.getTokenType();
-//                if (type == null)
-//                    break;
-//                if (!HaskellTokenTypes.WHITESPACES.contains(type)) {
-//                    nonSpace.set(lexer.getTokenStart(), lexer.getTokenEnd());
-//                }
-//                lexer.advance();
-//            }
-//            try {
-//                // todo: возможно, мы парсим не последнюю версию файла - нужно форсировать сохранение?
-//                String path = virtualFile.getPath();
-//                String output = new ProcessLauncher(false, null, "D:\\home\\oleg\\ideah\\idea\\ideah\\ideah\\format.exe", path).getStdOut();
-//                BufferedReader rdr = new BufferedReader(new StringReader(output));
-//                while (true) {
-//                    String line = rdr.readLine();
-//                    if (line == null)
-//                        break;
-//                    LineColRange lcRange = new LineColRange(line);
-//                    TextRange range = lcRange.getRange(file);
-//                    if (range.isEmpty()) {
-//                        System.out.println("WTF?");
-//                    }
-//                    map.put(range.getStartOffset(), new HaskellBlock(range, Collections.<Block>emptyList()));
-//                    functionRanges.add(range);
-//                }
-//            } catch (Exception ex) {
-//                LOG.error(ex);
-//            }
-//            int i = 0;
-//            for (TextRange range : functionRanges) {
-//                int limit = range.getStartOffset();
-//                if (i < limit) {
-//                    int from = nonSpace.nextSetBit(i);
-//                    if (from >= 0 && from < limit) {
-//                        int to = prevSetBit(nonSpace, limit - 1);
-//                        if (to >= from) {
-//                            TextRange newRange = new TextRange(from, to + 1);
-//                            map.put(newRange.getStartOffset(), new HaskellBlock(newRange, Collections.<Block>emptyList()));
-//                        }
-//                    }
-//                }
-//                i = range.getEndOffset();
-//            }
-//            if (i < nonSpace.length()) {
-//                int from = nonSpace.nextSetBit(i);
-//                if (from >= 0) {
-//                    int to = prevSetBit(nonSpace, nonSpace.length() - 1);
-//                    if (to >= from) {
-//                        TextRange newRange = new TextRange(from, to + 1);
-//                        map.put(newRange.getStartOffset(), new HaskellBlock(newRange, Collections.<Block>emptyList()));
-//                    }
-//                }
-//            }
-//        } else {
-//            text = "";
-//        }
-//        List<Block> blocks = new ArrayList<Block>(map.values());
-//        for (Block block : blocks) {
-//            System.out.println(block.getTextRange() + ": '" + block.getTextRange().substring(text) + "'");
-//        }
-//        Block rootBlock = new HaskellBlock(file.getTextRange(), blocks);
-//        return new DocumentBasedFormattingModel(rootBlock, project, settings, file.getFileType(), file);
-//    }
-
-
     @NotNull
     public FormattingModel createModel(PsiElement element, CodeStyleSettings settings) {
-        FormattingModel model = null;
+        Block root = null;
         try {
-            model = doCreateModel(element, settings);
+            root = doCreateModel(element);
         } catch (Exception ex) {
             LOG.error(ex);
         }
-        if (model == null) {
-            PsiFile file = element.getContainingFile();
-            Block root = new FakeBlock(file.getTextRange());
-            return new DocumentBasedFormattingModel(root, file.getProject(), settings, file.getFileType(), file);
-        } else {
-            return model;
+        PsiFile file = element.getContainingFile();
+        if (root == null) {
+            root = new FakeBlock(file.getTextRange());
         }
+        return new DocumentBasedFormattingModel(root, file.getProject(), settings, file.getFileType(), file);
     }
 
-    private static FormattingModel doCreateModel(PsiElement element, CodeStyleSettings settings) throws IOException, InterruptedException, NoMatchException {
+    private static Block doCreateModel(PsiElement element) throws IOException, InterruptedException, NoMatchException {
         PsiFile file = element.getContainingFile();
         VirtualFile virtualFile = file.getVirtualFile();
         if (virtualFile == null)
@@ -181,9 +88,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         }
         moduleTree.fillGaps(ranges);
 
-        Block root = toBlock(file, moduleTree);
-
-        return new DocumentBasedFormattingModel(root, file.getProject(), settings, file.getFileType(), file);
+        return toBlock(file, moduleTree);
     }
 
     private static HaskellBlock toBlock(PsiFile file, Located located) {

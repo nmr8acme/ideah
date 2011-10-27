@@ -77,6 +77,7 @@ public final class CompilerLocation {
         }
     }
 
+    // todo: WTF is packageNames?
     public static synchronized CompilerLocation get(Module module, String... packageNames) {
         if (module == null)
             return null;

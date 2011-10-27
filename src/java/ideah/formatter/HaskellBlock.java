@@ -55,4 +55,9 @@ final class HaskellBlock implements Block {
     public boolean isLeaf() {
         return subBlocks.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return range.toString();
+    }
 }

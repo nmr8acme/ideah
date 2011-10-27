@@ -193,9 +193,8 @@ public final class FakeNode extends Located {
 
     private Bind toBind() throws NoMatchException {
         if ("FunBind".equals(name)) {
-            Ident name = children.get(0).toIdent();
             List<Match> matches = toMatches(children.subList(1, children.size()));
-            return new FunctionDecl(location, name, matches);
+            return new FunctionDecl(location, matches);
         } else if ("PatBind".equals(name)) {
             Pat pattern = children.get(0).toPattern();
             GRHSs grhss = toGRHSs(children.subList(1, children.size()));
