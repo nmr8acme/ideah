@@ -19,9 +19,8 @@ getDeclPos srcPath ghcPath srcFile (line, col) =
 extractTypes :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
 extractTypes line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
-        let loc = nameSrcLoc $ idName var
-        print $ srcLocLine loc
-        print $ colFromGhc $ srcLocCol loc
+        let loc' = nameSrcLoc $ idName var
+        putStrLn $ locStr loc'
         print $ srcLocFile $ nameSrcLoc $ varName var
         exitSuccess
 

@@ -23,6 +23,30 @@ public final class LineCol implements Comparable<LineCol> {
         this.column = column;
     }
 
+    public static LineCol parse(String str) {
+        str = str.trim();
+        int line;
+        int col;
+        if ("?".equals(str)) {
+            line = 0;
+            col = 0;
+        } else {
+            int p = str.indexOf(':');
+            String strLine = str.substring(0, p);
+            String strCol = str.substring(p + 1);
+            line = parseInt(strLine);
+            col = parseInt(strCol);
+        }
+        return new LineCol(line, col);
+    }
+
+    private static int parseInt(String str) {
+        str = str.trim();
+        if ("?".equals(str))
+            return 0;
+        return Integer.parseInt(str);
+    }
+
     public int getOffset(PsiFile file) {
         return getOffset(file, line, column);
     }

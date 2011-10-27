@@ -26,27 +26,8 @@ public final class LineColRange {
         int p = str.indexOf('-');
         String start = str.substring(0, p);
         String end = str.substring(p + 1);
-        int[] starts = parsePair(start);
-        int[] ends = parsePair(end);
-        this.start = new LineCol(starts[0], starts[1]);
-        this.end = new LineCol(ends[0], ends[1]);
-    }
-
-    private static int[] parsePair(String str) {
-        str = str.trim();
-        if ("?".equals(str))
-            return new int[] {0, 0};
-        int p = str.indexOf(':');
-        String from = str.substring(0, p);
-        String to = str.substring(p + 1);
-        return new int[] {parseInt(from), parseInt(to)};
-    }
-
-    private static int parseInt(String str) {
-        str = str.trim();
-        if ("?".equals(str))
-            return 0;
-        return Integer.parseInt(str);
+        this.start = LineCol.parse(start);
+        this.end = LineCol.parse(end);
     }
 
     public TextRange getRange(PsiFile file) {

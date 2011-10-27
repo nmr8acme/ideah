@@ -9,7 +9,7 @@ import ideah.parser.HaskellParserDefinition;
 import ideah.psi.impl.HPIdentImpl;
 import org.jetbrains.annotations.NotNull;
 
-public class HaskellFindUsagesProvider implements FindUsagesProvider {
+public final class HaskellFindUsagesProvider implements FindUsagesProvider {
 
     public WordsScanner getWordsScanner() {
         return new DefaultWordsScanner(new HaskellLexer(),

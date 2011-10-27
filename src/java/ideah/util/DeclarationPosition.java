@@ -40,11 +40,10 @@ public final class DeclarationPosition {
             file.getPath()
         );
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
-        String l = reader.readLine();
-        String c = reader.readLine();
+        String lineCol = reader.readLine();
         String moduleLine = reader.readLine();
-        if (l != null && c != null && moduleLine != null) {
-            LineCol declCoord = new LineCol(Integer.parseInt(l), Integer.parseInt(c));
+        if (lineCol != null && moduleLine != null) {
+            LineCol declCoord = LineCol.parse(lineCol);
             String moduleName = moduleLine.replaceAll("\"", "");
             return new DeclarationPosition(declCoord, moduleName);
         } else {
