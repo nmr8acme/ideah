@@ -79,7 +79,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
             if (!HaskellTokenTypes.WHITESPACES.contains(type)) {
                 TextRange textRange = new TextRange(lexer.getTokenStart(), lexer.getTokenEnd());
                 LineColRange range = LineColRange.fromTextRange(file, textRange);
-                ranges.put(range.start, new Filler(range, lexer.getTokenText()));
+                ranges.put(range.start, new Filler(range, type, lexer.getTokenText()));
             }
             lexer.advance();
         }

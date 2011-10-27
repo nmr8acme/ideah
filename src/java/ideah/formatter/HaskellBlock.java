@@ -52,7 +52,7 @@ final class HaskellBlock implements Block {
     }
 
     public boolean isIncomplete() {
-        return false; // todo
+        return false;
     }
 
     public boolean isLeaf() {
