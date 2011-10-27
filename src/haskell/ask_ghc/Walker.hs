@@ -13,15 +13,15 @@ import DataCon
 data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule
     deriving (Show, Eq)
 
-data Callback a m = CB { generic :: a -> SrcSpan -> Where -> m (),
-                         name :: Name -> SrcSpan -> Where -> m (),
-                         braceOpen :: SrcSpan -> String -> m (),
+data Callback a m = CB { ident      :: a -> SrcSpan -> Where -> m (),
+                         name       :: Name -> SrcSpan -> Where -> m (),
+                         braceOpen  :: SrcSpan -> String -> m (),
                          braceClose :: m () }
 
 defWalkCallback :: (Monad m) => Callback a m
-defWalkCallback = CB { generic = (\_ _ _ -> return ()),
-                       name = (\_ _ _ -> return ()),
-                       braceOpen = (\_ _ -> return ()),
+defWalkCallback = CB { ident      = (\_ _ _ -> return ()),
+                       name       = (\_ _ _ -> return ()),
+                       braceOpen  = (\_ _ -> return ()),
                        braceClose = return () }
 
 brace :: (Monad m) => Callback a m -> SrcSpan -> String -> m() -> m ()
@@ -35,7 +35,7 @@ walkLoc cb walker node = walker cb (getLoc node) (unLoc node)
 
 
 walkId' :: (Monad m) => Callback a m -> a -> SrcSpan -> Where -> m ()
-walkId' f name loc definition = brace f loc "Id" $ (generic f) name loc definition
+walkId' f name loc definition = brace f loc "Id" $ (ident f) name loc definition
 
 walkId :: (Monad m) => Callback a m -> Located a -> Where -> m ()
 walkId f name definition = walkId' f (unLoc name) (getLoc name) definition
@@ -401,6 +401,7 @@ walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _) = brace f loc "ClassDecl" $
     walkId f name WTyDecl
     mapM_ (walkLSig f) sigs
     walkLBinds f Nothing defs
+
 
 -- Instance declarations
 walkInstD :: (Monad m) => Callback a m -> SrcSpan -> InstDecl a -> m ()

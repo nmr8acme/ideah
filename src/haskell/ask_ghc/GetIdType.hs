@@ -32,7 +32,7 @@ doExtractTypes line col checked = do
     let info = tm_checked_module_info checked
     (Just unqual) <- mkPrintUnqualifiedForModule info
     let style = mkUserStyle unqual AllTheWay
-    let cb = defWalkCallback { generic = extractTypes style line col }
+    let cb = defWalkCallback { ident = extractTypes style line col }
     --cb <- printCallback defWalkCallback
     walkDeclarations cb (typecheckedSource checked)
 

@@ -16,8 +16,8 @@ getDeclPos :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
 getDeclPos srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
 
-extractTypes :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
-extractTypes line col var loc _ = liftIO $
+extractLoc :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
+extractLoc line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let loc = nameSrcLoc $ idName var
         print $ srcLocLine loc
@@ -25,9 +25,9 @@ extractTypes line col var loc _ = liftIO $
         print $ srcLocFile $ nameSrcLoc $ varName var
         exitSuccess
 
-doExtractTypes :: Int -> Int -> TypecheckedModule -> Ghc ()
-doExtractTypes line col checked = do
-    let cb = defWalkCallback { generic = extractTypes line col }
+doExtractLoc :: Int -> Int -> TypecheckedModule -> Ghc ()
+doExtractLoc line col checked = do
+    let cb = defWalkCallback { ident = extractLoc line col }
     walkDeclarations cb (typecheckedSource checked)
 
 doWalk :: String -> FilePath -> Int -> Int -> Ghc ()
@@ -36,4 +36,4 @@ doWalk srcPath srcFile line col = do
     mod <- loadHsFile srcFile
     parsed <- parseModule mod
     checked <- typecheckModule parsed
-    doExtractTypes line col checked
+    doExtractLoc line col checked

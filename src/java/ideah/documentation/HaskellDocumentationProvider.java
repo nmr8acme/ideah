@@ -44,7 +44,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         int offset = range.getStartOffset();
         LineCol coord = LineCol.fromOffset(psiFile, offset);
         Module module = DeclarationPosition.getModule(psiFile);
-        CompilerLocation compiler = CompilerLocation.get(module);
+        CompilerLocation compiler = CompilerLocation.get(module, "haddock");
         if (compiler == null) {
             return null;
         }
