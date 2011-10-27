@@ -1,13 +1,13 @@
 package ideah.tree.expr;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Collections;
 
 public final class Literal extends Expression {
 
-    public Literal(LineColRange location) {
+    public Literal(IRange location) {
         super(location);
     }
 

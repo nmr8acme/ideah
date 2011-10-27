@@ -2,7 +2,7 @@ package ideah.tree.pat;
 
 import ideah.tree.Ident;
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -11,7 +11,7 @@ public final class AsPat extends Pat {
     public final Ident name;
     public final Pat pattern;
 
-    public AsPat(LineColRange location, Ident name, Pat pattern) {
+    public AsPat(IRange location, Ident name, Pat pattern) {
         super(location);
         this.name = name;
         this.pattern = pattern;

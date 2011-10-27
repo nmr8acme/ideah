@@ -1,5 +1,6 @@
 package ideah.tree;
 
+import ideah.util.IRange;
 import ideah.util.LineColRange;
 
 import java.io.BufferedReader;
@@ -11,9 +12,16 @@ import java.util.List;
 
 public final class TreeParser {
 
-    private final BufferedReader rdr;
+    public interface RangeFactory {
 
-    public TreeParser(Reader rdr) {
+        IRange parse(String str);
+    }
+
+    private final BufferedReader rdr;
+    private final RangeFactory factory;
+
+    public TreeParser(Reader rdr, RangeFactory factory) {
+        this.factory = factory;
         this.rdr = new BufferedReader(rdr);
     }
 
@@ -29,7 +37,7 @@ public final class TreeParser {
         String rest = str.substring(p1 + 1).trim();
         int p2 = rest.indexOf(' ');
         String locStr = rest.substring(0, p2).trim();
-        LineColRange loc = new LineColRange(locStr);
+        IRange loc = factory.parse(locStr);
         List<FakeNode> children = readNodes();
         return new FakeNode(loc, name, children);
     }
@@ -45,13 +53,17 @@ public final class TreeParser {
         return nodes;
     }
 
-    public ModuleTree readTree(LineColRange location) throws NoMatchException, IOException {
+    public ModuleTree readTree(IRange location) throws NoMatchException, IOException {
         List<FakeNode> nodes = readNodes();
         return nodes.get(0).toModule(location);
     }
 
     public static void main(String[] args) throws IOException, NoMatchException {
-        TreeParser parser = new TreeParser(new FileReader("C:\\work\\projects\\ideah\\src\\haskell\\ask_ghc\\err"));
+        TreeParser parser = new TreeParser(new FileReader("C:\\work\\projects\\ideah\\src\\haskell\\ask_ghc\\err"), new RangeFactory() {
+            public IRange parse(String str) {
+                return new LineColRange(str);
+            }
+        });
         ModuleTree module = parser.readTree(LineColRange.getFake());
         System.out.println(module);
     }

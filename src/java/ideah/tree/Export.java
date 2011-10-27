@@ -1,6 +1,6 @@
 package ideah.tree;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Collections;
 
@@ -8,7 +8,7 @@ public final class Export extends Located {
 
     // todo
 
-    public Export(LineColRange location) {
+    public Export(IRange location) {
         super(location);
     }
 

@@ -1,11 +1,11 @@
 package ideah.tree.pat;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 public abstract class Pat extends Located {
 
-    protected Pat(LineColRange location) {
+    protected Pat(IRange location) {
         super(location);
     }
 }

@@ -2,7 +2,7 @@ package ideah.tree;
 
 import com.google.common.collect.Iterables;
 import ideah.tree.pat.Pat;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public final class Match extends Located {
     // todo: Maybe LHsType - ???
     public final GRHSs rightHand;
 
-    public Match(LineColRange location, List<Pat> params, GRHSs rightHand) {
+    public Match(IRange location, List<Pat> params, GRHSs rightHand) {
         super(location);
         this.params = params;
         this.rightHand = rightHand;

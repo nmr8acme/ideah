@@ -8,7 +8,7 @@ import ideah.tree.stmt.ExprStmt;
 import ideah.tree.stmt.LetStmt;
 import ideah.tree.stmt.Statement;
 import ideah.tree.type.*;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ public final class FakeNode extends Located {
     public final String name;
     public final List<FakeNode> children;
 
-    public FakeNode(LineColRange location, String name, List<FakeNode> children) {
+    public FakeNode(IRange location, String name, List<FakeNode> children) {
         super(location);
         this.name = name;
         this.children = children;
@@ -40,7 +40,7 @@ public final class FakeNode extends Located {
     }
 
     // todo: range for module!
-    ModuleTree toModule(LineColRange location) throws NoMatchException {
+    ModuleTree toModule(IRange location) throws NoMatchException {
         if ("Module".equals(name)) {
             int i = 0;
             Ident name = null;

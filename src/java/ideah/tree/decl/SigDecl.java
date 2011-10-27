@@ -1,10 +1,10 @@
 package ideah.tree.decl;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 public abstract class SigDecl extends Declaration {
 
-    protected SigDecl(LineColRange location) {
+    protected SigDecl(IRange location) {
         super(location);
     }
 }

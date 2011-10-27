@@ -1,6 +1,6 @@
 package ideah.tree.type;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ public final class BangType extends Type {
 
     public final Type type;
 
-    public BangType(LineColRange location, Type type) {
+    public BangType(IRange location, Type type) {
         super(location);
         this.type = type;
     }

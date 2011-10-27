@@ -1,11 +1,11 @@
 package ideah.tree.decl;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 public abstract class Declaration extends Located {
 
-    protected Declaration(LineColRange location) {
+    protected Declaration(IRange location) {
         super(location);
     }
 }

@@ -2,7 +2,7 @@ package ideah.tree;
 
 import com.google.common.collect.Iterables;
 import ideah.tree.decl.Declaration;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,7 +15,7 @@ public final class ModuleTree extends Located {
     public final List<Import> imports;
     public final List<Declaration> declarations;
 
-    public ModuleTree(LineColRange location, Ident name, List<Export> exports, List<Import> imports, List<Declaration> declarations) {
+    public ModuleTree(IRange location, Ident name, List<Export> exports, List<Import> imports, List<Declaration> declarations) {
         super(location);
         this.name = name;
         this.exports = exports;

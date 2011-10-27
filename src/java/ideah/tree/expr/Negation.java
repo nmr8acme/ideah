@@ -1,6 +1,6 @@
 package ideah.tree.expr;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ public final class Negation extends Expression {
 
     public final Expression expression;
 
-    public Negation(LineColRange location, Expression expression) {
+    public Negation(IRange location, Expression expression) {
         super(location);
         this.expression = expression;
     }

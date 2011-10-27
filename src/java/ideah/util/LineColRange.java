@@ -3,7 +3,7 @@ package ideah.util;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
 
-public final class LineColRange {
+public final class LineColRange implements IRange {
 
     public final LineCol start;
     public final LineCol end;
@@ -38,6 +38,14 @@ public final class LineColRange {
         LineCol start = LineCol.fromOffset(file, range.getStartOffset());
         LineCol end = LineCol.fromOffset(file, range.getEndOffset());
         return new LineColRange(start, end);
+    }
+
+    public ILocation getStart() {
+        return start;
+    }
+
+    public ILocation getEnd() {
+        return end;
     }
 
     public String toString() {

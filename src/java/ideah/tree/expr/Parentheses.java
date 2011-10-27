@@ -1,6 +1,6 @@
 package ideah.tree.expr;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ public final class Parentheses extends Expression {
 
     public final Expression expression;
 
-    public Parentheses(LineColRange location, Expression expression) {
+    public Parentheses(IRange location, Expression expression) {
         super(location);
         this.expression = expression;
     }

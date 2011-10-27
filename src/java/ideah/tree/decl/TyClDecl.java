@@ -1,10 +1,10 @@
 package ideah.tree.decl;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 public abstract class TyClDecl extends Declaration {
 
-    protected TyClDecl(LineColRange location) {
+    protected TyClDecl(IRange location) {
         super(location);
     }
 }

@@ -1,13 +1,13 @@
 package ideah.tree.expr;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Collections;
 
 public final class OverLiteral extends Expression {
 
-    public OverLiteral(LineColRange location) {
+    public OverLiteral(IRange location) {
         super(location);
     }
 

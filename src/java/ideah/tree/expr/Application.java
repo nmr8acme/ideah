@@ -1,6 +1,6 @@
 package ideah.tree.expr;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -9,7 +9,7 @@ public final class Application extends Expression {
     public final Expression function;
     public final Expression arg;
 
-    public Application(LineColRange location, Expression function, Expression arg) {
+    public Application(IRange location, Expression function, Expression arg) {
         super(location);
         this.function = function;
         this.arg = arg;

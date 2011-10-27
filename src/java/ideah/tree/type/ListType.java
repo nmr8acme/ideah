@@ -1,6 +1,6 @@
 package ideah.tree.type;
 
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ public final class ListType extends Type {
 
     public final Type type;
 
-    public ListType(LineColRange location, Type type) {
+    public ListType(IRange location, Type type) {
         super(location);
         this.type = type;
     }

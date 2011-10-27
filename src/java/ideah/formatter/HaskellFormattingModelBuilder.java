@@ -47,7 +47,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
     }
 
     private static Block doCreateModel(PsiElement element) throws IOException, InterruptedException, NoMatchException {
-        PsiFile file = element.getContainingFile();
+        final PsiFile file = element.getContainingFile();
         VirtualFile virtualFile = file.getVirtualFile();
         if (virtualFile == null)
             return null;
@@ -65,10 +65,15 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         String stdOut = launcher.getStdOut();
         if (stdOut.trim().isEmpty())
             return null;
-        TreeParser parser = new TreeParser(new BufferedReader(new StringReader(stdOut)));
-        ModuleTree moduleTree = parser.readTree(LineColRange.fromTextRange(file, file.getTextRange()));
+        TreeParser parser = new TreeParser(new BufferedReader(new StringReader(stdOut)), new TreeParser.RangeFactory() {
+            public IRange parse(String str) {
+                LineColRange range = new LineColRange(str);
+                return new MyRange(range.getRange(file));
+            }
+        });
+        ModuleTree moduleTree = parser.readTree(new MyRange(file.getTextRange()));
 
-        SortedMap<LineCol, Filler> ranges = new TreeMap<LineCol, Filler>();
+        SortedMap<ILocation, Filler> ranges = new TreeMap<ILocation, Filler>();
         String text = file.getText();
         HaskellLexer lexer = new HaskellLexer();
         lexer.start(text);
@@ -78,8 +83,8 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
                 break;
             if (!HaskellTokenTypes.WHITESPACES.contains(type)) {
                 TextRange textRange = new TextRange(lexer.getTokenStart(), lexer.getTokenEnd());
-                LineColRange range = LineColRange.fromTextRange(file, textRange);
-                ranges.put(range.start, new Filler(range, type, lexer.getTokenText()));
+                IRange range = new MyRange(textRange);
+                ranges.put(range.getStart(), new Filler(range, type, lexer.getTokenText()));
             }
             lexer.advance();
         }

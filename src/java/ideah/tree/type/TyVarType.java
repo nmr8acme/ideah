@@ -1,13 +1,13 @@
 package ideah.tree.type;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Collections;
 
 public final class TyVarType extends Type {
 
-    public TyVarType(LineColRange location) {
+    public TyVarType(IRange location) {
         super(location);
     }
 

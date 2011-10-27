@@ -1,7 +1,7 @@
 package ideah.tree;
 
 import ideah.tree.expr.Expression;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Arrays;
 
@@ -10,7 +10,7 @@ public final class GRHS extends Located {
     // todo: statements? what statements?
     public final Expression expression;
 
-    public GRHS(LineColRange location, Expression expression) {
+    public GRHS(IRange location, Expression expression) {
         super(location);
         this.expression = expression;
     }

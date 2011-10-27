@@ -1,13 +1,13 @@
 package ideah.tree.pat;
 
 import ideah.tree.Located;
-import ideah.util.LineColRange;
+import ideah.util.IRange;
 
 import java.util.Collections;
 
 public final class VarPat extends Pat {
 
-    public VarPat(LineColRange location) {
+    public VarPat(IRange location) {
         super(location);
     }
 
