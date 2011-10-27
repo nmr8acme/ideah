@@ -7,7 +7,7 @@ import HDebugUtil
 
 doPrintOut parsed = do
     f <- printCallback defWalkCallback
-    mapM_ (walk f) (hsmodDecls parsed)
+    walkModule f parsed
 
 doWalk :: String -> Ghc ()
 doWalk file = do
@@ -15,7 +15,7 @@ doWalk file = do
     buffer <- liftIO $ loadFile file
     result <- parseHsFile buffer file
     case result of
-        Right parsed -> doPrintOut (unLoc parsed)
+        Right parsed -> doPrintOut parsed
         Left _ -> return ()
 
 main = do

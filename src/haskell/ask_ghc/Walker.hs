@@ -1,6 +1,6 @@
 module Walker (
     Where(..), Callback(..), defWalkCallback,
-    walk, walkDeclarations, walkGroup
+    walk, walkDeclarations, walkGroup, walkModule
     ) where
 
 import Data.Maybe (listToMaybe)
@@ -10,7 +10,7 @@ import GHC
 import BasicTypes
 import DataCon
 
-data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch
+data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule
     deriving (Show, Eq)
 
 data Callback a m = CB { generic :: a -> SrcSpan -> Where -> m (),
@@ -390,9 +390,8 @@ walkTyClD f loc (TyData _ _ name _ _ _ cons _) = brace f loc "TyData" $ do
     mapM_ walkCons cons
     where walkCons lcon = brace f (getLoc lcon) "ConDecl" $ do
               walkId f cname WConDecl
-              walkConDecl details
+              mapM_ (walkLType f) (hsConDeclArgTys details)
               where (ConDecl cname _ _ _ details _ _ _) = unLoc lcon -- todo
-                    walkConDecl details = mapM_ (walkLType f) (hsConDeclArgTys details)
 -- type synonym declaration
 walkTyClD f loc (TySynonym name _ _ typ) = brace f loc "TySynonym" $ do
     walkId f name WTyDecl
@@ -516,3 +515,20 @@ walkGroup f (HsGroup valds tyclds instds derivds fixds defds fords warnds annds 
     mapM_ (walkLoc f walkAnnD) annds
     mapM_ (walkLoc f walkRuleD) ruleds
     mapM_ (walkLoc f walkDocD) docs
+
+
+walkModule :: (Monad m) => Callback RdrName m -> ParsedSource -> m ()
+walkModule f src = brace f (getLoc src) "Module" $ do
+    let md = unLoc src
+    case hsmodName md of
+        (Just name) -> walkName name
+        _ -> return ()
+    case hsmodExports md of
+        (Just lies) -> mapM_ walkLIE lies
+        _ -> return ()
+    mapM_ walkImport (hsmodImports md)
+    mapM_ (walk f) (hsmodDecls md)
+    where
+        walkName name = brace f (getLoc name) "ModuleName" $ return ()
+        walkLIE lie = brace f (getLoc lie) "Export" $ return ()
+        walkImport imp = brace f (getLoc imp) "Import" $ return ()

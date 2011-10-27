@@ -9,8 +9,9 @@ import CheckMain
 import GetIdType
 import GetDocu
 import GetDeclPos
+import ParseTree
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu | ParseTree
     deriving Read
 
 -- ./ask_ghc
@@ -67,8 +68,9 @@ main = do
         singleFile = head files
         pos        = position opts
     case mode opts of
-        Compile     -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
-        CheckMain   -> checkMain ghcpath singleFile
-        GetIdType   -> getIdType srcpath ghcpath singleFile pos
+        Compile    -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
+        CheckMain  -> checkMain ghcpath singleFile
+        GetIdType  -> getIdType srcpath ghcpath singleFile pos
         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
-        GetDocu     -> getDocu srcpath ghcpath pos $ moduleFile opts
+        GetDocu    -> getDocu srcpath ghcpath pos $ moduleFile opts
+        ParseTree  -> parseTree ghcpath singleFile

@@ -42,11 +42,10 @@ public final class TreeParser {
         return nodes;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, NoMatchException {
         TreeParser parser = new TreeParser(new FileReader("C:\\work\\projects\\ideah\\src\\haskell\\ask_ghc\\err"));
         List<FakeNode> nodes = parser.readNodes();
-        for (FakeNode node : nodes) {
-            System.out.println(node.toStruct());
-        }
+        Module module = nodes.get(0).toModule();
+        System.out.println(module);
     }
 }

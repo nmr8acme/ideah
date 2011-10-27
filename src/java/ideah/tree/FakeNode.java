@@ -39,66 +39,78 @@ public final class FakeNode extends Located {
         return buf.toString();
     }
 
-    Located toStruct() {
-        try {
-            return toIdent();
-        } catch (NoMatchException ex) {
-            // ignore
+    Module toModule() throws NoMatchException {
+        if ("Module".equals(name)) {
+            int i = 0;
+            Ident name = null;
+            if (i < children.size()) {
+                try {
+                    name = children.get(i).toModuleName();
+                    i++;
+                } catch (NoMatchException ex) {
+                    // ignore
+                }
+            }
+            List<Export> exports = new ArrayList<Export>();
+            while (i < children.size()) {
+                FakeNode child = children.get(i);
+                try {
+                    Export export = child.toExport();
+                    exports.add(export);
+                } catch (NoMatchException ex) {
+                    break;
+                }
+                i++;
+            }
+            List<Import> imports = new ArrayList<Import>();
+            while (i < children.size()) {
+                FakeNode child = children.get(i);
+                try {
+                    Import imp = child.toImport();
+                    imports.add(imp);
+                } catch (NoMatchException ex) {
+                    break;
+                }
+                i++;
+            }
+            List<Declaration> declarations = new ArrayList<Declaration>();
+            while (i < children.size()) {
+                FakeNode child = children.get(i);
+                Declaration declaration = child.toDeclaration();
+                declarations.add(declaration);
+                i++;
+            }
+            return new Module(location, name, exports, imports, declarations);
+        } else {
+            throw new NoMatchException();
         }
-        try {
-            return toExpression();
-        } catch (NoMatchException ex) {
-            // ignore
+    }
+
+    private Ident toModuleName() throws NoMatchException {
+        if ("ModuleName".equals(name)) {
+            return new Ident(location);
+        } else {
+            throw new NoMatchException();
         }
-        try {
-            return toPattern();
-        } catch (NoMatchException ex) {
-            // ignore
+    }
+
+    private Export toExport() throws NoMatchException {
+        if ("Export".equals(name)) {
+            return new Export(location);
+        } else {
+            throw new NoMatchException();
         }
-        try {
-            return toMatch();
-        } catch (NoMatchException ex) {
-            // ignore
+    }
+
+    private Import toImport() throws NoMatchException {
+        if ("Import".equals(name)) {
+            return new Import(location);
+        } else {
+            throw new NoMatchException();
         }
-        try {
-            return toGRHS();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        try {
-            return toType();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        try {
-            return toConDeclaration();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        try {
-            return toDeclaration();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        return this;
     }
 
     private Declaration toDeclaration() throws NoMatchException {
-        try {
-            return toBind();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        try {
-            return toSigDeclaration();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
-        try {
-            return toTyClDeclaration();
-        } catch (NoMatchException ex) {
-            // ignore
-        }
         if ("ValD".equals(name)) {
             return children.get(0).toBind();
         } else if ("TyClD".equals(name)) {
