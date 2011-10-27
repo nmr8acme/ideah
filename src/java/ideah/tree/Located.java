@@ -19,12 +19,11 @@ public abstract class Located {
 
     public final void fillGaps(SortedMap<LineCol, LineColRange> tokens) {
         Iterable<? extends Located> children = getChildren();
-        boolean empty = true;
         for (Located child : children) {
             child.fillGaps(tokens);
-            empty = false;
         }
-        if (empty) {
+        LineColRange range = tokens.get(location.start);
+        if (range != null && range.equals(location)) {
             tokens.remove(location.start);
         }
         setGaps(tokens);

@@ -80,8 +80,6 @@ public final class CompilerLocation {
     public static synchronized CompilerLocation get(Module module, String... packageNames) {
         if (module == null)
             return null;
-        if (module == null)
-            return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         if (sdk == null)
             return null;
@@ -95,6 +93,9 @@ public final class CompilerLocation {
 //        }
         String ghcLib = null;
         try {
+            // todo: use ProcessLauncher
+            // todo: cache result somewhere (or better store in SDK settings)
+            // todo: getGhcCommandPath can return null
             ProcessBuilder pb = new ProcessBuilder(getGhcCommandPath(ghcHome), "--print-libdir");
             Process process = pb.start();
             InputStream is = process.getInputStream();
@@ -111,7 +112,7 @@ public final class CompilerLocation {
             File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
             pluginPath.mkdirs();
             File compilerExe = new File(pluginPath, getExeName(MAIN_FILE));
-            cabalInstall(packageNames);
+            cabalInstall(packageNames); // todo: install only if .exe is outdated
             if (needRecompile(compilerExe)) {
                 if (!compileHs(module.getProject(), pluginPath, ghcHome, compilerExe))
                     return null;
@@ -127,9 +128,10 @@ public final class CompilerLocation {
         }
     }
 
+    // todo: can check all packages at once
     private static boolean hasPackage(String thePackage) {
         try {
-            String cabalPath = getPathFor("cabal");
+            String cabalPath = getPathFor("cabal"); // todo: find cabal only once
             if (cabalPath == null)
                 return false;
             ProcessLauncher pkgs = new ProcessLauncher(true, null, cabalPath, "list", "--installed", "-v0", "--simple-output", thePackage);
@@ -147,11 +149,11 @@ public final class CompilerLocation {
     private static String getPathFor(String name) {
         final String fileName = name;
         String path = System.getenv("PATH");
-        String[] dirs = path.split(File.pathSeparator);
+        String[] dirs = path.split(File.pathSeparator); // todo: use StringTokenizer
         for (String dir : dirs) {
             File directory = new File(dir);
             if (directory.exists() && directory.isDirectory()) {
-                String exeName = getExeName(fileName);
+                String exeName = getExeName(fileName); // todo: move away from loop
                 File file = new File(directory, exeName);
                 if (file.exists())
                     return new File(directory, fileName).getAbsolutePath();
@@ -163,12 +165,12 @@ public final class CompilerLocation {
     private static void runCabal(String... args) {
         if (args.length > 0) {
             try {
-                String cabalPath = getPathFor("cabal");
+                String cabalPath = getPathFor("cabal"); // todo: find cabal only once
                 if (cabalPath == null)
                     return; // todo: force user to specify cabal installation path
                 Process cabalProcess = Runtime.getRuntime().exec(cabalPath, args);
                 cabalProcess.waitFor();
-                boolean equals = "update".equals(args[0].trim());
+                boolean equals = "update".equals(args[0].trim()); // todo: WTF?!!!
                 if (equals) {
                     cabalUpdated = true;
                 }
@@ -178,6 +180,7 @@ public final class CompilerLocation {
         }
     }
 
+    // todo: HTTP proxy settings
     private static void cabalInstall(String... packages) {
         if (packages.length > 0) {
             if (!cabalUpdated) {
@@ -229,7 +232,7 @@ public final class CompilerLocation {
             });
             String mainHs = MAIN_FILE + ".hs";
             ProcessLauncher launcher = new ProcessLauncher(
-                true, null, getGhcCommandPath(ghcHome),
+                true, null, getGhcCommandPath(ghcHome), // todo: duplicate of ghcExe
                 "--make", "-cpp", "-O", "-package", "ghc",
                 "-i" + pluginPath.getAbsolutePath(),
                 new File(pluginPath, mainHs).getAbsolutePath()
