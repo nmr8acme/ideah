@@ -19,6 +19,8 @@ public final class CompilerLocation {
     private static final Logger LOG = Logger.getInstance("ideah.util.CompilerLocation");
     private static final String MAIN_FILE = "ask_ghc";
 
+    private static boolean cabalUpdated = false;
+
     private static Long sourcesLastModified = null;
 
     public final String exe;
@@ -75,7 +77,7 @@ public final class CompilerLocation {
         }
     }
 
-    public static synchronized CompilerLocation get(Module module) {
+    public static synchronized CompilerLocation get(Module module, String... packageNames) {
         if (module == null)
             return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
@@ -84,29 +86,106 @@ public final class CompilerLocation {
         VirtualFile ghcHome = sdk.getHomeDirectory();
         if (ghcHome == null)
             return null;
-        VirtualFile ghcLib = ghcHome;
-        VirtualFile packageConfD = ghcLib.findChild("package.conf.d");
-        if (packageConfD == null) {
-            ghcLib = ghcHome.findChild("lib");
+//        VirtualFile ghcLib = ghcHome;
+//        VirtualFile packageConfD = ghcLib.findChild("package.conf.d");
+//        if (packageConfD == null) {
+//            ghcLib = ghcHome.findChild("lib");
+//        }
+        String ghcLib = null;
+        try {
+            ProcessBuilder pb = new ProcessBuilder(getGhcCommandPath(ghcHome), "--print-libdir");
+            Process process = pb.start();
+            InputStream is = process.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            ghcLib = br.readLine();
+        } catch (Exception e) {
+            LOG.error(e);
         }
         if (ghcLib == null)
             return null;
+        ghcLib = ghcLib.trim();
         try {
             File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
             pluginPath.mkdirs();
             File compilerExe = new File(pluginPath, getExeName(MAIN_FILE));
+            cabalInstall(packageNames);
             if (needRecompile(compilerExe)) {
                 if (!compileHs(module.getProject(), pluginPath, ghcHome, compilerExe))
                     return null;
             }
             if (compilerExe.exists()) {
-                return new CompilerLocation(compilerExe.getAbsolutePath(), ghcLib.getPath());
+                return new CompilerLocation(compilerExe.getAbsolutePath(), ghcLib);
             } else {
                 return null;
             }
         } catch (Exception ex) {
             LOG.error(ex);
             return null;
+        }
+    }
+
+    private static boolean hasPackage(String thePackage) {
+        try {
+            String cabalPath = getPathFor("cabal");
+            if (cabalPath == null)
+                return false;
+            ProcessLauncher pkgs = new ProcessLauncher(true, null, cabalPath, "list", "--installed", "-v0", "--simple-output", thePackage);
+            BufferedReader reader = new BufferedReader(new StringReader(pkgs.getStdOut()));
+            String line = reader.readLine();
+            if (line == null)
+                return false;
+            return line.trim().startsWith(thePackage);
+        } catch (Exception e) {
+            LOG.error(e);
+        }
+        return false;
+    }
+
+    private static String getPathFor(String name) {
+        final String fileName = name;
+        String path = System.getenv("PATH");
+        String[] dirs = path.split(File.pathSeparator);
+        for (String dir : dirs) {
+            File directory = new File(dir);
+            if (directory.exists() && directory.isDirectory()) {
+                String exeName = getExeName(fileName);
+                File file = new File(directory, exeName);
+                if (file.exists())
+                    return new File(directory, fileName).getAbsolutePath();
+            }
+        }
+        return null;
+    }
+
+    private static void runCabal(String... args) {
+        if (args.length > 0) {
+            try {
+                String cabalPath = getPathFor("cabal");
+                if (cabalPath == null)
+                    return; // todo: force user to specify cabal installation path
+                Process cabalProcess = Runtime.getRuntime().exec(cabalPath, args);
+                cabalProcess.waitFor();
+                boolean equals = "update".equals(args[0].trim());
+                if (equals) {
+                    cabalUpdated = true;
+                }
+            } catch (Exception e) {
+                LOG.error(e);
+            }
+        }
+    }
+
+    private static void cabalInstall(String... packages) {
+        if (packages.length > 0) {
+            if (!cabalUpdated) {
+                runCabal("update");
+            }
+            for (String pkg : packages) {
+                if (hasPackage(pkg))
+                    return;
+                runCabal("install", pkg);
+            }
         }
     }
 
@@ -119,10 +198,19 @@ public final class CompilerLocation {
         return buf.substring(1);
     }
 
+    private static String getGhcCommandPath(VirtualFile ghcHome) {
+        if (ghcHome == null)
+            return null;
+        VirtualFile virBin = ghcHome.findChild("bin");
+        if (virBin == null)
+            return null;
+        return new File(virBin.getPath(), "ghc").getAbsolutePath();
+    }
+
     private static boolean compileHs(Project project, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
         exe.delete();
-        VirtualFile ghcBin = ghcHome.findChild("bin");
-        if (ghcBin == null)
+        String ghcExe = getGhcCommandPath(ghcHome);
+        if (ghcExe == null)
             return false;
         StatusBar.Info.set("Compiling " + MAIN_FILE + "...", project);
         try {
@@ -139,8 +227,7 @@ public final class CompilerLocation {
             });
             String mainHs = MAIN_FILE + ".hs";
             ProcessLauncher launcher = new ProcessLauncher(
-                true, null,
-                new File(ghcBin.getPath(), "ghc").getAbsolutePath(),
+                true, null, getGhcCommandPath(ghcHome),
                 "--make", "-cpp", "-O", "-package", "ghc",
                 "-i" + pluginPath.getAbsolutePath(),
                 new File(pluginPath, mainHs).getAbsolutePath()
