@@ -1,14 +1,19 @@
 package ideah.tree.pat;
 
+import ideah.tree.Located;
+
 import java.util.List;
 
+// todo: record pattern
 public final class ConPatDetails {
 
-    public final List<Pat> patterns; // todo: ???
-    public final List<RecField> args;
+    public final List<Pat> patterns;
 
-    public ConPatDetails(List<Pat> patterns, List<RecField> args) {
+    public ConPatDetails(List<Pat> patterns) {
         this.patterns = patterns;
-        this.args = args;
+    }
+
+    public Iterable<? extends Located> getChildren() {
+        return patterns;
     }
 }

@@ -1,5 +1,6 @@
 package ideah.tree;
 
+import com.google.common.collect.Iterables;
 import ideah.tree.decl.Bind;
 import ideah.tree.decl.SigDecl;
 
@@ -14,5 +15,9 @@ public final class LocalBinds {
     public LocalBinds(List<Bind> binds, List<SigDecl> sigs) {
         this.binds = binds;
         this.sigs = sigs;
+    }
+
+    public Iterable<? extends Located> getChildren() {
+        return Iterables.concat(binds, sigs);
     }
 }

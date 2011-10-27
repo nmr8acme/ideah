@@ -71,4 +71,21 @@
         </jar>
         <zip destfile="ideah-bin-${project.version}.zip" basedir="${distr.dir}"/>
     </target>
+
+    <target name="send">
+        <delete file="send.zip"/>
+        <zip destfile="send.zip">
+            <fileset dir=".">
+                <include name="*.*"/>
+                <include name="src/**"/>
+                <include name="META-INF/**"/>
+                <include name=".idea/**"/>
+
+                <exclude name="src/haskell/**/*.exe"/>
+                <exclude name="src/haskell/**/*.o"/>
+                <exclude name="src/haskell/**/*.hi"/>
+                <exclude name="*.zip"/>
+            </fileset>
+        </zip>
+    </target>
 </project>

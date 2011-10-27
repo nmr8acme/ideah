@@ -80,6 +80,8 @@ public final class CompilerLocation {
     public static synchronized CompilerLocation get(Module module, String... packageNames) {
         if (module == null)
             return null;
+        if (module == null)
+            return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         if (sdk == null)
             return null;

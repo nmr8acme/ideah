@@ -12,4 +12,8 @@ public final class TupleType extends Type {
         super(location);
         this.types = types;
     }
+
+    protected Iterable<Type> getChildren() {
+        return types;
+    }
 }

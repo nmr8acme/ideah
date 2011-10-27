@@ -12,4 +12,8 @@ public final class ListExpr extends Expression {
         super(location);
         this.expressions = expressions;
     }
+
+    protected Iterable<Expression> getChildren() {
+        return expressions;
+    }
 }

@@ -39,7 +39,8 @@ public final class FakeNode extends Located {
         return buf.toString();
     }
 
-    Module toModule() throws NoMatchException {
+    // todo: range for module!
+    ModuleTree toModule(LineColRange location) throws NoMatchException {
         if ("Module".equals(name)) {
             int i = 0;
             Ident name = null;
@@ -80,7 +81,7 @@ public final class FakeNode extends Located {
                 declarations.add(declaration);
                 i++;
             }
-            return new Module(location, name, exports, imports, declarations);
+            return new ModuleTree(location, name, exports, imports, declarations);
         } else {
             throw new NoMatchException();
         }
@@ -339,7 +340,7 @@ public final class FakeNode extends Located {
                 Pat pattern = child.toPattern();
                 patterns.add(pattern);
             }
-            return new ConPat(location, name, new ConPatDetails(patterns, null)); // todo: records?
+            return new ConPat(location, name, new ConPatDetails(patterns)); // todo: records?
         } else {
             // todo: other cases
             throw new NoMatchException();
@@ -447,5 +448,9 @@ public final class FakeNode extends Located {
         } else {
             throw new NoMatchException();
         }
+    }
+
+    protected Iterable<FakeNode> getChildren() {
+        return children;
     }
 }

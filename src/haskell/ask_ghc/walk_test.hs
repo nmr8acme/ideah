@@ -33,11 +33,11 @@ doExtractTypes checked = do
     let info = tm_checked_module_info checked
     (Just unqual) <- mkPrintUnqualifiedForModule info
     let style = mkUserStyle unqual AllTheWay
-    walkDeclarations (defWalkCallback { generic = extractTypes style }) (typecheckedSource checked)
+    walkDeclarations (defWalkCallback { ident = extractTypes style }) (typecheckedSource checked)
 
 doExtractIds checked = do
     let (Just (grp, _, _, _)) = renamedSource checked
-    walkGroup (defWalkCallback { generic = extractId, name = extractId }) grp
+    walkGroup (defWalkCallback { ident = extractId, name = extractId }) grp
 
 doWalk :: Ghc ()
 doWalk = do

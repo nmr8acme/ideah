@@ -1,8 +1,11 @@
 package ideah.tree.stmt;
 
+import ideah.tree.Located;
 import ideah.tree.expr.Expression;
 import ideah.tree.pat.Pat;
 import ideah.util.LineColRange;
+
+import java.util.Arrays;
 
 public final class BindStmt extends Statement {
 
@@ -13,5 +16,9 @@ public final class BindStmt extends Statement {
         super(location);
         this.pattern = pattern;
         this.expression = expression;
+    }
+
+    protected Iterable<Located> getChildren() {
+        return Arrays.asList(pattern, expression);
     }
 }

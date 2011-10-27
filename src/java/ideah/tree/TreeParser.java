@@ -2,7 +2,10 @@ package ideah.tree;
 
 import ideah.util.LineColRange;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,10 +45,14 @@ public final class TreeParser {
         return nodes;
     }
 
+    public ModuleTree readTree(LineColRange location) throws NoMatchException, IOException {
+        List<FakeNode> nodes = readNodes();
+        return nodes.get(0).toModule(location);
+    }
+
     public static void main(String[] args) throws IOException, NoMatchException {
         TreeParser parser = new TreeParser(new FileReader("C:\\work\\projects\\ideah\\src\\haskell\\ask_ghc\\err"));
-        List<FakeNode> nodes = parser.readNodes();
-        Module module = nodes.get(0).toModule();
+        ModuleTree module = parser.readTree(LineColRange.getFake());
         System.out.println(module);
     }
 }

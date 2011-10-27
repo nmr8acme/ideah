@@ -1,5 +1,6 @@
 package ideah.tree;
 
+import com.google.common.collect.Iterables;
 import ideah.tree.pat.Pat;
 import ideah.util.LineColRange;
 
@@ -15,5 +16,9 @@ public final class Match extends Located {
         super(location);
         this.params = params;
         this.rightHand = rightHand;
+    }
+
+    protected Iterable<Located> getChildren() {
+        return Iterables.concat(params, rightHand.getChildren());
     }
 }

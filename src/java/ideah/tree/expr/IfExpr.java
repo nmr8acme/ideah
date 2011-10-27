@@ -2,6 +2,8 @@ package ideah.tree.expr;
 
 import ideah.util.LineColRange;
 
+import java.util.Arrays;
+
 public final class IfExpr extends Expression {
 
     public final Expression condition;
@@ -13,5 +15,9 @@ public final class IfExpr extends Expression {
         this.condition = condition;
         this.thenExpr = thenExpr;
         this.elseExpr = elseExpr;
+    }
+
+    protected Iterable<Expression> getChildren() {
+        return Arrays.asList(condition, thenExpr, elseExpr);
     }
 }

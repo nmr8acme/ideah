@@ -1,6 +1,7 @@
 package ideah.compiler;
 
 import com.intellij.openapi.projectRoots.*;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -15,7 +16,6 @@ import java.io.FileFilter;
 import java.io.FilenameFilter;
 import java.util.*;
 
-// todo: config page - do not include classpath/sourcepath/etc
 public final class HaskellSdkType extends SdkType {
 
     public static final HaskellSdkType INSTANCE = new HaskellSdkType();
@@ -177,5 +177,10 @@ public final class HaskellSdkType extends SdkType {
     @Override
     public void setupSdkPaths(Sdk sdk) {
         // todo: ???
+    }
+
+    @Override
+    public boolean isRootTypeApplicable(OrderRootType type) {
+        return false;
     }
 }

@@ -2,11 +2,15 @@ package ideah.tree;
 
 import ideah.util.LineColRange;
 
-public final class Ident extends Located {
+import java.util.Collections;
 
-    // todo
+public final class Ident extends Located {
 
     public Ident(LineColRange location) {
         super(location);
+    }
+
+    protected Iterable<? extends Located> getChildren() {
+        return Collections.emptyList();
     }
 }

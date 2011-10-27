@@ -12,4 +12,8 @@ public final class ListPat extends Pat {
         super(location);
         this.patterns = patterns;
     }
+
+    protected Iterable<Pat> getChildren() {
+        return patterns;
+    }
 }

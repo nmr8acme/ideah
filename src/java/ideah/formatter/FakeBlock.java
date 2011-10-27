@@ -4,16 +4,15 @@ import com.intellij.formatting.*;
 import com.intellij.openapi.util.TextRange;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
 import java.util.List;
 
-final class HaskellBlock implements Block {
+final class FakeBlock implements Block {
 
     private final TextRange range;
-    private final List<Block> subBlocks;
 
-    HaskellBlock(TextRange range, List<Block> subBlocks) {
+    FakeBlock(TextRange range) {
         this.range = range;
-        this.subBlocks = subBlocks;
     }
 
     @NotNull
@@ -23,36 +22,35 @@ final class HaskellBlock implements Block {
 
     @NotNull
     public List<Block> getSubBlocks() {
-        return subBlocks;
+        return Collections.emptyList();
     }
 
     public Wrap getWrap() {
-        return null; // todo
+        return null;
     }
 
     public Indent getIndent() {
-        return Indent.getNoneIndent(); // todo
+        return null;
     }
 
     public Alignment getAlignment() {
-        return null; // todo
+        return null;
     }
 
     public Spacing getSpacing(Block child1, Block child2) {
-        //return Spacing.createSpacing(1, 2, 1, true, 2); // todo
         return null;
     }
 
     @NotNull
     public ChildAttributes getChildAttributes(int newChildIndex) {
-        return new ChildAttributes(null, null); // todo
+        return new ChildAttributes(null, null);
     }
 
     public boolean isIncomplete() {
-        return false; // todo
+        return false;
     }
 
     public boolean isLeaf() {
-        return subBlocks.isEmpty();
+        return true;
     }
 }

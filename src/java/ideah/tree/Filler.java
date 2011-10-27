@@ -4,15 +4,13 @@ import ideah.util.LineColRange;
 
 import java.util.Collections;
 
-public final class Import extends Located {
+public final class Filler extends Located {
 
-    // todo
-
-    public Import(LineColRange location) {
+    public Filler(LineColRange location) {
         super(location);
     }
 
     protected Iterable<? extends Located> getChildren() {
-        return Collections.emptyList(); // todo
+        return Collections.emptyList();
     }
 }

@@ -7,7 +7,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 
-public final class LineCol {
+public final class LineCol implements Comparable<LineCol> {
 
     /**
      * 1-based line number
@@ -51,5 +51,36 @@ public final class LineCol {
     @Override
     public String toString() {
         return line + ":" + column;
+    }
+
+    public int compareTo(LineCol that) {
+        if (this.line < that.line) {
+            return -1;
+        } else if (this.line > that.line) {
+            return 1;
+        } else {
+            if (this.column < that.column) {
+                return -1;
+            } else if (this.column > that.column) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof LineCol) {
+            LineCol that = (LineCol) obj;
+            return this.line == that.line && this.column == that.column;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * line + column;
     }
 }

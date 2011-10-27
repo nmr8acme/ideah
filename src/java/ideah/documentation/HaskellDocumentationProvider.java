@@ -44,13 +44,13 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         int offset = range.getStartOffset();
         LineCol coord = LineCol.fromOffset(psiFile, offset);
         Module module = DeclarationPosition.getModule(psiFile);
-        CompilerLocation compiler = CompilerLocation.get(module, "haddock");
+        CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null) {
             return null;
         }
         try {
             String sourcePath = CompilerLocation.rootsAsString(module, false);
-            ProcessLauncher idLauncher= new ProcessLauncher(
+            ProcessLauncher idLauncher = new ProcessLauncher(
                 false, null,
                 compiler.exe,
                 "-m", "GetIdType",

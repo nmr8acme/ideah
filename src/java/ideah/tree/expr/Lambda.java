@@ -13,4 +13,8 @@ public final class Lambda extends Expression {
         super(location);
         this.matches = matches;
     }
+
+    protected Iterable<Match> getChildren() {
+        return matches;
+    }
 }
