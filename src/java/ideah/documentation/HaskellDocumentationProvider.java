@@ -43,7 +43,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         //fdm.saveAllDocuments();
         int offset = range.getStartOffset();
         LineCol coord = LineCol.fromOffset(psiFile, offset);
-        Module module = DeclarationPosition.getModule(psiFile);
+        Module module = DeclarationPosition.getDeclModule(psiFile);
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null) {
             return null;

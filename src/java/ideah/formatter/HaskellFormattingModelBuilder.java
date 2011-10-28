@@ -51,7 +51,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         VirtualFile virtualFile = file.getVirtualFile();
         if (virtualFile == null)
             return null;
-        Module module = DeclarationPosition.getModule(file);
+        Module module = DeclarationPosition.getDeclModule(file);
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;

@@ -120,7 +120,7 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
         VirtualFile file = mainFile.getVirtualFile();
         if (file != null) {
             this.mainFile = file.getPath();
-            Module module = DeclarationPosition.getModule(mainFile);
+            Module module = DeclarationPosition.getDeclModule(mainFile);
             setModule(module);
         }
     }

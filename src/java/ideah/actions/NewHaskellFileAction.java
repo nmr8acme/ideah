@@ -134,7 +134,7 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
     }
 
     private static boolean isHaskellModule(Project project, PsiDirectory dir) {
-        Module module = DeclarationPosition.getModule(project, dir);
+        Module module = DeclarationPosition.getDeclModule(project, dir);
         if (module == null)
             return false;
         return HaskellModuleType.INSTANCE.equals(HaskellModuleType.get(module));

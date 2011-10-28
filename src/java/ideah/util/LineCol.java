@@ -32,6 +32,8 @@ public final class LineCol implements ILocation {
             col = 0;
         } else {
             int p = str.indexOf(':');
+            if (p < 0)
+                return null;
             String strLine = str.substring(0, p);
             String strCol = str.substring(p + 1);
             line = parseInt(strLine);

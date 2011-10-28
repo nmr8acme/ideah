@@ -21,7 +21,7 @@ public final class GHCMessageHighlighter implements ExternalAnnotator {
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return;
-        Module module = DeclarationPosition.getModule(psiFile);
+        Module module = DeclarationPosition.getDeclModule(psiFile);
         List<GHCMessage> ghcMessages = LaunchGHC.getGHCMessages(null, file.getPath(), module, true);
         File mainFile = new File(file.getPath());
         for (GHCMessage ghcMessage : ghcMessages) {

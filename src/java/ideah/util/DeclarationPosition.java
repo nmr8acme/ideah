@@ -16,7 +16,7 @@ public final class DeclarationPosition {
     public final LineCol coord;
     public final String module;
 
-    private DeclarationPosition(LineCol coord, String module) {
+    public DeclarationPosition(LineCol coord, String module) {
         this.coord = coord;
         this.module = module;
     }
@@ -25,7 +25,7 @@ public final class DeclarationPosition {
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;
-        Module module = getModule(psiFile);
+        Module module = getDeclModule(psiFile);
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;
@@ -51,11 +51,11 @@ public final class DeclarationPosition {
         }
     }
 
-    public static Module getModule(PsiFile psiFile) {
-        return getModule(psiFile.getProject(), psiFile);
+    public static Module getDeclModule(PsiFile psiFile) {
+        return getDeclModule(psiFile.getProject(), psiFile);
     }
 
-    public static Module getModule(Project project, PsiFileSystemItem psiFile) {
+    public static Module getDeclModule(Project project, PsiFileSystemItem psiFile) {
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;

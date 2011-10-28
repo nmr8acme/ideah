@@ -44,26 +44,12 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     public PsiElement resolve() {
         PsiFile psiFile = getContainingFile();
-        int startOffset = getTextOffset();
-        LineCol coord = LineCol.fromOffset(psiFile, startOffset);
+        LineCol coord = LineCol.fromOffset(psiFile, getTextOffset());
         if (coord == null)
             return null;
         try {
             DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
-            if (declaration == null)
-                return null;
-            Project project = getProject();
-            VirtualFile baseDir = project.getBaseDir();
-            if (baseDir == null)
-                return null;
-            VirtualFile declarationModuleVirtualFile = baseDir.getFileSystem().findFileByPath(declaration.module);
-            if (declarationModuleVirtualFile == null)
-                return null;
-            PsiFile declarationModulePsiFile = PsiManager.getInstance(project).findFile(declarationModuleVirtualFile);
-            if (declarationModulePsiFile == null)
-                return null;
-            int declarationStart = declaration.coord.getOffset(declarationModulePsiFile);
-            PsiElement elementAt = declarationModulePsiFile.getViewProvider().findElementAt(declarationStart);
+            PsiElement elementAt = getElementAt(getProject(), declaration);
             if (elementAt == null)
                 return null;
             return new HPIdentImpl(elementAt.getNode());
@@ -73,6 +59,25 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
             LOG.error(e);
             return null;
         }
+    }
+
+    public static PsiElement getElementAt(Project project, DeclarationPosition declaration) {
+        if (declaration == null)
+            return null;
+        VirtualFile baseDir = project.getBaseDir();
+        if (baseDir == null)
+            return null;
+        VirtualFile declarationModuleVirtualFile = baseDir.getFileSystem().findFileByPath(declaration.module);
+        if (declarationModuleVirtualFile == null)
+            return null;
+        PsiFile declarationModulePsiFile = PsiManager.getInstance(project).findFile(declarationModuleVirtualFile);
+        if (declarationModulePsiFile == null)
+            return null;
+        int declarationStart = declaration.coord.getOffset(declarationModulePsiFile);
+        PsiElement elementAt = declarationModulePsiFile.getViewProvider().findElementAt(declarationStart);
+        if (elementAt == null)
+            return null;
+        return elementAt;
     }
 
     @NotNull

@@ -10,8 +10,9 @@ import GetIdType
 import GetDocu
 import GetDeclPos
 import ParseTree
+import FindUsages
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu | ParseTree
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu | ParseTree | FindUsages
     deriving Read
 
 -- ./ask_ghc
@@ -74,3 +75,4 @@ main = do
         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
         GetDocu    -> getDocu srcpath ghcpath pos $ moduleFile opts
         ParseTree  -> parseTree ghcpath singleFile
+        FindUsages -> findUsages srcpath ghcpath singleFile pos
