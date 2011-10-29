@@ -1,16 +1,14 @@
-package ideah.tree.pat;
-
-import ideah.tree.IRange;
-import ideah.tree.Located;
+package ideah.tree;
 
 import java.util.Collections;
 
-public final class VarPat extends Pat {
+public final class WhereBinds extends Located {
 
-    public VarPat(IRange location) {
+    public WhereBinds(IRange location) {
         super(location);
     }
 
+    @Override
     protected Iterable<? extends Located> getChildren() {
         return Collections.emptyList();
     }

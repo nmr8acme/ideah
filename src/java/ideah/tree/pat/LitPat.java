@@ -1,7 +1,7 @@
 package ideah.tree.pat;
 
+import ideah.tree.IRange;
 import ideah.tree.Located;
-import ideah.util.IRange;
 
 import java.util.Collections;
 

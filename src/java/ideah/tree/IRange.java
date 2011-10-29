@@ -1,11 +1,10 @@
-package ideah.util;
+package ideah.tree;
 
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiFile;
 
 public interface IRange {
 
-    TextRange getRange(PsiFile file);
+    TextRange getRange();
 
     ILocation getStart();
 

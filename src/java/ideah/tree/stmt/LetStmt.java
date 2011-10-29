@@ -1,8 +1,8 @@
 package ideah.tree.stmt;
 
+import ideah.tree.IRange;
 import ideah.tree.LocalBinds;
 import ideah.tree.Located;
-import ideah.util.IRange;
 
 public final class LetStmt extends Statement {
 

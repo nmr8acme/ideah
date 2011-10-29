@@ -7,7 +7,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 
-public final class LineCol implements ILocation {
+public final class LineCol implements Comparable<LineCol> {
 
     /**
      * 1-based line number
@@ -79,11 +79,7 @@ public final class LineCol implements ILocation {
         return line + ":" + column;
     }
 
-    public int compareTo(ILocation o) {
-        return compare((LineCol) o);
-    }
-
-    public int compare(LineCol that) {
+    public int compareTo(LineCol that) {
         if (this.line < that.line) {
             return -1;
         } else if (this.line > that.line) {

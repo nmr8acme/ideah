@@ -1,8 +1,9 @@
 package ideah.tree;
 
 import com.google.common.collect.Iterables;
+import com.intellij.formatting.Block;
+import com.intellij.formatting.Spacing;
 import ideah.tree.decl.Declaration;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,5 +29,11 @@ public final class ModuleTree extends Located {
             name == null ? Collections.<Ident>emptyList() : Arrays.asList(name),
             exports, imports, declarations
         );
+    }
+
+    @Override
+    public Spacing getSpacing(Block child1, Block child2) {
+        // todo: handle comments/imports/declarations/exports/name
+        return Spacing.createSpacing(0, 0, 1, false, 2); // todo: ???
     }
 }

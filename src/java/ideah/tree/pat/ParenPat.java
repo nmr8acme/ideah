@@ -1,6 +1,6 @@
 package ideah.tree.pat;
 
-import ideah.util.IRange;
+import ideah.tree.IRange;
 
 import java.util.Arrays;
 

@@ -1,7 +1,7 @@
 package ideah.tree.stmt;
 
+import ideah.tree.IRange;
 import ideah.tree.expr.Expression;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 

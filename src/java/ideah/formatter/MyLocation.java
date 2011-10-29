@@ -1,6 +1,7 @@
 package ideah.formatter;
 
-import ideah.util.ILocation;
+import com.intellij.openapi.util.TextRange;
+import ideah.tree.ILocation;
 
 final class MyLocation implements ILocation {
 
@@ -8,6 +9,10 @@ final class MyLocation implements ILocation {
 
     MyLocation(int offset) {
         this.offset = offset;
+    }
+
+    static MyRange create(MyLocation start, MyLocation end) {
+        return new MyRange(new TextRange(start.offset, end.offset));
     }
 
     public int compareTo(ILocation o) {

@@ -1,7 +1,7 @@
 package ideah.tree.stmt;
 
+import ideah.tree.IRange;
 import ideah.tree.Located;
-import ideah.util.IRange;
 
 public abstract class Statement extends Located {
 

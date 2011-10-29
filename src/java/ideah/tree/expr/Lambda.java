@@ -1,7 +1,7 @@
 package ideah.tree.expr;
 
+import ideah.tree.IRange;
 import ideah.tree.Match;
-import ideah.util.IRange;
 
 import java.util.List;
 

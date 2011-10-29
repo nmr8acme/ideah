@@ -16,14 +16,15 @@ import com.intellij.psi.tree.IElementType;
 import ideah.lexer.HaskellLexer;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.tree.*;
-import ideah.util.*;
+import ideah.util.CompilerLocation;
+import ideah.util.DeclarationPosition;
+import ideah.util.LineColRange;
+import ideah.util.ProcessLauncher;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -65,12 +66,20 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         String stdOut = launcher.getStdOut();
         if (stdOut.trim().isEmpty())
             return null;
-        TreeParser parser = new TreeParser(new BufferedReader(new StringReader(stdOut)), new TreeParser.RangeFactory() {
+        RangeFactory factory = new RangeFactory() {
+
             public IRange parse(String str) {
                 LineColRange range = new LineColRange(str);
                 return new MyRange(range.getRange(file));
             }
-        });
+
+            public IRange create(ILocation start, ILocation end) {
+                MyLocation from = (MyLocation) start;
+                MyLocation to = (MyLocation) end;
+                return MyLocation.create(from, to);
+            }
+        };
+        TreeParser parser = new TreeParser(new BufferedReader(new StringReader(stdOut)), factory);
         ModuleTree moduleTree = parser.readTree(new MyRange(file.getTextRange()));
 
         SortedMap<ILocation, Filler> ranges = new TreeMap<ILocation, Filler>();
@@ -88,18 +97,9 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
             }
             lexer.advance();
         }
-        moduleTree.fillGaps(ranges);
+        moduleTree.buildBlocks(ranges, factory);
 
-        return toBlock(file, moduleTree);
-    }
-
-    private static HaskellBlock toBlock(PsiFile file, Located located) {
-        List<Located> children = located.getBlocks();
-        List<Block> subBlocks = new ArrayList<Block>();
-        for (Located child : children) {
-            subBlocks.add(toBlock(file, child));
-        }
-        return new HaskellBlock(located, located.location.getRange(file), subBlocks);
+        return moduleTree;
     }
 
     public TextRange getRangeAffectingIndent(PsiFile file, int offset, ASTNode elementAtOffset) {

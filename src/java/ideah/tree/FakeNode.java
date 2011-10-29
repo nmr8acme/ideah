@@ -8,7 +8,6 @@ import ideah.tree.stmt.ExprStmt;
 import ideah.tree.stmt.LetStmt;
 import ideah.tree.stmt.Statement;
 import ideah.tree.type.*;
-import ideah.util.IRange;
 
 import java.util.ArrayList;
 import java.util.List;

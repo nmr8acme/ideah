@@ -2,9 +2,9 @@ package ideah.tree.decl;
 
 import com.google.common.collect.Iterables;
 import ideah.tree.GRHSs;
+import ideah.tree.IRange;
 import ideah.tree.Located;
 import ideah.tree.pat.Pat;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 

@@ -1,7 +1,7 @@
 package ideah.tree.type;
 
+import ideah.tree.IRange;
 import ideah.tree.Located;
-import ideah.util.IRange;
 
 public abstract class Type extends Located {
 

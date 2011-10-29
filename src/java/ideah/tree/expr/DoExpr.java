@@ -1,9 +1,9 @@
 package ideah.tree.expr;
 
 import com.google.common.collect.Iterables;
+import ideah.tree.IRange;
 import ideah.tree.Located;
 import ideah.tree.stmt.Statement;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 import java.util.List;

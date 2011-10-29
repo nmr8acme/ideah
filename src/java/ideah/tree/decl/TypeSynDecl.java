@@ -1,9 +1,9 @@
 package ideah.tree.decl;
 
+import ideah.tree.IRange;
 import ideah.tree.Ident;
 import ideah.tree.Located;
 import ideah.tree.type.Type;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 

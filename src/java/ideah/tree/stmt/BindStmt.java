@@ -1,9 +1,9 @@
 package ideah.tree.stmt;
 
+import ideah.tree.IRange;
 import ideah.tree.Located;
 import ideah.tree.expr.Expression;
 import ideah.tree.pat.Pat;
-import ideah.util.IRange;
 
 import java.util.Arrays;
 

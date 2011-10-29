@@ -1,9 +1,8 @@
 package ideah.formatter;
 
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiFile;
-import ideah.util.ILocation;
-import ideah.util.IRange;
+import ideah.tree.ILocation;
+import ideah.tree.IRange;
 
 final class MyRange implements IRange {
 
@@ -13,7 +12,7 @@ final class MyRange implements IRange {
         this.range = range;
     }
 
-    public TextRange getRange(PsiFile file) {
+    public TextRange getRange() {
         return range;
     }
 

@@ -1,6 +1,6 @@
 package ideah.tree.decl;
 
-import ideah.util.IRange;
+import ideah.tree.IRange;
 
 public abstract class Bind extends Declaration {
 

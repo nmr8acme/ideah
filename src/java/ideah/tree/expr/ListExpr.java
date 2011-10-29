@@ -1,6 +1,6 @@
 package ideah.tree.expr;
 
-import ideah.util.IRange;
+import ideah.tree.IRange;
 
 import java.util.List;
 
