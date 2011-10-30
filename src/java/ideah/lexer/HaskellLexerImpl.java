@@ -196,7 +196,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         la.next();
         while (true) {
             int c1 = la.peek();
-            if (isSmall(c1) || isLarge(c1) || c1 == '\'') {
+            if (isSmall(c1) || isLarge(c1) || isDigit(c1) || c1 == '\'') {
                 append(buf, c1);
                 la.next();
             } else {
