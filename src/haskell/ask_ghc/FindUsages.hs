@@ -19,10 +19,12 @@ findUsages srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
 
 extractLocs :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
-extractLocs line col var span _ = let loc = srcSpanStart span
-    in liftIO $ when (isGoodSrcSpan span && srcLocLine loc == line && srcLocCol loc == col) $ do
-        putStrLn $ locStr loc
-        print $ unpackFS $ srcLocFile $ nameSrcLoc $ varName var
+extractLocs line col var span _ = let varloc = nameSrcLoc $ varName var 
+    in liftIO $ when (isGoodSrcSpan span && srcLocLine varloc == line && srcLocCol varloc == col) $ do
+        let loc = srcSpanStart span
+        print $ locStr loc
+        print $ unpackFS $ srcLocFile loc
+        exitSuccess
 
 doExtractLocs :: Int -> Int -> TypecheckedModule -> Ghc ()
 doExtractLocs line col checked = do
