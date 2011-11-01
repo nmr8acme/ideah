@@ -24,7 +24,7 @@ public final class LineCol implements Comparable<LineCol> {
     }
 
     public static LineCol parse(String str) {
-        str = str.trim();
+        str = cleanString(str);
         int line;
         int col;
         if ("?".equals(str)) {
@@ -43,10 +43,14 @@ public final class LineCol implements Comparable<LineCol> {
     }
 
     private static int parseInt(String str) {
-        str = str.trim();
+        str = cleanString(str);
         if ("?".equals(str))
             return 0;
         return Integer.parseInt(str);
+    }
+
+    public static String cleanString(String str) {
+        return str.replaceAll("\"", "").trim();
     }
 
     public int getOffset(PsiFile file) {

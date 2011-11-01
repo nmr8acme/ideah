@@ -10,6 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.impl.source.tree.java.PsiEmptyExpressionImpl;
 import com.intellij.util.IncorrectOperationException;
 import ideah.psi.api.HPIdent;
 import ideah.util.DeclarationPosition;

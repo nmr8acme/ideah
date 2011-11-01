@@ -61,8 +61,10 @@ parseHsFile buffer fileName = do
         POk _ parsed -> return $ Right parsed
         PFailed loc msg -> return $ Left (loc, show $ msg defaultUserStyle)
 
+lineToGhc :: Int -> Int
 lineToGhc line = line
 
+lineFromGhc :: Int -> Int
 lineFromGhc line = line
 
 #if __GLASGOW_HASKELL__ >= 700

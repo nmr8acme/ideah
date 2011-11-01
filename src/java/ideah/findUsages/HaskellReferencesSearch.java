@@ -40,7 +40,8 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
             HPIdentImpl ident = (HPIdentImpl) element;
             PsiFile file = element.getContainingFile();
             try {
-                DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, element.getTextOffset()));
+                int textOffset = element.getTextOffset();
+                DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, textOffset));
                 LineCol coord = declaration.coord;
                 VirtualFile virtualFile = file.getVirtualFile();
                 Project project = file.getProject();
@@ -54,20 +55,15 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
                     virtualFile.getPath()
                 );
-                List<String> referenceStrings = new ArrayList<String>();
                 BufferedReader bf = new BufferedReader(new StringReader(launcher.getStdOut()));
                 String line = bf.readLine();
                 while (line != null) {
-                    referenceStrings.add(line);
+                    LineCol refLineCol = LineCol.parse(line);
                     line = bf.readLine();
-                }
-                Iterator<String> refIterator = referenceStrings.iterator();
-                while (refIterator.hasNext()) {
-                    String lineColStr = refIterator.next();
-                    LineCol refLineCol = LineCol.parse(lineColStr);
-                    if (refIterator.hasNext() && refLineCol != null) {
-                        String refModuleStr = refIterator.next();
-                        consumer.process(HPIdentImpl.getElementAt(project, new DeclarationPosition(refLineCol, refModuleStr)).getReference());
+                    if (line != null) {
+                        PsiElement elementAt = HPIdentImpl.getElementAt(project, new DeclarationPosition(refLineCol, LineCol.cleanString(line)));
+                        PsiReference reference = elementAt.getReference();
+                        consumer.process(reference);
                     }
                 }
             } catch (Exception e) {

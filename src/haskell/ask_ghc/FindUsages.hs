@@ -6,7 +6,7 @@ import FastString (unpackFS)
 
 import GHC
 import MonadUtils
-import Name (nameSrcLoc)
+import Name hiding (varName)
 import Id
 import Var (varName)
 
@@ -18,17 +18,23 @@ findUsages :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
 findUsages srcPath ghcPath srcFile (line, col) =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
 
-extractLocs :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
-extractLocs line col var span _ = let varloc = nameSrcLoc $ varName var 
-    in liftIO $ when (isGoodSrcSpan span && srcLocLine varloc == line && srcLocCol varloc == col) $ do
-        let loc = srcSpanStart span
+extractDecl :: Int -> Int -> TypecheckedModule -> Id -> SrcSpan -> Where -> Ghc ()
+extractDecl line col checked var loc _ =
+    when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
+        let cb = defWalkCallback { ident = extractLocs (varName var) }
+        walkDeclarations cb (typecheckedSource checked)
+        liftIO exitSuccess
+
+extractLocs :: Name -> Id -> SrcSpan -> Where -> Ghc ()
+extractLocs name var span _ = let loc     = srcSpanStart span
+                                  varname = varName var
+    in liftIO $ when (isGoodSrcSpan span && name == varname && loc /= nameSrcLoc varname) $ do
         print $ locStr loc
         print $ unpackFS $ srcLocFile loc
-        exitSuccess
 
 doExtractLocs :: Int -> Int -> TypecheckedModule -> Ghc ()
 doExtractLocs line col checked = do
-    let cb = defWalkCallback { ident = extractLocs line col }
+    let cb = defWalkCallback { ident = extractDecl line col checked }
     walkDeclarations cb (typecheckedSource checked)
 
 doWalk :: String -> FilePath -> Int -> Int -> Ghc ()
