@@ -43,7 +43,7 @@ public final class DeclarationPosition {
         String lineCol = reader.readLine();
         String moduleLine = reader.readLine();
         if (lineCol != null && moduleLine != null) {
-            LineCol declCoord = LineCol.parse(lineCol.replaceAll("[\"]", ""));
+            LineCol declCoord = LineCol.parse(lineCol);
             String moduleName = moduleLine.replaceAll("\"", "");
             return new DeclarationPosition(declCoord, moduleName);
         } else {

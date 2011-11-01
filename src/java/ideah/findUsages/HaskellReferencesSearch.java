@@ -40,8 +40,7 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
             HPIdentImpl ident = (HPIdentImpl) element;
             PsiFile file = element.getContainingFile();
             try {
-                int textOffset = element.getTextOffset();
-                DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, textOffset));
+                DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, element.getTextOffset()));
                 LineCol coord = declaration.coord;
                 VirtualFile virtualFile = file.getVirtualFile();
                 Project project = file.getProject();
