@@ -61,7 +61,7 @@ defaultOpts = Options
 
 main = do
     args <- getArgs
-    let (opts', files, errors)    = getOpt Permute options args
+    let (opts', files, errors) = getOpt Permute options args
     unless (null errors) $ ioError $ userError $ concat errors
     let opts       = foldl (\opt f -> f opt) defaultOpts opts'
         ghcpath    = ghcPath opts
@@ -75,4 +75,4 @@ main = do
         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
         GetDocu    -> getDocu srcpath ghcpath pos $ moduleFile opts
         ParseTree  -> parseTree ghcpath singleFile
-        FindUsages -> findUsages srcpath ghcpath singleFile pos
+        FindUsages -> mapM_ (findUsages srcpath ghcpath pos) files

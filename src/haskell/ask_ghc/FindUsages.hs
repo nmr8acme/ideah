@@ -14,8 +14,8 @@ import HUtil
 import Walker
 import GetDeclPos
 
-findUsages :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
-findUsages srcPath ghcPath srcFile (line, col) =
+findUsages :: String -> FilePath -> (Int, Int) -> FilePath -> IO ()
+findUsages srcPath ghcPath (line, col) srcFile =
     runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
 
 extractDecl :: Int -> Int -> TypecheckedModule -> Id -> SrcSpan -> Where -> Ghc ()

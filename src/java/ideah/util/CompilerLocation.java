@@ -20,8 +20,6 @@ public final class CompilerLocation {
     private static final Logger LOG = Logger.getInstance("ideah.util.CompilerLocation");
     private static final String MAIN_FILE = "ask_ghc";
 
-    private static boolean cabalUpdated = false;
-
     private static Long sourcesLastModified = null;
 
     public final String exe;
@@ -125,6 +123,7 @@ public final class CompilerLocation {
     }
 
     private static List<String> getMissingPackages(String cabalPath, List<String> packages) {
+        List<String> missingPackages = null;
         try {
             if (cabalPath == null)
                 return packages; // todo: produce user error
@@ -132,26 +131,27 @@ public final class CompilerLocation {
             args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
             args.addAll(packages);
             Collections.sort(packages);
+            missingPackages = new ArrayList<String>();
             Iterator<String> iterator = packages.iterator();
             ProcessLauncher getMissingPackagesLauncher = new ProcessLauncher(true, null, args);
             BufferedReader reader = new BufferedReader(new StringReader(getMissingPackagesLauncher.getStdOut()));
             String line = reader.readLine();
             while (line != null && iterator.hasNext()) {
-                if (line.startsWith(iterator.next())) {
-                    iterator.remove();
+                String next = iterator.next();
+                if (!line.startsWith(next)) {
+                    missingPackages.add(next);
                 }
                 line = reader.readLine();
             }
         } catch (Exception e) {
             LOG.error(e);
         }
-        return packages;
+        return missingPackages;
     }
 
     private static String getPathFor(String name) {
-        String fileName = name;
         String path = System.getenv("PATH");
-        String exeName = getExeName(fileName);
+        String exeName = getExeName(name);
         StringTokenizer stringTokenizer = new StringTokenizer(path, File.pathSeparator);
         while (stringTokenizer.hasMoreElements()) {
             String dir = stringTokenizer.nextToken();
@@ -159,22 +159,18 @@ public final class CompilerLocation {
             if (directory.exists() && directory.isDirectory()) {
                 File file = new File(directory, exeName);
                 if (file.exists())
-                    return new File(directory, fileName).getAbsolutePath();
+                    return new File(directory, name).getAbsolutePath();
             }
         }
         return null;
     }
 
-    private static void runCabal(String cabalPath, boolean doUpdate, List<String> args) {
+    private static void cabalInstall(String cabalPath, List<String> args) {
         List<String> cabalArgsList = new ArrayList<String>();
         if (cabalPath == null)
             return; // todo: force user to specify cabal installation path
         try {
-            if (doUpdate) {
-                cabalArgsList.add("update");
-                runCabal(cabalPath, cabalArgsList);
-                cabalUpdated = true;
-            }
+            runCabal(cabalPath, Arrays.asList("update"));
             if (args.size() > 0) {
                 cabalArgsList.add("install");
                 cabalArgsList.addAll(args);
@@ -195,7 +191,11 @@ public final class CompilerLocation {
         if (packages.length > 0) {
             String cabalPath = getPathFor("cabal");
             List<String> missingPackages = getMissingPackages(cabalPath, Arrays.asList(packages));
-            runCabal(cabalPath, !cabalUpdated, missingPackages);
+            try {
+                cabalInstall(cabalPath, missingPackages);
+            } catch (Exception e) {
+                LOG.error(e);
+            }
         }
     }
 

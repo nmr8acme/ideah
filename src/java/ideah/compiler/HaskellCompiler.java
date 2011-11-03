@@ -40,6 +40,11 @@ public final class HaskellCompiler implements TranslatingCompiler {
         return HaskellFileType.INSTANCE.equals(fileType);
     }
 
+    public static boolean isCompilableFile(VirtualFile file) {
+        FileType fileType = FileTypeManager.getInstance().getFileTypeByFile(file);
+        return HaskellFileType.INSTANCE.equals(fileType);
+    }
+
     public void compile(CompileContext context, Chunk<Module> moduleChunk, VirtualFile[] files, OutputSink sink) {
         Map<Module, List<VirtualFile>> mapModulesToVirtualFiles;
         if (moduleChunk.getNodes().size() == 1) {
