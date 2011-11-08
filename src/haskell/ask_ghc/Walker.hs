@@ -19,9 +19,9 @@ data Callback a m = CB { ident      :: a -> SrcSpan -> Where -> m (),
                          braceClose :: m () }
 
 defWalkCallback :: (Monad m) => Callback a m
-defWalkCallback = CB { ident      = (\_ _ _ -> return ()),
-                       name       = (\_ _ _ -> return ()),
-                       braceOpen  = (\_ _ -> return ()),
+defWalkCallback = CB { ident      = \_ _ _ -> return (),
+                       name       = \_ _ _ -> return (),
+                       braceOpen  = \_ _ -> return (),
                        braceClose = return () }
 
 brace :: (Monad m) => Callback a m -> SrcSpan -> String -> m() -> m ()

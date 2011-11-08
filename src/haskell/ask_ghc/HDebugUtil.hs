@@ -13,10 +13,10 @@ printCallback cb = do
         prt1 loc what = liftIO $ do
             i <- readIORef indent
             putStrLn (i ++ what ++ " " ++ spanStr loc ++ " {")
-            writeIORef indent (i ++ "    ")
+            writeIORef indent ("    " ++ i)
         prt2 = liftIO $ do
             i <- readIORef indent
-            let newi = take (length i - 4) i;
+            let newi = drop 4 i;
             writeIORef indent newi
             putStrLn (newi ++ "}")
     return $ cb { braceOpen = prt1, braceClose = prt2 }
