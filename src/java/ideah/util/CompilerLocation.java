@@ -156,7 +156,7 @@ public final class CompilerLocation {
         while (stringTokenizer.hasMoreElements()) {
             String dir = stringTokenizer.nextToken();
             File directory = new File(dir);
-            if (directory.exists() && directory.isDirectory()) {
+            if (directory.exists() && directory.isDirectory()) { // todo: no need for exists
                 File file = new File(directory, exeName);
                 if (file.exists())
                     return new File(directory, name).getAbsolutePath();

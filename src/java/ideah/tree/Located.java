@@ -23,7 +23,7 @@ public abstract class Located implements Block {
 
     public final void buildBlocks(SortedMap<ILocation, Filler> tokens, RangeFactory factory) {
         doFillGaps(tokens, factory);
-        doSorting();
+        doBuildBlocks();
         doFormat();
     }
 
@@ -54,18 +54,18 @@ public abstract class Located implements Block {
             i.remove();
         }
 
-        rebuildStructure(factory);
-    }
-
-    private void doSorting() {
-        for (Located child : allChildren) {
-            child.doSorting();
-        }
         Collections.sort(allChildren, new Comparator<Located>() {
             public int compare(Located o1, Located o2) {
                 return o1.location.getStart().compareTo(o2.location.getStart());
             }
         });
+        rebuildStructure(factory);
+    }
+
+    private void doBuildBlocks() {
+        for (Located child : allChildren) {
+            child.doBuildBlocks();
+        }
         subBlocks = new ArrayList<Block>(allChildren);
     }
 

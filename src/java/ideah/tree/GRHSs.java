@@ -17,8 +17,4 @@ public final class GRHSs {
     public Iterable<Located> getChildren() {
         return Iterables.concat(grhss, where.getChildren());
     }
-
-    public void format() {
-        where.format();
-    }
 }

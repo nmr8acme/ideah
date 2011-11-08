@@ -70,7 +70,6 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
             compiler.exe,
             "-m", "CheckMain",
             "-g", compiler.libPath,
-            "-s", CompilerLocation.rootsAsString(module, false),
             file.getPath()
         );
         String stdOut = launcher.getStdOut();

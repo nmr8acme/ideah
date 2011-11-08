@@ -4,9 +4,9 @@ import com.intellij.formatting.Indent;
 
 import java.util.Collections;
 
-public final class Where extends Located {
+public final class IndentBlock extends Located {
 
-    public Where(IRange location) {
+    public IndentBlock(IRange location) {
         super(location);
     }
 

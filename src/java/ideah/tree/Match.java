@@ -3,7 +3,6 @@ package ideah.tree;
 import com.google.common.collect.Iterables;
 import ideah.tree.pat.Pat;
 
-import java.util.Arrays;
 import java.util.List;
 
 public final class Match extends Located {
@@ -26,22 +25,10 @@ public final class Match extends Located {
     protected void rebuildStructure(RangeFactory factory) {
         Located where = findKeyword("where");
         if (where != null) {
-            Iterable<? extends Located> whereDecls = rightHand.where.getChildren();
-            WhereBinds whereBindsBlock = new WhereBinds(minMax(whereDecls, factory));
-            for (Located whereDecl : whereDecls) {
-                allChildren.remove(whereDecl);
-                whereBindsBlock.allChildren.add(whereDecl);
-            }
-            Where whereBlock = new Where(minMax(Arrays.asList(whereBindsBlock, where), factory));
-            whereBlock.allChildren.add(where);
-            whereBlock.allChildren.add(whereBindsBlock);
+            int i = allChildren.indexOf(where);
+            IndentBlock whereBlock = LocalBinds.createSubBlock(allChildren, i + 1, allChildren.size(), factory, where);
             allChildren.remove(where);
             allChildren.add(whereBlock);
         }
-    }
-
-    @Override
-    protected void format() {
-        rightHand.format();
     }
 }
