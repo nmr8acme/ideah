@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Chunk;
 import ideah.HaskellFileType;
 import ideah.module.HaskellModuleType;
+import ideah.sdk.HaskellSdkType;
 import ideah.util.CompilerLocation;
 import ideah.util.DeclarationPosition;
 import ideah.util.LineCol;

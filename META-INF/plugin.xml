@@ -47,7 +47,7 @@
         <lang.findUsagesProvider language="Haskell" implementationClass="ideah.findUsages.HaskellFindUsagesProvider"/>
         <lang.documentationProvider language="Haskell" implementationClass="ideah.documentation.HaskellDocumentationProvider"/>
 
-        <sdkType id="GHC" implementation="ideah.compiler.HaskellSdkType"/>
+        <sdkType id="GHC" implementation="ideah.sdk.HaskellSdkType"/>
         <moduleType id="HASKELL_MODULE" classpathProvider="false" implementationClass="ideah.module.HaskellModuleType"/>
         <moduleConfigurationEditorProvider implementation="ideah.module.HaskellModuleConfigEditor"/>
 

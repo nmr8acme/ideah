@@ -85,11 +85,6 @@ public final class CompilerLocation {
         VirtualFile ghcHome = sdk.getHomeDirectory();
         if (ghcHome == null)
             return null;
-//        VirtualFile ghcLib = ghcHome;
-//        VirtualFile packageConfD = ghcLib.findChild("package.conf.d");
-//        if (packageConfD == null) {
-//            ghcLib = ghcHome.findChild("lib");
-//        }
         String ghcLib = null;
         try {
             // todo: cache result somewhere (or better store in SDK settings)

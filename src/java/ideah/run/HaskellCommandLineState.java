@@ -13,7 +13,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.util.Computable;
-import ideah.compiler.HaskellSdkType;
+import ideah.sdk.HaskellSdkType;
 import ideah.util.CompilerLocation;
 
 import java.nio.charset.Charset;

@@ -1,4 +1,4 @@
-package ideah.compiler;
+package ideah.sdk;
 
 import com.intellij.openapi.projectRoots.*;
 import com.intellij.openapi.roots.OrderRootType;
@@ -6,6 +6,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.HashMap;
+import ideah.compiler.GHCDir;
 import ideah.util.ProcessLauncher;
 import org.jdom.Element;
 import org.jetbrains.annotations.Nullable;
@@ -65,8 +66,8 @@ public final class HaskellSdkType extends SdkType {
         }
         Collections.sort(ghcDirs, new Comparator<GHCDir>() {
             public int compare(GHCDir d1, GHCDir d2) {
-                Integer[] version1 = d1.version;
-                Integer[] version2 = d2.version;
+                Integer[] version1 = d1.getVersion();
+                Integer[] version2 = d2.getVersion();
                 int minSize = Math.min(version1.length, version2.length);
                 for (int i = 0; i < minSize; i++) {
                     int compare = version1[i].compareTo(version2[i]);
@@ -149,7 +150,36 @@ public final class HaskellSdkType extends SdkType {
     }
 
     public AdditionalDataConfigurable createAdditionalDataConfigurable(SdkModel sdkModel, SdkModificator sdkModificator) {
-        return null;
+        final HaskellSdkConfigurable c = new HaskellSdkConfigurable(sdkModel, sdkModificator);
+
+        sdkModel.addListener(new SdkModel.Listener() {
+
+            public void sdkAdded(Sdk sdk) {
+                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
+                    c.addJavaSdk(sdk);
+                }
+            }
+
+            public void beforeSdkRemove(Sdk sdk) {
+                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
+                    c.removeJavaSdk(sdk);
+                }
+            }
+
+            public void sdkChanged(Sdk sdk, String previousName) {
+                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
+                    c.updateJavaSdkList(sdk, previousName);
+                }
+            }
+
+            public void sdkHomeSelected(final Sdk sdk, final String newSdkHome) {
+                if (sdk.getSdkType().equals(HaskellSdkType.getInstance())) {
+                    c.internalJdkUpdate(sdk);
+                }
+            }
+        });
+
+        return c;
     }
 
     public void saveAdditionalData(SdkAdditionalData additionalData, Element additional) {
@@ -182,5 +212,9 @@ public final class HaskellSdkType extends SdkType {
     @Override
     public boolean isRootTypeApplicable(OrderRootType type) {
         return false;
+    }
+
+    public static HaskellSdkType getInstance() {
+        return SdkType.findInstance(HaskellSdkType.class);
     }
 }

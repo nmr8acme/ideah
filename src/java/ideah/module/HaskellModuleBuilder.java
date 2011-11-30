@@ -8,7 +8,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ProjectRootManager;
-import ideah.compiler.HaskellSdkType;
+import ideah.sdk.HaskellSdkType;
 
 // todo: setup page?
 public final class HaskellModuleBuilder extends JavaModuleBuilder {
