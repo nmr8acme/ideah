@@ -37,8 +37,7 @@ public final class HaskellCompiler implements TranslatingCompiler {
     }
 
     public boolean isCompilableFile(VirtualFile file, CompileContext context) {
-        FileType fileType = FileTypeManager.getInstance().getFileTypeByFile(file);
-        return HaskellFileType.INSTANCE.equals(fileType);
+        return isCompilableFile(file);
     }
 
     public static boolean isCompilableFile(VirtualFile file) {
