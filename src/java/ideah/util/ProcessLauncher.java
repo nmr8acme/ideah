@@ -19,22 +19,27 @@ public final class ProcessLauncher {
     }
 
     public ProcessLauncher(boolean waitFor, InputStream stdin, String... args) throws InterruptedException, IOException {
-        Process process = Runtime.getRuntime().exec(args);
-        StreamReader outReader = new StreamReader(process.getInputStream());
-        StreamReader errReader = new StreamReader(process.getErrorStream());
-        outReader.start();
-        errReader.start();
-        if (stdin != null) {
-            OutputStream os = process.getOutputStream();
-            StreamUtil.copyStreamContent(stdin, os);
-            os.close();
-        }
-        errReader.join();
-        outReader.join();
-        this.stdOut = outReader.getOutput();
-        this.stdErr = errReader.getOutput();
-        if (waitFor) {
-            process.waitFor();
+        if (args.length > 0) {
+            Process process = Runtime.getRuntime().exec(args);
+            StreamReader outReader = new StreamReader(process.getInputStream());
+            StreamReader errReader = new StreamReader(process.getErrorStream());
+            outReader.start();
+            errReader.start();
+            if (stdin != null) {
+                OutputStream os = process.getOutputStream();
+                StreamUtil.copyStreamContent(stdin, os);
+                os.close();
+            }
+            errReader.join();
+            outReader.join();
+            this.stdOut = outReader.getOutput();
+            this.stdErr = errReader.getOutput();
+            if (waitFor) {
+                process.waitFor();
+            }
+        } else {
+            stdOut = null;
+            stdErr = null;
         }
     }
 

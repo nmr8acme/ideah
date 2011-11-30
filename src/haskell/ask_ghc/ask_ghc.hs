@@ -75,4 +75,4 @@ main = do
         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
         GetDocu    -> getDocu srcpath ghcpath pos $ moduleFile opts
         ParseTree  -> parseTree ghcpath singleFile
-        FindUsages -> mapM_ (findUsages srcpath ghcpath pos) files
+        FindUsages -> findUsages srcpath ghcpath pos (moduleFile opts) files

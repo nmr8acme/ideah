@@ -1,5 +1,5 @@
 import Control.Monad
-import Testitesti
+import Testi
 
 --data D = D Int Int
 data String = Int
@@ -12,11 +12,13 @@ l (x:xs) = 3 + l xs
 
 -- | test (D x y) = x + y
 tutu :: Int
-tutu=4
+tutu=4+a
 
 hallo = tutu
 
-bibi = tata
+halli = tutu
+
+--bibi = tata
 
 -- | the coolest function eva eva eva
 main = Prelude.print $ test "x"

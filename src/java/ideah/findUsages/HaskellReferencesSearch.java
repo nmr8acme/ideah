@@ -59,18 +59,18 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                     "-g", compiler.libPath,
                     "-s", CompilerLocation.rootsAsString(module, false),
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-                    virtualFile.getPath()));
+                    "-f", virtualFile.getPath()));
                 final List<String> srcFiles = new ArrayList<String>();
                 fileIndex.iterateContent(new ContentIterator() {
                     public boolean processFile(VirtualFile virtualFile) {
-                        boolean isCompilableFile = HaskellCompiler.isCompilableFile(virtualFile);
-                        if (isCompilableFile) {
+                        if (HaskellCompiler.isCompilableFile(virtualFile)) {
                             srcFiles.add(virtualFile.getPath());
                         }
-                        return isCompilableFile;
+                        return true;
                     }
                 });
-                ProcessLauncher launcher = new ProcessLauncher(true, null, srcFiles);
+                args.addAll(srcFiles);
+                ProcessLauncher launcher = new ProcessLauncher(true, null, args);
                 BufferedReader bf = new BufferedReader(new StringReader(launcher.getStdOut()));
                 String line = bf.readLine();
                 while (line != null) {
