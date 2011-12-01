@@ -17,8 +17,6 @@ import ideah.util.LineCol;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-
 public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent, PsiReference {
 
     private static final Logger LOG = Logger.getInstance("ideah.psi.impl.HPIdentImpl");

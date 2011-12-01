@@ -2,7 +2,6 @@ package ideah.findUsages;
 
 import com.intellij.openapi.application.QueryExecutorBase;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentIterator;
@@ -14,8 +13,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Processor;
-import ideah.HaskellFileType;
-import ideah.HaskellFileTypeLoader;
 import ideah.compiler.HaskellCompiler;
 import ideah.psi.impl.HPIdentImpl;
 import ideah.util.CompilerLocation;
@@ -25,7 +22,6 @@ import ideah.util.ProcessLauncher;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,14 +39,15 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
     public void processQuery(@NotNull ReferencesSearch.SearchParameters queryParameters, @NotNull Processor<PsiReference> consumer) {
         PsiElement element = queryParameters.getElementToSearch();
         if (element instanceof HPIdentImpl) {
-            HPIdentImpl ident = (HPIdentImpl) element;
             PsiFile file = element.getContainingFile();
             try {
                 DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, element.getTextOffset()));
                 LineCol coord = declaration.coord;
                 VirtualFile virtualFile = file.getVirtualFile();
-                final Project project = file.getProject();
+                Project project = file.getProject();
                 ProjectFileIndex fileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+                if (virtualFile == null)
+                    return;
                 Module module = fileIndex.getModuleForFile(virtualFile);
                 CompilerLocation compiler = CompilerLocation.get(module);
                 List<String> args = new ArrayList<String>();
