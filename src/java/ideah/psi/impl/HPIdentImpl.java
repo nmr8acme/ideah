@@ -17,6 +17,8 @@ import ideah.util.LineCol;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
+
 public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent, PsiReference {
 
     private static final Logger LOG = Logger.getInstance("ideah.psi.impl.HPIdentImpl");
@@ -44,19 +46,10 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     public PsiElement resolve() {
         PsiFile psiFile = getContainingFile();
-        LineCol coord = LineCol.fromOffset(psiFile, getTextOffset());
-        if (coord == null)
-            return null;
         try {
-            DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
-            PsiElement elementAt = getElementAt(getProject(), declaration);
-            if (elementAt == null)
-                return null;
-            return new HPIdentImpl(elementAt.getNode());
-        } catch (ProcessCanceledException ex) {
-            return null;
+            return getElementAt(getProject(), DeclarationPosition.get(psiFile, LineCol.fromOffset(psiFile, getTextOffset())));
         } catch (Exception e) {
-            LOG.error(e);
+            LOG.error(e.getMessage());
             return null;
         }
     }
@@ -73,11 +66,20 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
         PsiFile declarationModulePsiFile = PsiManager.getInstance(project).findFile(declarationModuleVirtualFile);
         if (declarationModulePsiFile == null)
             return null;
-        int declarationStart = declaration.coord.getOffset(declarationModulePsiFile);
-        PsiElement elementAt = declarationModulePsiFile.getViewProvider().findElementAt(declarationStart);
-        if (elementAt == null)
+        LineCol coord = declaration.coord;
+        if (coord == null)
             return null;
-        return elementAt;
+        try {
+            PsiElement elementAt = declarationModulePsiFile.getViewProvider().findElementAt(coord.getOffset(declarationModulePsiFile));
+            if (elementAt == null)
+                return null;
+            return new HPIdentImpl(elementAt.getNode());
+        } catch (ProcessCanceledException ex) {
+            return null;
+        } catch (Exception e) {
+            LOG.error(e);
+            return null;
+        }
     }
 
     @NotNull

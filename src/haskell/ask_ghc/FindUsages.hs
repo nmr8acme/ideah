@@ -37,8 +37,8 @@ extractLocs :: Name -> Id -> SrcSpan -> Where -> Ghc ()
 extractLocs name var span _ = let loc     = srcSpanStart span
                                   varname = varName var
     in liftIO $ when (isGoodSrcSpan span && name == varname && loc /= nameSrcLoc varname) $ do
-        print $ locStr loc
-        print $ unpackFS $ srcLocFile loc
+        putStrLn $ locStr loc
+        putStrLn $ unpackFS $ srcLocFile loc
 
 doExtractLocs :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Ghc ()
 doExtractLocs line col checkedSrc srcFile files = do

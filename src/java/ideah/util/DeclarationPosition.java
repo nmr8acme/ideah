@@ -22,6 +22,8 @@ public final class DeclarationPosition {
     }
 
     public static DeclarationPosition get(PsiFile psiFile, LineCol coord) throws IOException, InterruptedException {
+        if (coord == null)
+            return null;
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;

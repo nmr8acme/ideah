@@ -72,12 +72,14 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 args.addAll(srcFiles);
                 ProcessLauncher launcher = new ProcessLauncher(true, null, args);
                 BufferedReader bf = new BufferedReader(new StringReader(launcher.getStdOut()));
-                String line = bf.readLine();
-                while (line != null) {
-                    LineCol refLineCol = LineCol.parse(line);
-                    line = bf.readLine();
-                    if (line != null) {
-                        PsiElement elementAt = HPIdentImpl.getElementAt(project, new DeclarationPosition(refLineCol, LineCol.cleanString(line)));
+                while (true) {
+                    String srcLineCol = bf.readLine();
+                    if (srcLineCol == null)
+                        break;
+                    LineCol refLineCol = LineCol.parse(srcLineCol);
+                    String srcModule = bf.readLine();
+                    if (srcModule != null) {
+                        PsiElement elementAt = HPIdentImpl.getElementAt(project, new DeclarationPosition(refLineCol, srcModule));
                         PsiReference reference = elementAt.getReference();
                         consumer.process(reference);
                     }

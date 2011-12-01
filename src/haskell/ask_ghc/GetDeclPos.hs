@@ -21,7 +21,7 @@ extractPos line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let loc' = nameSrcLoc $ idName var
         putStrLn $ locStr loc'
-        print $ srcLocFile loc'
+        putStrLn $ show $ srcLocFile loc'
         exitSuccess
 
 doExtractPos :: Int -> Int -> TypecheckedModule -> Ghc ()
