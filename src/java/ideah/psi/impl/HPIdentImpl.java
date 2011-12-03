@@ -44,15 +44,19 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     public PsiElement resolve() {
         PsiFile psiFile = getContainingFile();
+        LineCol coord = LineCol.fromOffset(psiFile, getTextOffset());
         try {
-            return getElementAt(getProject(), DeclarationPosition.get(psiFile, LineCol.fromOffset(psiFile, getTextOffset())));
+            DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
+            return getElementAt(getProject(), declaration);
+        } catch (ProcessCanceledException ex) {
+            return null;
         } catch (Exception e) {
-            LOG.error(e.getMessage());
+            LOG.error(e);
             return null;
         }
     }
 
-    public static PsiElement getElementAt(Project project, DeclarationPosition declaration) {
+    public static HPIdentImpl getElementAt(Project project, DeclarationPosition declaration) {
         if (declaration == null)
             return null;
         VirtualFile baseDir = project.getBaseDir();
@@ -64,20 +68,11 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
         PsiFile declarationModulePsiFile = PsiManager.getInstance(project).findFile(declarationModuleVirtualFile);
         if (declarationModulePsiFile == null)
             return null;
-        LineCol coord = declaration.coord;
-        if (coord == null)
+        int declarationStart = declaration.coord.getOffset(declarationModulePsiFile);
+        PsiElement elementAt = declarationModulePsiFile.findElementAt(declarationStart);
+        if (elementAt == null)
             return null;
-        try {
-            PsiElement elementAt = declarationModulePsiFile.getViewProvider().findElementAt(coord.getOffset(declarationModulePsiFile));
-            if (elementAt == null)
-                return null;
-            return new HPIdentImpl(elementAt.getNode());
-        } catch (ProcessCanceledException ex) {
-            return null;
-        } catch (Exception e) {
-            LOG.error(e);
-            return null;
-        }
+        return new HPIdentImpl(elementAt.getNode());
     }
 
     @NotNull

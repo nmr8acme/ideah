@@ -20,6 +20,9 @@ public final class HaskellFileType extends LanguageFileType {
     public static final Language HASKELL_LANGUAGE = INSTANCE.getLanguage();
     public static final Icon HASKELL_ICON = IconLoader.getIcon("/ideah/haskell_16x16.png");
 
+    private static final String HASKELL_CHARSET_NAME = "UTF8";
+    public static final Charset HASKELL_CHARSET = Charset.forName(HASKELL_CHARSET_NAME);
+
     public HaskellFileType() {
         super(new HaskellLanguage());
     }
@@ -56,11 +59,11 @@ public final class HaskellFileType extends LanguageFileType {
 
     @Override
     public String getCharset(@NotNull VirtualFile file, byte[] content) {
-        return "UTF8";
+        return HASKELL_CHARSET_NAME;
     }
 
     @Override
     public Charset extractCharsetFromFileContent(@Nullable Project project, @Nullable VirtualFile file, @NotNull String content) {
-        return Charset.forName("UTF8");
+        return HASKELL_CHARSET;
     }
 }

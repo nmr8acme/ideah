@@ -14,6 +14,9 @@
     <property name="distr.dir" location="distr"/>
 
     <path id="project.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="guava*.jar"/>
+        </fileset>
         <pathelement path="${lib.dir}/annotations.jar"/>
         <pathelement path="${lib.dir}/jdom.jar"/>
         <pathelement path="${lib.dir}/openapi.jar"/>
@@ -73,8 +76,8 @@
     </target>
 
     <target name="send">
-        <delete file="send.zip"/>
-        <zip destfile="send.zip">
+        <delete file="ideah_send.zip"/>
+        <zip destfile="ideah_send.zip">
             <fileset dir=".">
                 <include name="*.*"/>
                 <include name="src/**"/>

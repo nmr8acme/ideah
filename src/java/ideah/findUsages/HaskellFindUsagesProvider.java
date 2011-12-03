@@ -37,9 +37,9 @@ public final class HaskellFindUsagesProvider implements FindUsagesProvider {
     @NotNull
     public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
         if (element instanceof HPIdentImpl) {
-          HPIdentImpl ident = (HPIdentImpl) element;
-          String name = ident.getName();
-          return name == null ? ident.getText() : name;
+            HPIdentImpl ident = (HPIdentImpl) element;
+            String name = ident.getName();
+            return name == null ? ident.getText() : name;
         }
         return element.getText();
     }

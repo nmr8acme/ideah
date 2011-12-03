@@ -46,6 +46,8 @@ public final class DeclarationPosition {
         String moduleLine = reader.readLine();
         if (lineCol != null && moduleLine != null) {
             LineCol declCoord = LineCol.parse(lineCol);
+            if (declCoord == null)
+                return null;
             String moduleName = moduleLine.replaceAll("\"", "");
             return new DeclarationPosition(declCoord, moduleName);
         } else {
