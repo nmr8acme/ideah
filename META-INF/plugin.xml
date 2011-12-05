@@ -4,7 +4,9 @@
     <description>Support for Haskell language</description>
     <category>Custom Languages</category>
     <version>VERSION</version>
-    <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">ideah.plugin@gmail.com</vendor>
+    <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">
+        ideah.plugin@gmail.com
+    </vendor>
     <idea-version since-build="99.18"/>
 
     <application-components>
@@ -21,11 +23,32 @@
     </project-components>
 
     <actions>
+        <!-- Create file actions -->
         <action id="Haskell.HaskellFile" class="ideah.actions.NewHaskellFileAction"
                 text="Haskell module" description="Create new Haskell module">
             <add-to-group group-id="NewGroup" anchor="first"/>
         </action>
-        <!-- Add your actions here -->
+
+        <!-- REPL-related actions -->
+        <group id="Haskell.REPL.Group"
+               class="ideah.repl.actions.HaskellReplActionGroup"
+               text="Haskell REPL" description="Haskell" popup="true">
+
+            <action id="ideah.repl.actions.LoadHaskellFileInConsoleAction"
+                    class="ideah.repl.actions.LoadHaskellFileInConsoleAction"
+                    text="Load file to REPL">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift L"/>
+            </action>
+
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </group>
+
+        <action id="ideah.repl.actions.RunHaskellConsoleAction"
+                class="ideah.repl.actions.RunHaskellConsoleAction"
+                text="Start Haskell Console" description="Runs Haskell REPL">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift F10"/>
+        </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -42,10 +65,11 @@
         <lang.formatter language="Haskell"
                         implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->
-                              <!--order="before EnterBetweenBracesHandler"/>-->
+        <!--order="before EnterBetweenBracesHandler"/>-->
         <externalAnnotator implementationClass="ideah.annotator.GHCMessageHighlighter" language="Haskell"/>
         <lang.findUsagesProvider language="Haskell" implementationClass="ideah.findUsages.HaskellFindUsagesProvider"/>
-        <lang.documentationProvider language="Haskell" implementationClass="ideah.documentation.HaskellDocumentationProvider"/>
+        <lang.documentationProvider language="Haskell"
+                                    implementationClass="ideah.documentation.HaskellDocumentationProvider"/>
 
         <sdkType id="GHC" implementation="ideah.sdk.HaskellSdkType"/>
         <moduleType id="HASKELL_MODULE" classpathProvider="false" implementationClass="ideah.module.HaskellModuleType"/>

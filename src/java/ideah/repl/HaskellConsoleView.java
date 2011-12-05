@@ -1,13 +1,15 @@
 package ideah.repl;
 
 import com.intellij.execution.console.LanguageConsoleViewImpl;
+import com.intellij.execution.process.ConsoleHistoryModel;
 import com.intellij.openapi.project.Project;
-import ideah.HaskellFileType;
 
-final class HaskellConsoleView extends LanguageConsoleViewImpl {
+public final class HaskellConsoleView extends LanguageConsoleViewImpl {
 
-    HaskellConsoleView(Project project, String title) {
-        super(project, title, HaskellFileType.HASKELL_LANGUAGE);
+    HaskellConsoleView(Project project,
+                       String title,
+                       ConsoleHistoryModel historyModel) {
+        super(project, new HaskellConsole(project, title, historyModel));
     }
 
     @Override
