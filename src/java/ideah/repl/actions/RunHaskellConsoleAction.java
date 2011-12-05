@@ -33,7 +33,7 @@ public class RunHaskellConsoleAction extends AnAction implements DumbAware {
         HaskellConsoleRunner.run(module, path);
     }
 
-    static Module getModule(AnActionEvent e) {
+    private static Module getModule(AnActionEvent e) {
         Module module = e.getData(DataKeys.MODULE);
         if (module == null) {
             Project project = e.getData(DataKeys.PROJECT);

@@ -5,11 +5,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 
 final class HaskellExecuteImmediatelyAction extends HaskellExecuteActionBase {
 
-    HaskellExecuteImmediatelyAction(HaskellConsole languageConsole, ProcessHandler processHandler, HaskellConsoleExecuteActionHandler consoleExecuteActionHandler) {
-        super(languageConsole, processHandler, consoleExecuteActionHandler, HaskellConsoleRunner.EXECUTE_ACTION_IMMEDIATELY_ID);
+    HaskellExecuteImmediatelyAction(HaskellConsole languageConsole, ProcessHandler processHandler, HaskellConsoleExecuteActionHandler executeHandler) {
+        super(languageConsole, processHandler, executeHandler, HaskellConsoleRunner.EXECUTE_ACTION_IMMEDIATELY_ID);
     }
 
     public void actionPerformed(AnActionEvent e) {
-        getExecuteActionHandler().runExecuteAction(myLanguageConsole, true);
+        executeHandler.runExecuteAction(console, true);
     }
 }

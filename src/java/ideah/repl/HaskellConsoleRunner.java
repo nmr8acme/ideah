@@ -39,17 +39,17 @@ public final class HaskellConsoleRunner {
     private HaskellConsoleView consoleView;
     private ProcessHandler processHandler;
 
-    private HaskellConsoleExecuteActionHandler consoleExecuteActionHandler;
+    private HaskellConsoleExecuteActionHandler executeHandler;
     private AnAction runAction;
 
     private HaskellConsoleRunner(@NotNull Module module,
                                  @NotNull String consoleTitle,
                                  @Nullable String workingDir) {
         this.module = module;
-        project = module.getProject();
+        this.project = module.getProject();
         this.consoleTitle = consoleTitle;
         this.workingDir = workingDir;
-        historyModel = new ConsoleHistoryModel();
+        this.historyModel = new ConsoleHistoryModel();
     }
 
     public static void run(@NotNull Module module,
@@ -65,13 +65,14 @@ public final class HaskellConsoleRunner {
 
     private void initAndRun(String... statements2execute) throws ExecutionException {
         // Create Server process
-        Process process = createProcess();
+        GeneralCommandLine cmdline = createCommandLine(module, workingDir);
+        Process process = cmdline.createProcess();
         // !!! do not change order!!!
         consoleView = createConsoleView();
-        String commandLine = ""; // todo
+        String commandLine = cmdline.getCommandLineString();
         processHandler = new HaskellConsoleProcessHandler(process, commandLine, getLanguageConsole());
-        consoleExecuteActionHandler = new HaskellConsoleExecuteActionHandler(processHandler, project, false);
-        getLanguageConsole().setExecuteHandler(consoleExecuteActionHandler);
+        executeHandler = new HaskellConsoleExecuteActionHandler(processHandler, project, false);
+        getLanguageConsole().setExecuteHandler(executeHandler);
 
         // Init a console view
         ProcessTerminatedListener.attach(processHandler);
@@ -128,13 +129,11 @@ public final class HaskellConsoleRunner {
         // Run
         processHandler.startNotify();
 
-
         HaskellConsole console = consoleView.getConsole();
         for (String statement : statements2execute) {
             String st = statement + "\n";
             HaskellConsoleHighlightingUtil.processOutput(console, st, ProcessOutputTypes.SYSTEM);
-            HaskellConsoleExecuteActionHandler actionHandler = consoleExecuteActionHandler;
-            actionHandler.processLine(st);
+            executeHandler.processLine(st);
         }
 
     }
@@ -163,7 +162,7 @@ public final class HaskellConsoleRunner {
 
         // run and history actions
         ArrayList<AnAction> executionActions = createConsoleExecActions(getLanguageConsole(),
-            processHandler, consoleExecuteActionHandler, historyModel);
+            processHandler, executeHandler, historyModel);
         runAction = executionActions.get(0);
         actionList.addAll(executionActions);
 
@@ -177,10 +176,9 @@ public final class HaskellConsoleRunner {
 
     private static ArrayList<AnAction> createConsoleExecActions(HaskellConsole languageConsole,
                                                                 ProcessHandler processHandler,
-                                                                HaskellConsoleExecuteActionHandler consoleExecuteActionHandler,
+                                                                HaskellConsoleExecuteActionHandler executeHandler,
                                                                 ConsoleHistoryModel historyModel) {
-
-        AnAction runImmediatelyAction = new HaskellExecuteImmediatelyAction(languageConsole, processHandler, consoleExecuteActionHandler);
+        AnAction runImmediatelyAction = new HaskellExecuteImmediatelyAction(languageConsole, processHandler, executeHandler);
 
         ConsoleHistoryController historyController = new ConsoleHistoryController("haskell", null, languageConsole, historyModel);
         historyController.install();
@@ -192,7 +190,7 @@ public final class HaskellConsoleRunner {
         list.add(runImmediatelyAction);
         list.add(downAction);
         list.add(upAction);
-//      list.add(enterAction);
+//        list.add(enterAction);
         return list;
     }
 
@@ -214,17 +212,6 @@ public final class HaskellConsoleRunner {
         // todo: create command line for ghci
         line.setWorkDirectory(workingDir);
         return line;
-    }
-
-    private Process createProcess() throws ExecutionException {
-        GeneralCommandLine cmdline = createCommandLine(module, workingDir);
-        Process process = null;
-        try {
-            process = cmdline.createProcess();
-        } catch (Exception e) {
-            ExecutionHelper.showErrors(project, Arrays.<Exception>asList(e), REPL_TITLE, null);
-        }
-        return process;
     }
 
     private HaskellConsole getLanguageConsole() {

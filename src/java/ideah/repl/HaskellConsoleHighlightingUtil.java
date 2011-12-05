@@ -12,7 +12,7 @@ final class HaskellConsoleHighlightingUtil {
     private static final String PROMPT_ARROW = ">";
     static final String LINE_WITH_PROMPT = MODULES + PROMPT_ARROW + ".*";
 
-    static final Pattern CLOJURE_PROMPT_PATTERN = Pattern.compile(MODULES + PROMPT_ARROW);
+    static final Pattern GHCI_PATTERN = Pattern.compile(MODULES + PROMPT_ARROW);
 
     static void processOutput(LanguageConsoleImpl console, String text, Key attributes) {
         ConsoleViewContentType outputType = ConsoleViewContentType.NORMAL_OUTPUT;

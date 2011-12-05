@@ -12,7 +12,6 @@ import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
@@ -29,8 +28,15 @@ import java.util.Collection;
 
 abstract class HaskellConsoleActionBase extends AnAction {
 
-    protected static HaskellConsoleProcessHandler findRunningClojureConsole(Project project) {
-        Collection<RunContentDescriptor> descriptors = ExecutionHelper.findRunningConsole(project, new ClojureConsoleMatcher());
+    private static final class HaskellConsoleMatcher implements NotNullFunction<RunContentDescriptor, Boolean> {
+        @NotNull
+        public Boolean fun(RunContentDescriptor descriptor) {
+            return descriptor != null && (descriptor.getExecutionConsole() instanceof HaskellConsoleView);
+        }
+    }
+
+    private static HaskellConsoleProcessHandler findRunningHaskellConsole(Project project) {
+        Collection<RunContentDescriptor> descriptors = ExecutionHelper.findRunningConsole(project, new HaskellConsoleMatcher());
         for (RunContentDescriptor descriptor : descriptors) {
             ProcessHandler handler = descriptor.getProcessHandler();
             if (handler instanceof HaskellConsoleProcessHandler) {
@@ -41,7 +47,7 @@ abstract class HaskellConsoleActionBase extends AnAction {
     }
 
     protected static void executeCommand(Project project, String command) {
-        HaskellConsoleProcessHandler processHandler = findRunningClojureConsole(project);
+        HaskellConsoleProcessHandler processHandler = findRunningHaskellConsole(project);
 
         // implement a command
         LanguageConsoleImpl languageConsole = processHandler.getLanguageConsole();
@@ -51,18 +57,10 @@ abstract class HaskellConsoleActionBase extends AnAction {
         CaretModel caretModel = editor.getCaretModel();
         caretModel.moveToOffset(command.length());
 
-
         HaskellConsole console = (HaskellConsole) languageConsole;
         HaskellConsoleExecuteActionHandler handler = console.getExecuteHandler();
 
         handler.runExecuteAction(console, true);
-    }
-
-    private static final class ClojureConsoleMatcher implements NotNullFunction<RunContentDescriptor, Boolean> {
-        @NotNull
-        public Boolean fun(RunContentDescriptor descriptor) {
-            return descriptor != null && (descriptor.getExecutionConsole() instanceof HaskellConsoleView);
-        }
     }
 
     @Override
@@ -99,7 +97,7 @@ abstract class HaskellConsoleActionBase extends AnAction {
             return;
         }
 
-        HaskellConsoleProcessHandler handler = findRunningClojureConsole(project);
+        HaskellConsoleProcessHandler handler = findRunningHaskellConsole(project);
         if (handler == null) {
             presentation.setEnabled(false);
             return;
@@ -112,9 +110,5 @@ abstract class HaskellConsoleActionBase extends AnAction {
         }
 
         presentation.setEnabled(true);
-    }
-
-    protected static void showError(String msg) {
-        Messages.showErrorDialog(msg, "Haskell console");
     }
 }
