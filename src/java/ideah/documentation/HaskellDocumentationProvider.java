@@ -41,6 +41,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             return null;
         // todo: run in event-dispatch thread
         //fdm.saveAllDocuments();
+        // try this: PsiDocumentManager.getInstance(getProject()).commitAllDocuments();
         int offset = range.getStartOffset();
         LineCol coord = LineCol.fromOffset(psiFile, offset);
         Module module = DeclarationPosition.getDeclModule(psiFile);
