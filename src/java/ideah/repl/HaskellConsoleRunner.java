@@ -113,7 +113,7 @@ public final class HaskellConsoleRunner {
         panel.updateUI();
 
         // enter action
-        //createAndRegisterEnterAction(panel);
+        createAndRegisterEnterAction(panel);
 
         // Show in run tool window
         ExecutionManager.getInstance(project).getContentManager().showRunContent(defaultExecutor, myDescriptor);
@@ -135,7 +135,12 @@ public final class HaskellConsoleRunner {
             HaskellConsoleHighlightingUtil.processOutput(console, st, ProcessOutputTypes.SYSTEM);
             executeHandler.processLine(st);
         }
+    }
 
+    private void createAndRegisterEnterAction(JPanel panel) {
+        AnAction enterAction = new HaskellConsoleEnterAction(getLanguageConsole(), processHandler, executeHandler);
+        enterAction.registerCustomShortcutSet(enterAction.getShortcutSet(), getLanguageConsole().getConsoleEditor().getComponent());
+        enterAction.registerCustomShortcutSet(enterAction.getShortcutSet(), panel);
     }
 
     private static void registerActionShortcuts(AnAction[] actions, JComponent component) {
@@ -190,7 +195,6 @@ public final class HaskellConsoleRunner {
         list.add(runImmediatelyAction);
         list.add(downAction);
         list.add(upAction);
-//        list.add(enterAction);
         return list;
     }
 

@@ -4,6 +4,7 @@ import com.intellij.codeInsight.lookup.Lookup;
 import com.intellij.codeInsight.lookup.LookupManager;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.EmptyAction;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.IconLoader;
@@ -26,7 +27,7 @@ abstract class HaskellExecuteActionBase extends DumbAwareAction {
         this.console = languageConsole;
         this.processHandler = processHandler;
         this.executeHandler = executeHandler;
-        //EmptyAction.setupAction(this, actionId, null); // todo
+        EmptyAction.setupAction(this, actionId, null);
     }
 
     public void update(AnActionEvent e) {

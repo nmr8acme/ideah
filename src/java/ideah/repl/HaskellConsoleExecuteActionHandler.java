@@ -46,7 +46,6 @@ public final class HaskellConsoleExecuteActionHandler {
 
     public void runExecuteAction(final HaskellConsole console,
                                  boolean executeImmediately) {
-
         ConsoleHistoryModel consoleHistoryModel = console.getHistoryModel();
         if (executeImmediately) {
             execute(console, consoleHistoryModel);
@@ -78,8 +77,7 @@ public final class HaskellConsoleExecuteActionHandler {
             return;
         }
 
-        String candidate = text.trim();
-
+//        String candidate = text.trim();
 //        // S-expression contains no syntax errors
 //        if (ClojurePsiUtil.isValidClojureExpression(candidate, myProject) || "".equals(candidate)) {
 //            execute(console, consoleHistoryModel);
@@ -91,7 +89,6 @@ public final class HaskellConsoleExecuteActionHandler {
 
     private void execute(LanguageConsoleImpl languageConsole,
                          ConsoleHistoryModel consoleHistoryModel) {
-
         // Process input and add to history
         Document document = languageConsole.getCurrentEditor().getDocument();
         String text = document.getText();
