@@ -55,6 +55,8 @@ public final class CompilerLocation {
     }
 
     private static boolean needRecompile(File compilerExe) throws IOException {
+        if (compilerExe == null)
+            return false;
         if (compilerExe.exists()) {
             if (sourcesLastModified == null) {
                 final Long[] maxModified = new Long[1];
@@ -79,7 +81,10 @@ public final class CompilerLocation {
     public static synchronized CompilerLocation get(Module module) {
         if (module == null)
             return null;
-        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
+        ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+        if (rootManager == null)
+            return null;
+        Sdk sdk = rootManager.getSdk();
         if (sdk == null)
             return null;
         VirtualFile ghcHome = sdk.getHomeDirectory();
@@ -195,7 +200,12 @@ public final class CompilerLocation {
     }
 
     public static String rootsAsString(Module module, boolean tests) {
-        VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(tests);
+        if (module == null)
+            return null;
+        ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+        if (rootManager == null)
+            return null;
+        VirtualFile[] sourceRoots = rootManager.getSourceRoots(tests);
         StringBuilder buf = new StringBuilder();
         for (VirtualFile root : sourceRoots) {
             buf.append(':').append(root.getPath());
@@ -213,7 +223,9 @@ public final class CompilerLocation {
     }
 
     private static boolean compileHs(Project project, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
-        cabalInstall("haddock");
+        cabalInstall("haddock-2.9.2");
+        if (exe == null)
+            return false;
         exe.delete();
         String ghcExe = getGhcCommandPath(ghcHome);
         if (ghcExe == null)

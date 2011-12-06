@@ -28,6 +28,8 @@ public final class DeclarationPosition {
         if (file == null)
             return null;
         Module module = getDeclModule(psiFile);
+        if (module == null)
+            return null;
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;
@@ -56,10 +58,14 @@ public final class DeclarationPosition {
     }
 
     public static Module getDeclModule(PsiFile psiFile) {
+        if (psiFile == null)
+            return null;
         return getDeclModule(psiFile.getProject(), psiFile);
     }
 
     public static Module getDeclModule(Project project, PsiFileSystemItem psiFile) {
+        if (project == null || psiFile == null)
+            return null;
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;
@@ -67,6 +73,8 @@ public final class DeclarationPosition {
     }
 
     public static Module getModule(Project project, VirtualFile file) {
+        if (project == null || file == null)
+            return null;
         return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file);
     }
 }

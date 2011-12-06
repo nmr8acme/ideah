@@ -1,8 +1,10 @@
 package ideah.sdk;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.projectRoots.*;
+import com.intellij.openapi.projectRoots.AdditionalDataConfigurable;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkModel;
+import com.intellij.openapi.projectRoots.SdkModificator;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -25,42 +27,20 @@ public class HaskellSdkConfigurable implements AdditionalDataConfigurable {
         return myForm.getContentPanel();
     }
 
-    //  @Override
     public boolean isModified() {
         HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) mySdk.getSdkAdditionalData();
         Sdk javaSdk = data != null ? data.getJavaSdk() : null;
         return javaSdk != myForm.getSelectedSdk();
     }
 
-    //  @Override
     public void apply() throws ConfigurationException {
-        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(mySdk, myForm.getSelectedSdk());
-//    newData.setBuildTarget(myForm.getSelectedBuildTarget());
-        final SdkModificator modificator = mySdk.getSdkModificator();
-        modificator.setSdkAdditionalData(newData);
-        ApplicationManager.getApplication().runWriteAction(new Runnable() {
-            public void run() {
-                modificator.commitChanges();
-            }
-        });
+        // todo
     }
 
-    //  @Override
     public void reset() {
-        if (mySdk == null) {
-            return;
-        }
-        SdkAdditionalData data = mySdk.getSdkAdditionalData();
-        if (!(data instanceof HaskellSdkAdditionalData)) {
-            return;
-        }
-        HaskellSdkAdditionalData androidData = (HaskellSdkAdditionalData) data;
-//    AndroidPlatform platform = androidData.getAndroidPlatform();
-//    myForm.init(androidData.getJavaSdk(), mySdk, platform != null ? androidData.getBuildTarget(platform.getSdk()) : null);
-        myForm.init(androidData.getJavaSdk(), mySdk, null);
+        // todo
     }
 
-    //  @Override
     public void disposeUIResources() {
     }
 
