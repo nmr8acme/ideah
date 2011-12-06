@@ -45,6 +45,8 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         int offset = range.getStartOffset();
         LineCol coord = LineCol.fromOffset(psiFile, offset);
         Module module = DeclarationPosition.getDeclModule(psiFile);
+        if (module == null)
+            return null;
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null) {
             return null;

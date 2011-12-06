@@ -55,8 +55,6 @@ public final class CompilerLocation {
     }
 
     private static boolean needRecompile(File compilerExe) throws IOException {
-        if (compilerExe == null)
-            return false;
         if (compilerExe.exists()) {
             if (sourcesLastModified == null) {
                 final Long[] maxModified = new Long[1];
@@ -200,8 +198,6 @@ public final class CompilerLocation {
     }
 
     public static String rootsAsString(Module module, boolean tests) {
-        if (module == null)
-            return null;
         ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
         if (rootManager == null)
             return null;

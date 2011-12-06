@@ -58,8 +58,6 @@ public final class DeclarationPosition {
     }
 
     public static Module getDeclModule(PsiFile psiFile) {
-        if (psiFile == null)
-            return null;
         return getDeclModule(psiFile.getProject(), psiFile);
     }
 
@@ -73,8 +71,6 @@ public final class DeclarationPosition {
     }
 
     public static Module getModule(Project project, VirtualFile file) {
-        if (project == null || file == null)
-            return null;
         return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(file);
     }
 }
