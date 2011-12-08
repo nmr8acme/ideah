@@ -15,10 +15,7 @@ import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Processor;
 import ideah.compiler.HaskellCompiler;
 import ideah.psi.impl.HPIdentImpl;
-import ideah.util.CompilerLocation;
-import ideah.util.DeclarationPosition;
-import ideah.util.LineCol;
-import ideah.util.ProcessLauncher;
+import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
@@ -54,7 +51,7 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 args.addAll(Arrays.asList(compiler.exe,
                     "-m", "FindUsages",
                     "-g", compiler.libPath,
-                    "-s", CompilerLocation.rootsAsString(module, false),
+                    "-s", LocationUtil.rootsAsString(module, false),
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
                     "-f", virtualFile.getPath()));
                 final List<String> srcFiles = new ArrayList<String>();

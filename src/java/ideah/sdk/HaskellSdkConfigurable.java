@@ -1,22 +1,21 @@
 package ideah.sdk;
 
-import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.projectRoots.AdditionalDataConfigurable;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkModel;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.projectRoots.SdkModificator;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class HaskellSdkConfigurable implements AdditionalDataConfigurable {
+public final class HaskellSdkConfigurable implements AdditionalDataConfigurable {
 
     private final HaskellSdkConfigurableForm myForm;
 
     private Sdk mySdk;
 
-    public HaskellSdkConfigurable(@NotNull SdkModel sdkModel, @NotNull SdkModificator sdkModificator) {
-        myForm = new HaskellSdkConfigurableForm(sdkModel, sdkModificator);
+    public HaskellSdkConfigurable() {
+        myForm = new HaskellSdkConfigurableForm();
     }
 
     public void setSdk(Sdk sdk) {
@@ -29,34 +28,32 @@ public class HaskellSdkConfigurable implements AdditionalDataConfigurable {
 
     public boolean isModified() {
         HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) mySdk.getSdkAdditionalData();
-        Sdk javaSdk = data != null ? data.getJavaSdk() : null;
-        return javaSdk != myForm.getSelectedSdk();
+        return true; // todo
     }
 
-    public void apply() throws ConfigurationException {
-        // todo
+    public void apply() {
+        String libPath = myForm.getLibPath();
+        String cabalPath = myForm.getCabalPath();
+        String ghcOptions = myForm.getGhcOptions();
+        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(libPath, cabalPath, ghcOptions);
+        final SdkModificator modificator = mySdk.getSdkModificator();
+        modificator.setSdkAdditionalData(newData);
+        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            public void run() {
+                modificator.commitChanges();
+            }
+        });
     }
 
     public void reset() {
-        // todo
+        SdkAdditionalData data = mySdk.getSdkAdditionalData();
+        if (!(data instanceof HaskellSdkAdditionalData)) {
+            return;
+        }
+        HaskellSdkAdditionalData ghcData = (HaskellSdkAdditionalData) data;
+        myForm.init(ghcData.getLibPath(), ghcData.getCabalPath(), ghcData.getGhcOptions());
     }
 
     public void disposeUIResources() {
-    }
-
-    public void addJavaSdk(Sdk sdk) {
-        myForm.addJavaSdk(sdk);
-    }
-
-    public void removeJavaSdk(Sdk sdk) {
-        myForm.removeJavaSdk(sdk);
-    }
-
-    public void updateJavaSdkList(Sdk sdk, String previousName) {
-        myForm.updateJdks(sdk, previousName);
-    }
-
-    public void internalJdkUpdate(Sdk sdk) {
-        myForm.internalJdkUpdate(sdk);
     }
 }

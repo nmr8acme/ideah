@@ -3,13 +3,13 @@ package ideah.util;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -19,21 +19,19 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public final class CompilerLocation {
+public final class HaddockLocation {
 
-    private static final Logger LOG = Logger.getInstance("ideah.util.CompilerLocation");
-    private static final String MAIN_FILE = "ask_ghc";
-    private static Boolean haddockInstalled = false;       // todo: how else, if no access to background task state?!
+    private static final Logger LOG = Logger.getInstance("ideah.util.HaddockLocation");
+    private static final String MAIN_FILE = "ask_haddock";
 
     public final String exe;
-    public final String libPath;
 
-    private CompilerLocation(String exe, String libPath) {
+    private HaddockLocation(String exe) {
         this.exe = exe;
-        this.libPath = libPath;
     }
 
-    public static synchronized CompilerLocation get(@Nullable Module module) {
+    public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
+        LocationUtil.cabalCheckAndInstall(indicator, "haddock-2.9.2");
         if (module == null)
             return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
@@ -42,30 +40,24 @@ public final class CompilerLocation {
         VirtualFile ghcHome = sdk.getHomeDirectory();
         if (ghcHome == null)
             return null;
-        String ghcLib = null;
         try {
             // todo: cache result somewhere (or better store in SDK settings)
             String ghcCommandPath = LocationUtil.getGhcCommandPath(ghcHome);
             if (ghcCommandPath == null)
                 return null;
-            ProcessLauncher getLibdirLauncher = new ProcessLauncher(true, null, ghcCommandPath, "--print-libdir");
-            ghcLib = getLibdirLauncher.getStdOut();
         } catch (Exception e) {
             LOG.error(e);
         }
-        if (ghcLib == null)
-            return null;
-        ghcLib = ghcLib.trim();
         try {
             File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
             pluginPath.mkdirs();
-            File compilerExe = new File(pluginPath, LocationUtil.getExeName(MAIN_FILE));
-            if (LocationUtil.needRecompile(compilerExe)) {
-                if (!compileHs(module, pluginPath, ghcHome, compilerExe))
+            File haddockExe = new File(pluginPath, LocationUtil.getExeName(MAIN_FILE));
+            if (LocationUtil.needRecompile(haddockExe)) {
+                if (!compileHs(module.getProject(), pluginPath, ghcHome, haddockExe))
                     return null;
             }
-            if (compilerExe.exists())
-                return new CompilerLocation(compilerExe.getAbsolutePath(), ghcLib);
+            if (haddockExe.exists())
+                return new HaddockLocation(haddockExe.getAbsolutePath());
             else
                 return null;
         } catch (Exception ex) {
@@ -74,19 +66,7 @@ public final class CompilerLocation {
         }
     }
 
-    private static boolean compileHs(final Module module, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
-        Project project = module.getProject();
-//        Task haddockBackgroundTask =
-            new Task.Backgroundable(project, "Installing Haddock 2.9.2 if missing", true) {
-
-            public void run(ProgressIndicator indicator) {
-                indicator.setText("Checking Haddock installation...");
-                indicator.setFraction(0.0);
-                HaddockLocation.get(module, indicator);
-                indicator.setFraction(1.0);
-            }
-        }.queue();//.setCancelText("Stop Haddock installation");
-//        haddockBackgroundTask.queue();
+    private static boolean compileHs(@Nullable Project project, @NotNull final File pluginPath, @Nullable VirtualFile ghcHome, File exe) throws IOException, InterruptedException { // todo: not sure about @NotNull
         exe.delete();
         String ghcExe = LocationUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
@@ -122,9 +102,5 @@ public final class CompilerLocation {
         } finally {
             StatusBar.Info.set("Done compiling " + MAIN_FILE, project);
         }
-    }
-
-    private static void compileHaddock() {
-        // todo
     }
 }

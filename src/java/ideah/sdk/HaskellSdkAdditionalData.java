@@ -1,107 +1,73 @@
 package ideah.sdk;
 
-import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.projectRoots.ProjectJdkTable;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.projectRoots.SdkModel;
 import org.jdom.Element;
-import org.jetbrains.annotations.NonNls;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-public class HaskellSdkAdditionalData implements SdkAdditionalData {
+public final class HaskellSdkAdditionalData implements SdkAdditionalData {
 
-    @NonNls
-    private static final String JDK = "jdk";
-    @NonNls
-    private static final String BUILD_TARGET = "sdk";
+    private static final String LIB_PATH = "ghcLibPath";
+    private static final String CABAL_PATH = "cabalPath";
+    private static final String GHC_OPTIONS = "ghcOptions";
 
-    private String myJavaSdkName;
-    private final Sdk myAndroidSdk;
-    private Sdk myJavaSdk;
+    private String libPath;
+    private String cabalPath;
+    private String ghcOptions;
 
-    // hash string
-    private String myBuildTarget;
-
-//  private AndroidPlatform myAndroidPlatform = null;
-
-    public HaskellSdkAdditionalData(@NotNull Sdk androidSdk, Sdk javaSdk) {
-        myJavaSdk = javaSdk;
-        myAndroidSdk = androidSdk;
+    public HaskellSdkAdditionalData(String libPath, String cabalPath, String ghcOptions) {
+        this.libPath = libPath;
+        this.cabalPath = cabalPath;
+        this.ghcOptions = ghcOptions;
     }
 
-    public HaskellSdkAdditionalData(@NotNull Sdk androidSdk, @NotNull Element element) {
-        myAndroidSdk = androidSdk;
-        myJavaSdkName = element.getAttributeValue(JDK);
-        myBuildTarget = element.getAttributeValue(BUILD_TARGET);
+    public HaskellSdkAdditionalData(Element element) {
+        this.libPath = element.getAttributeValue(LIB_PATH);
+        this.cabalPath = element.getAttributeValue(CABAL_PATH);
+        this.ghcOptions = element.getAttributeValue(GHC_OPTIONS);
     }
 
-    public HaskellSdkAdditionalData(Sdk androidSdk) {
-        myAndroidSdk = androidSdk;
+    public void checkValid(SdkModel sdkModel) {
+        // todo
     }
 
-    public void checkValid(SdkModel sdkModel) throws ConfigurationException {
-        if (getJavaSdk() == null) {
-//      throw new ConfigurationException(AndroidBundle.message("android.sdk.configure.jdk.error"));
-            throw new ConfigurationException("android.sdk.configure.jdk.error");
-        }
-    }
-
+    @Override
     public Object clone() throws CloneNotSupportedException {
-        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) super.clone();
-        data.setJavaSdk(getJavaSdk());
-        data.myBuildTarget = myBuildTarget;
-        return data;
+        return super.clone();
     }
-
-    @Nullable
-    public Sdk getJavaSdk() {
-        final ProjectJdkTable jdkTable = ProjectJdkTable.getInstance();
-        if (myJavaSdk == null) {
-            if (myJavaSdkName != null) {
-                myJavaSdk = jdkTable.findJdk(myJavaSdkName);
-                myJavaSdkName = null;
-            } else {
-                for (Sdk jdk : jdkTable.getAllJdks()) {
-//          if (AndroidSdkUtils.isApplicableJdk(jdk)) {
-                    myJavaSdk = jdk;
-                    break;
-//          }
-                }
-            }
-        }
-        return myJavaSdk;
-    }
-
-    public void setJavaSdk(final Sdk javaSdk) {
-        myJavaSdk = javaSdk;
-    }
-
-//  public void setBuildTarget(IAndroidTarget target) {
-//    myBuildTarget = target.hashString();
-//  }
 
     public void save(Element element) {
-        final Sdk sdk = getJavaSdk();
-        if (sdk != null) {
-            element.setAttribute(JDK, sdk.getName());
+        if (libPath != null) {
+            element.setAttribute(LIB_PATH, libPath);
         }
-        if (myBuildTarget != null) {
-            element.setAttribute(BUILD_TARGET, myBuildTarget);
+        if (cabalPath != null) {
+            element.setAttribute(CABAL_PATH, cabalPath);
+        }
+        if (ghcOptions != null) {
+            element.setAttribute(GHC_OPTIONS, ghcOptions);
         }
     }
 
-//  @Nullable
-//  public IAndroidTarget getBuildTarget(@NotNull AndroidSdk sdkObject) {
-//    return myBuildTarget != null ? sdkObject.findTargetByHashString(myBuildTarget) : null;
-//  }
+    public String getLibPath() {
+        return libPath;
+    }
 
-//  @Nullable
-//  public AndroidPlatform getAndroidPlatform() {
-//    if (myAndroidPlatform == null) {
-//      myAndroidPlatform = AndroidPlatform.parse(myAndroidSdk);
-//    }
-//    return myAndroidPlatform;
-//  }
+    public String getCabalPath() {
+        return cabalPath;
+    }
+
+    public String getGhcOptions() {
+        return ghcOptions;
+    }
+
+    public void setLibPath(String libPath) {
+        this.libPath = libPath;
+    }
+
+    public void setCabalPath(String cabalPath) {
+        this.cabalPath = cabalPath;
+    }
+
+    public void setGhcOptions(String ghcOptions) {
+        this.ghcOptions = ghcOptions;
+    }
 }

@@ -47,7 +47,7 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
     @NotNull
     protected PsiElement[] create(String newName, PsiDirectory directory) throws Exception {
         if ("".equals(newName)) {
-            throw new IncorrectOperationException("A name should be specified.");
+            throw new IncorrectOperationException("A name should be specified");
         }
         HaskellFileType type = HaskellFileType.INSTANCE;
         String ext = type.getDefaultExtension();

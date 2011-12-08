@@ -9,10 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import ideah.psi.api.HPIdent;
-import ideah.util.CompilerLocation;
-import ideah.util.DeclarationPosition;
-import ideah.util.LineCol;
-import ideah.util.ProcessLauncher;
+import ideah.util.*;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -52,7 +49,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             return null;
         }
         try {
-            String sourcePath = CompilerLocation.rootsAsString(module, false);
+            String sourcePath = LocationUtil.rootsAsString(module, false);
             ProcessLauncher idLauncher = new ProcessLauncher(
                 false, null,
                 compiler.exe,
@@ -86,8 +83,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             if (declaration != null) {
                 ProcessLauncher documentationLauncher = new ProcessLauncher(
                     false, null,
-                    compiler.exe,
-                    "-m", "GetDocu",
+                    HaddockLocation.get(module, null).exe,
                     "-g", compiler.libPath,
                     "-s", sourcePath,
                     "--line-number",
@@ -96,17 +92,19 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     "--module", declaration.module
                 );
                 BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
-                String l = reader.readLine();
-                while (l != null && !l.startsWith(newMsgIndicator)) {
-                    l = reader.readLine();
+                while (true) {
+                    String l = reader.readLine();
+                    if (l == null || l.startsWith(newMsgIndicator))
+                        break;
                 }
-                if (l != null && l.startsWith(newMsgIndicator)) {
-                    l = reader.readLine();
-                    while (l != null) {
-                        documentation.append("<br>").append(l);
-                        l = reader.readLine();
-                    }
+                String newLineHtml = "<br>";
+                while (true) {
+                    String l = reader.readLine();
+                    if (l != null) {
+                        documentation.append(l).append(newLineHtml);
+                    } else break;
                 }
+                documentation.substring(0, documentation.lastIndexOf(newLineHtml));
             }
             return documentation.toString();
         } catch (Exception ex) {

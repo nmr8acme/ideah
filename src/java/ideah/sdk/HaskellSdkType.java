@@ -6,7 +6,6 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.util.containers.HashMap;
-import ideah.compiler.GHCDir;
 import ideah.util.ProcessLauncher;
 import org.jdom.Element;
 import org.jetbrains.annotations.Nullable;
@@ -27,11 +26,11 @@ public final class HaskellSdkType extends SdkType {
     }
 
     public String suggestHomePath() {
-        File haskellProgDir = null;
-        String[] ghcDirs = null;
+        File haskellProgDir;
+        String[] ghcDirs;
         if (SystemInfo.isLinux) {
             haskellProgDir = new File("/usr/lib");
-            if (!haskellProgDir.exists())
+            if (!haskellProgDir.isDirectory())
                 return null;
             ghcDirs = haskellProgDir.list(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
@@ -43,18 +42,25 @@ public final class HaskellSdkType extends SdkType {
             if (progFiles == null) {
                 progFiles = System.getenv("ProgramFiles");
             }
+            if (progFiles == null)
+                return null;
             haskellProgDir = new File(progFiles, "Haskell Platform");
-            if (!haskellProgDir.exists())
+            if (!haskellProgDir.isDirectory())
                 return progFiles;
             ghcDirs = haskellProgDir.list();
+        } else {
+            // todo: Mac branch
+            return null;
         }
         String latestVersion = getLatestVersion(ghcDirs);
-        return haskellProgDir == null || latestVersion == null
+        return latestVersion == null
             ? null
             : new File(haskellProgDir, latestVersion).getAbsolutePath();
     }
 
     private static String getLatestVersion(String[] names) {
+        if (names == null)
+            return null;
         int length = names.length;
         if (length == 0)
             return null;
@@ -150,39 +156,18 @@ public final class HaskellSdkType extends SdkType {
     }
 
     public AdditionalDataConfigurable createAdditionalDataConfigurable(SdkModel sdkModel, SdkModificator sdkModificator) {
-        final HaskellSdkConfigurable c = new HaskellSdkConfigurable(sdkModel, sdkModificator);
-
-        sdkModel.addListener(new SdkModel.Listener() {
-
-            public void sdkAdded(Sdk sdk) {
-                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
-                    c.addJavaSdk(sdk);
-                }
-            }
-
-            public void beforeSdkRemove(Sdk sdk) {
-                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
-                    c.removeJavaSdk(sdk);
-                }
-            }
-
-            public void sdkChanged(Sdk sdk, String previousName) {
-                if (sdk.getSdkType().equals(JavaSdk.getInstance())) {
-                    c.updateJavaSdkList(sdk, previousName);
-                }
-            }
-
-            public void sdkHomeSelected(final Sdk sdk, final String newSdkHome) {
-                if (sdk.getSdkType().equals(HaskellSdkType.getInstance())) {
-                    c.internalJdkUpdate(sdk);
-                }
-            }
-        });
-
-        return c;
+        return new HaskellSdkConfigurable();
     }
 
     public void saveAdditionalData(SdkAdditionalData additionalData, Element additional) {
+        if (additionalData instanceof HaskellSdkAdditionalData) {
+            ((HaskellSdkAdditionalData) additionalData).save(additional);
+        }
+    }
+
+    @Override
+    public SdkAdditionalData loadAdditionalData(Element additional) {
+        return new HaskellSdkAdditionalData(additional);
     }
 
     public String getPresentableName() {

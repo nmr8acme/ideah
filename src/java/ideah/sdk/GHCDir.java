@@ -1,15 +1,15 @@
-package ideah.compiler;
+package ideah.sdk;
 
-public final class GHCDir {
+final class GHCDir {
 
-    public final String name;
-    Integer[] version;
+    final String name;
+    private Integer[] version;
 
-    public Integer[] getVersion() {
+    Integer[] getVersion() {
         return version;
     }
 
-    public GHCDir(String name) {
+    GHCDir(String name) {
         this.name = name;
         String[] versionStr = name.split("[^0-9]");
         version = new Integer[versionStr.length];

@@ -16,10 +16,7 @@ import com.intellij.psi.tree.IElementType;
 import ideah.lexer.HaskellLexer;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.tree.*;
-import ideah.util.CompilerLocation;
-import ideah.util.DeclarationPosition;
-import ideah.util.LineColRange;
-import ideah.util.ProcessLauncher;
+import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;

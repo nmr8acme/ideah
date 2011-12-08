@@ -12,6 +12,30 @@ import Lexer
 import StringBuffer
 import FastString
 
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages
+    deriving Read
+
+data Options = Options
+    { mode            :: Mode
+    , ghcPath         :: String
+    , sourcePath      :: String
+    , outputPath      :: String
+    , compilerOptions :: [String]
+    , position        :: (Int, Int)
+    , moduleFile      :: FilePath
+    }
+
+defaultOpts :: Options
+defaultOpts = Options
+    { mode            = Compile
+    , ghcPath         = ""
+    , outputPath      = ""
+    , sourcePath      = ""
+    , compilerOptions = []
+    , position        = (0, 0)
+    , moduleFile      = ""
+    }
+
 newMsgIndicator = "\f"
 
 toString :: (Outputable a) => a -> String

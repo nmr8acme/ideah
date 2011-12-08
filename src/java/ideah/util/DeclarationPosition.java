@@ -6,6 +6,8 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileSystemItem;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,7 +23,8 @@ public final class DeclarationPosition {
         this.module = module;
     }
 
-    public static DeclarationPosition get(PsiFile psiFile, LineCol coord) throws IOException, InterruptedException {
+    @Nullable
+    public static DeclarationPosition get(@NotNull PsiFile psiFile, @Nullable LineCol coord) throws IOException, InterruptedException {
         if (coord == null)
             return null;
         VirtualFile file = psiFile.getVirtualFile();
@@ -33,7 +36,7 @@ public final class DeclarationPosition {
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;
-        String sourcePath = CompilerLocation.rootsAsString(module, false);
+        String sourcePath = LocationUtil.rootsAsString(module, false);
         ProcessLauncher launcher = new ProcessLauncher(
             false, null,
             compiler.exe,

@@ -4,16 +4,13 @@ import Control.Monad
 import System.Environment
 import System.Console.GetOpt
 
+import HUtil
 import Compile
 import CheckMain
 import GetIdType
-import GetDocu
 import GetDeclPos
 import ParseTree
 import FindUsages
-
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu | ParseTree | FindUsages
-    deriving Read
 
 -- ./ask_ghc
 --    -m                  # ask_ghc mode
@@ -26,16 +23,6 @@ data Mode = Compile | CheckMain | GetIdType | GetDeclPos | GetDocu | ParseTree |
 --    -r <column>         # column number
 --    <files>             # files to be compiled
 
-data Options = Options
-    { mode            :: Mode
-    , ghcPath         :: String
-    , sourcePath      :: String
-    , outputPath      :: String
-    , compilerOptions :: [String]
-    , position        :: (Int, Int)
-    , moduleFile      :: FilePath
-    }
-
 options :: [OptDescr (Options -> Options)]
 options =
     [ Option ['m'] ["main-func-mode"] (ReqArg (\mod opt  -> opt {mode = read mod}) "Mode") "Mode"
@@ -47,17 +34,6 @@ options =
     , Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "line number"
     , Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "column number"
     ]
-
-defaultOpts :: Options
-defaultOpts = Options
-    { mode            = Compile
-    , ghcPath         = ""
-    , outputPath      = ""
-    , sourcePath      = ""
-    , compilerOptions = []
-    , position        = (0, 0)
-    , moduleFile      = ""
-    }
 
 main = do
     args <- getArgs
@@ -73,6 +49,5 @@ main = do
         CheckMain  -> checkMain ghcpath singleFile
         GetIdType  -> getIdType srcpath ghcpath singleFile pos
         GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
-        GetDocu    -> getDocu srcpath ghcpath pos $ moduleFile opts
         ParseTree  -> parseTree ghcpath singleFile
         FindUsages -> findUsages srcpath ghcpath pos (moduleFile opts) files
