@@ -14,7 +14,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.util.Computable;
 import ideah.sdk.HaskellSdkType;
-import ideah.util.CompilerLocation;import ideah.util.LocationUtil;
+import ideah.util.LocationUtil;
 
 import java.nio.charset.Charset;
 import java.util.Map;

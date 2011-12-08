@@ -4,7 +4,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import ideah.util.CompilerLocation;
-import ideah.util.LocationUtil;import ideah.util.ProcessLauncher;
+import ideah.util.LocationUtil;
+import ideah.util.ProcessLauncher;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -29,6 +29,7 @@ import java.util.Collection;
 abstract class HaskellConsoleActionBase extends AnAction {
 
     private static final class HaskellConsoleMatcher implements NotNullFunction<RunContentDescriptor, Boolean> {
+
         @NotNull
         public Boolean fun(RunContentDescriptor descriptor) {
             return descriptor != null && (descriptor.getExecutionConsole() instanceof HaskellConsoleView);

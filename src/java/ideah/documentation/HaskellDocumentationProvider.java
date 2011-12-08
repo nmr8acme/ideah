@@ -78,7 +78,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                 (modName.length() == 0
                     ? ""
                     : "Module: <code>" + modName + "</code><br>")
-                + "Type: <code>" + type + "</code><br>");
+                    + "Type: <code>" + type + "</code><br>");
             DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
             if (declaration != null) {
                 ProcessLauncher documentationLauncher = new ProcessLauncher(

@@ -3,7 +3,6 @@ package ideah.sdk;
 import ideah.util.LocationUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 final class GHCDir {
 

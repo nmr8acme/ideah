@@ -11,7 +11,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import ideah.parser.HaskellFile;
 import ideah.util.CompilerLocation;
-import ideah.util.LocationUtil;import ideah.util.ProcessLauncher;
+import ideah.util.ProcessLauncher;
 
 import java.io.IOException;
 

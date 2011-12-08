@@ -64,9 +64,9 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
         boolean needsModuleName = Character.isUpperCase(moduleName.charAt(0));
         String parentPackages = ProjectRootManager.getInstance(project).getFileIndex().getPackageNameByDirectory(directory.getVirtualFile());
         StringBuilder packages = new StringBuilder(
-                "".equals(parentPackages) || !needsModuleName
-                        ? ""
-                        : parentPackages + "."
+            "".equals(parentPackages) || !needsModuleName
+                ? ""
+                : parentPackages + "."
         );
         for (int i = 0; i < depth - 1; i++) {
             String dirName = fileNames[i];
@@ -80,9 +80,9 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
             }
         }
         PsiFile file = PsiFileFactory.getInstance(project).createFileFromText(moduleName + "." + ext, type,
-                needsModuleName
-                        ? "module " + packages + moduleName + " where\n\n"
-                        : ""
+            needsModuleName
+                ? "module " + packages + moduleName + " where\n\n"
+                : ""
         );
         file = (PsiFile) moduleDir.add(file);
         VirtualFile virtualFile = file.getVirtualFile();

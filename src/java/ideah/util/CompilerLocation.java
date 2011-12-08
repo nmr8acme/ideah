@@ -7,9 +7,11 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -23,7 +25,6 @@ public final class CompilerLocation {
 
     private static final Logger LOG = Logger.getInstance("ideah.util.CompilerLocation");
     private static final String MAIN_FILE = "ask_ghc";
-    private static Boolean haddockInstalled = false;       // todo: how else, if no access to background task state?!
 
     public final String exe;
     public final String libPath;
@@ -74,10 +75,55 @@ public final class CompilerLocation {
         }
     }
 
-    private static boolean compileHs(final Module module, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
+    @Nullable
+    public static String suggestLibPath(@Nullable Sdk sdk) {
+        if (sdk == null)
+            return null;
+        VirtualFile ghcHome = sdk.getHomeDirectory();
+        if (ghcHome == null)
+            return null;
+        String ghcLib = null;
+        try {
+            String ghcCommandPath = LocationUtil.getGhcCommandPath(ghcHome);
+            if (ghcCommandPath == null)
+                return null;
+            ProcessLauncher getLibdirLauncher = new ProcessLauncher(true, null, ghcCommandPath, "--print-libdir");
+            ghcLib = getLibdirLauncher.getStdOut().trim();
+        } catch (Exception e) {
+            LOG.error(e);
+        }
+        return ghcLib;
+    }
+
+    @Nullable
+    public static String suggestCabalPath(@Nullable Sdk sdk) {
+        String cabalExe = LocationUtil.getExeName("cabal");
+        if (SystemInfo.isLinux || SystemInfo.isMac) {
+            try {
+                ProcessLauncher getCabalDir = new ProcessLauncher(true, null, "which");
+                File cabalDir = new File(getCabalDir.getStdOut());
+                File cabal = new File(cabalDir, cabalExe);
+                if (cabalDir.isDirectory() && cabal.exists())
+                    return cabal.getPath();
+            } catch (Exception e) {
+                LOG.error(e.getMessage());
+            }
+        } else if (SystemInfo.isWindows) {
+            String separator = System.getProperty("file.separator");
+            String libPath = suggestLibPath(sdk);
+            if (libPath == null)
+                return null;
+            File cabalDir = new File(libPath + separator + "extralibs" + separator + "bin");
+            File cabal = new File(cabalDir, cabalExe);
+            if (cabalDir.isDirectory() && cabal.exists())
+                return cabal.getPath();
+        }
+        return null;
+    }
+
+    private static boolean compileHs(@NotNull final Module module, final File pluginPath, VirtualFile ghcHome, File exe) throws IOException, InterruptedException {
         Project project = module.getProject();
-//        Task haddockBackgroundTask =
-            new Task.Backgroundable(project, "Installing Haddock 2.9.2 if missing", true) {
+        Task haddockBackgroundTask = new Task.Backgroundable(project, "Installing Haddock 2.9.2 if missing", true) {
 
             public void run(ProgressIndicator indicator) {
                 indicator.setText("Checking Haddock installation...");
@@ -85,8 +131,8 @@ public final class CompilerLocation {
                 HaddockLocation.get(module, indicator);
                 indicator.setFraction(1.0);
             }
-        }.queue();//.setCancelText("Stop Haddock installation");
-//        haddockBackgroundTask.queue();
+        }.setCancelText("Stop Haddock installation");
+        haddockBackgroundTask.queue();
         exe.delete();
         String ghcExe = LocationUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
@@ -122,9 +168,5 @@ public final class CompilerLocation {
         } finally {
             StatusBar.Info.set("Done compiling " + MAIN_FILE, project);
         }
-    }
-
-    private static void compileHaddock() {
-        // todo
     }
 }

@@ -23,7 +23,7 @@ import ideah.sdk.HaskellSdkType;
 import ideah.util.CompilerLocation;
 import ideah.util.DeclarationPosition;
 import ideah.util.LineCol;
-import ideah.util.LocationUtil;import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.*;

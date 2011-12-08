@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -21,10 +20,10 @@ public final class LocationUtil {
 
     private static Long sourcesLastModified = null;
 
-    static String getExeName(String file) {
+    public static String getExeName(String file) {
         return SystemInfo.isWindows
-                ? file + ".exe"
-                : file;
+            ? file + ".exe"
+            : file;
     }
 
     static String getGhcCommandPath(VirtualFile ghcHome) {
@@ -198,25 +197,25 @@ public final class LocationUtil {
     }
 
     static boolean needRecompile(File compilerExe) throws IOException {
-           if (compilerExe.exists()) {
-               if (sourcesLastModified == null) {
-                   final Long[] maxModified = new Long[1];
-                   listHaskellSources(new HsCallback() {
-                       public void run(ZipInputStream zis, ZipEntry entry) {
-                           long lastModified = entry.getTime();
-                           if (maxModified[0] == null) {
-                               maxModified[0] = lastModified;
-                           } else {
-                               maxModified[0] = Math.max(maxModified[0].longValue(), lastModified);
-                           }
-                       }
-                   });
-                   sourcesLastModified = maxModified[0];
-               }
-               return sourcesLastModified != null && sourcesLastModified.longValue() > compilerExe.lastModified();
-           } else {
-               return true;
-           }
-       }
+        if (compilerExe.exists()) {
+            if (sourcesLastModified == null) {
+                final Long[] maxModified = new Long[1];
+                listHaskellSources(new HsCallback() {
+                    public void run(ZipInputStream zis, ZipEntry entry) {
+                        long lastModified = entry.getTime();
+                        if (maxModified[0] == null) {
+                            maxModified[0] = lastModified;
+                        } else {
+                            maxModified[0] = Math.max(maxModified[0].longValue(), lastModified);
+                        }
+                    }
+                });
+                sourcesLastModified = maxModified[0];
+            }
+            return sourcesLastModified != null && sourcesLastModified.longValue() > compilerExe.lastModified();
+        } else {
+            return true;
+        }
+    }
 
 }

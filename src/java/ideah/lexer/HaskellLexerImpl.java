@@ -702,13 +702,20 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
 
     private static HaskellTokenType specialType(int c) {
         switch (c) {
-        case '(': return L_PAREN;
-        case ')': return R_PAREN;
-        case '[': return L_SQUARE;
-        case ']': return R_SQUARE;
-        case '{': return L_CURLY;
-        case '}': return R_CURLY;
-        case ',': return COMMA;
+        case '(':
+            return L_PAREN;
+        case ')':
+            return R_PAREN;
+        case '[':
+            return L_SQUARE;
+        case ']':
+            return R_SQUARE;
+        case '{':
+            return L_CURLY;
+        case '}':
+            return R_CURLY;
+        case ',':
+            return COMMA;
         }
         return SPECIAL;
     }
@@ -725,23 +732,23 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         HaskellLexerImpl lexer = new HaskellLexerImpl();
         String str =
             "Xyzzy.Fyva.add\n" +
-            "Xyzzy.Abba.+--\n" +
-            "Xyzzy.Abba.+-->\n" +
-            "Xyzzy.Abba.-->\n" +
-            "Xyzzy.Abba.--\n" +
-            "Xyzzy.Abba.\n" +
-            "Xyzzy.Abba..\n" +
-            "Xyzzy.Abba...\n" +
-            "1234\n" +
-            "1234.567\n" +
-            "123.456E10\n" +
-            "123.456E+10\n" +
-            "123.456E-10\n" +
-            "0123E10\n" +
-            "\"xyzzy^A\"\n" +
-            "\"xyzzy\\r\\nabba\"\n" +
-            "'\\f'\n" +
-            "'X'";
+                "Xyzzy.Abba.+--\n" +
+                "Xyzzy.Abba.+-->\n" +
+                "Xyzzy.Abba.-->\n" +
+                "Xyzzy.Abba.--\n" +
+                "Xyzzy.Abba.\n" +
+                "Xyzzy.Abba..\n" +
+                "Xyzzy.Abba...\n" +
+                "1234\n" +
+                "1234.567\n" +
+                "123.456E10\n" +
+                "123.456E+10\n" +
+                "123.456E-10\n" +
+                "0123E10\n" +
+                "\"xyzzy^A\"\n" +
+                "\"xyzzy\\r\\nabba\"\n" +
+                "'\\f'\n" +
+                "'X'";
         lexer.init(str, 0, str.length());
         while (true) {
             HaskellToken t = lexer.nextToken();

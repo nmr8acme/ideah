@@ -13,7 +13,8 @@ final class OutputEditor extends ModuleElementsEditor {
 
     OutputEditor(ModuleConfigurationState state) {
         super(state);
-        myCompilerOutputEditor = new BuildElementsEditor(state) {};
+        myCompilerOutputEditor = new BuildElementsEditor(state) {
+        };
     }
 
     protected JComponent createComponentImpl() {

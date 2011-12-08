@@ -5,6 +5,7 @@ import com.intellij.openapi.projectRoots.AdditionalDataConfigurable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.projectRoots.SdkModificator;
+import ideah.util.CompilerLocation;
 
 import javax.swing.*;
 
@@ -20,6 +21,20 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
 
     public void setSdk(Sdk sdk) {
         mySdk = sdk;
+        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
+        if (sdkAdditionalData instanceof HaskellSdkAdditionalData) {
+            HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+            if (data.getCabalPath() == null) {
+                String cabalPath = CompilerLocation.suggestCabalPath(sdk);
+                data.setCabalPath(cabalPath == null ? "" : cabalPath);
+            }
+            if (data.getGhcOptions() == null)
+                data.setGhcOptions("");
+            if (data.getLibPath() == null) {
+                String libPath = CompilerLocation.suggestLibPath(sdk);
+                data.setLibPath(libPath == null ? "" : libPath);
+            }
+        }
     }
 
     public JComponent createComponent() {
@@ -28,14 +43,18 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
 
     public boolean isModified() {
         HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) mySdk.getSdkAdditionalData();
-        return true; // todo
+        if (data == null)
+            return true;
+        return !(data.getCabalPath().equals(myForm.getCabalPath())
+            && data.getGhcOptions().equals(myForm.getGhcOptions())
+            && data.getLibPath().equals(myForm.getLibPath()));
     }
 
     public void apply() {
         String libPath = myForm.getLibPath();
         String cabalPath = myForm.getCabalPath();
         String ghcOptions = myForm.getGhcOptions();
-        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(libPath, cabalPath, ghcOptions);
+        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(libPath, cabalPath, ghcOptions, this);
         final SdkModificator modificator = mySdk.getSdkModificator();
         modificator.setSdkAdditionalData(newData);
         ApplicationManager.getApplication().runWriteAction(new Runnable() {

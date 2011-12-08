@@ -60,18 +60,18 @@ public final class HaskellColorsAndFontsPage implements ColorSettingsPage {
     public String getDemoText() {
         return
             "{-\n" +
-            " Quicksort example\n" +
-            "-}\n" +
-            "module Main where\n\n" +
-            "-- Not a real quicksort!\n" +
-            "qsort :: Ord a => [a] -> [a]\n" +
-            "qsort []     = []\n" +
-            "qsort (p:xs) = qsort lesser ++ [p] ++ qsort greater\n" +
-            "    where\n" +
-            "        lesser  = filter (< p) xs\n" +
-            "        greater = filter (>= p) xs\n\n" +
-            "main :: IO ()\n" +
-            "main = print $ \"Sorted list: \" ++ show (qsort [5, 3, 2, 4.5e-1])";
+                " Quicksort example\n" +
+                "-}\n" +
+                "module Main where\n\n" +
+                "-- Not a real quicksort!\n" +
+                "qsort :: Ord a => [a] -> [a]\n" +
+                "qsort []     = []\n" +
+                "qsort (p:xs) = qsort lesser ++ [p] ++ qsort greater\n" +
+                "    where\n" +
+                "        lesser  = filter (< p) xs\n" +
+                "        greater = filter (>= p) xs\n\n" +
+                "main :: IO ()\n" +
+                "main = print $ \"Sorted list: \" ++ show (qsort [5, 3, 2, 4.5e-1])";
     }
 
     @Nullable
