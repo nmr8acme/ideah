@@ -72,8 +72,8 @@ public final class HaskellSdkType extends SdkType {
         }
         Collections.sort(ghcDirs, new Comparator<GHCDir>() {
             public int compare(GHCDir d1, GHCDir d2) {
-                Integer[] version1 = d1.getVersion();
-                Integer[] version2 = d2.getVersion();
+                Integer[] version1 = d1.version;
+                Integer[] version2 = d2.version;
                 int minSize = Math.min(version1.length, version2.length);
                 for (int i = 0; i < minSize; i++) {
                     int compare = version1[i].compareTo(version2[i]);

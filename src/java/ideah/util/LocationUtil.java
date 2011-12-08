@@ -6,9 +6,11 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -145,7 +147,11 @@ public final class LocationUtil {
                 return packages; // todo: produce user error
             List<String> args = new ArrayList<String>();
             args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
-            args.addAll(packages);
+            Map<String, String> argsPackages = new HashMap<String, String>();
+            for (String pkg : packages) {
+                argsPackages.put(pkg, pkg.substring(0, pkg.lastIndexOf('-')));
+            }
+            args.addAll(argsPackages.values()); // For "haddock list --installed <package name>", the package name should not include the version
             Collections.sort(packages);
             missingPackages = new ArrayList<String>();
             Iterator<String> iterator = packages.iterator();
@@ -154,15 +160,41 @@ public final class LocationUtil {
             String line = reader.readLine();
             while (line != null && iterator.hasNext()) {
                 String next = iterator.next();
-                if (!line.startsWith(next)) {
+                if (!(line.startsWith(argsPackages.get(next)) && equalVersion(getVersion(next), getVersion(line)))) {
                     missingPackages.add(next);
+                } else {
+                    line = reader.readLine();
                 }
-                line = reader.readLine();
             }
         } catch (Exception e) {
             LOG.error(e);
         }
         return missingPackages;
+    }
+
+    public static ArrayList<Integer> getVersion(@NotNull String name) {
+        String[] versionStr = name.split("[^0-9]");
+        int length = versionStr.length;
+        ArrayList<Integer> version = new ArrayList<Integer>();
+        for (int i = 0; i < length; i++) {
+            try {
+                version.add(Integer.parseInt(versionStr[i]));
+            } catch (NumberFormatException ignored) {
+                break;
+            }
+        }
+        return version;
+    }
+
+    public static boolean equalVersion(@NotNull ArrayList<Integer> v1, @NotNull ArrayList<Integer> v2) {
+        int size = v1.size();
+        if (size != v2.size())
+            return false;
+        for (int i = 0; i < size; i++) {
+            if (!v1.get(i).equals(v2.get(i)))
+                return false;
+        }
+        return true;
     }
 
     static boolean needRecompile(File compilerExe) throws IOException {
