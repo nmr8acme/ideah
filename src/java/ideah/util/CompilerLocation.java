@@ -100,10 +100,9 @@ public final class CompilerLocation {
         String cabalExe = LocationUtil.getExeName("cabal");
         if (SystemInfo.isLinux || SystemInfo.isMac) {
             try {
-                ProcessLauncher getCabalDir = new ProcessLauncher(true, null, "which");
-                File cabalDir = new File(getCabalDir.getStdOut());
-                File cabal = new File(cabalDir, cabalExe);
-                if (cabalDir.isDirectory() && cabal.exists())
+                ProcessLauncher getCabalDir = new ProcessLauncher(true, null, "which", "cabal");
+                File cabal = new File(getCabalDir.getStdOut(), cabalExe);
+                if (cabal.exists())
                     return cabal.getPath();
             } catch (Exception e) {
                 LOG.error(e.getMessage());
