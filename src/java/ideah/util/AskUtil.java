@@ -3,10 +3,12 @@ package ideah.util;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import ideah.sdk.HaskellSdkAdditionalData;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -25,6 +27,8 @@ final class AskUtil {
     @NotNull
     private final Module module;
     @NotNull
+    private final Sdk sdk;
+    @NotNull
     private final VirtualFile ghcHome;
     @NotNull
     private final File pluginPath;
@@ -33,8 +37,9 @@ final class AskUtil {
     @NotNull
     private final String mainFile;
 
-    private AskUtil(@NotNull Module module, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
+    private AskUtil(@NotNull Module module, @NotNull Sdk sdk, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
         this.module = module;
+        this.sdk = sdk;
         this.ghcHome = ghcHome;
         this.pluginPath = pluginPath;
         this.exe = exe;
@@ -53,24 +58,23 @@ final class AskUtil {
         File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
-        return new AskUtil(module, ghcHome, pluginPath, exe, mainFile);
+        return new AskUtil(module, sdk, ghcHome, pluginPath, exe, mainFile);
     }
 
     String getLibDir() {
-        String ghcLib = null;
-        try {
-            // todo: cache result somewhere (or better store in SDK settings)
-            String ghcCommandPath = GHCUtil.getGhcCommandPath(ghcHome);
-            if (ghcCommandPath == null)
-                return null;
-            ProcessLauncher getLibdirLauncher = new ProcessLauncher(true, null, ghcCommandPath, "--print-libdir");
-            ghcLib = getLibdirLauncher.getStdOut();
-        } catch (Exception e) {
-            LOG.error(e);
-        }
-        if (ghcLib == null)
+        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
+        if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
             return null;
-        return ghcLib.trim();
+        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+        return data.getLibPath();
+    }
+
+    String getCabalPath() {
+        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
+        if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
+            return null;
+        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+        return data.getCabalPath();
     }
 
     File getExe() {

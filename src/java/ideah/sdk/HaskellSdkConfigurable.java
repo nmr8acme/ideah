@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.StringTokenizer;
 
 public final class HaskellSdkConfigurable implements AdditionalDataConfigurable {
 
@@ -48,24 +49,41 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
     }
 
     @Nullable
-    private static String suggestCabalPath(@Nullable String libPath, @Nullable Sdk sdk) {
+    private static String getPathFor(String exeName) {
+        String path = System.getenv("PATH");
+        StringTokenizer stringTokenizer = new StringTokenizer(path, File.pathSeparator);
+        while (stringTokenizer.hasMoreTokens()) {
+            String dir = stringTokenizer.nextToken();
+            File directory = new File(dir);
+            if (directory.isDirectory()) {
+                File file = new File(directory, exeName);
+                if (file.isFile())
+                    return file.getAbsolutePath();
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String suggestCabalPath(@Nullable String libPath) {
         String cabalExe = GHCUtil.getExeName("cabal");
         if (SystemInfo.isLinux || SystemInfo.isMac) {
             try {
                 ProcessLauncher getCabalDir = new ProcessLauncher(true, null, "which", "cabal");
-                File cabal = new File(getCabalDir.getStdOut(), cabalExe);
-                if (cabal.exists())
+                File cabal = new File(getCabalDir.getStdOut().trim(), cabalExe);
+                if (cabal.isFile())
                     return cabal.getPath();
             } catch (Exception e) {
                 LOG.error(e.getMessage());
             }
         } else if (SystemInfo.isWindows) {
-            if (libPath == null)
-                return null;
-            File cabalDir = new File(libPath + File.separator + "extralibs" + File.separator + "bin");
-            File cabal = new File(cabalDir, cabalExe);
-            if (cabalDir.isDirectory() && cabal.exists())
-                return cabal.getPath();
+            if (libPath != null) {
+                File cabalDir = new File(libPath + File.separator + "extralibs" + File.separator + "bin");
+                File cabal = new File(cabalDir, cabalExe);
+                if (cabal.isFile())
+                    return cabal.getPath();
+            }
+            return getPathFor(cabalExe);
         }
         return null;
     }
@@ -82,7 +100,7 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
                 data.setLibPath(libPath == null ? "" : libPath);
             }
             if (data.getCabalPath() == null) {
-                String cabalPath = suggestCabalPath(libPath, sdk);
+                String cabalPath = suggestCabalPath(libPath);
                 data.setCabalPath(cabalPath == null ? "" : cabalPath);
             }
             if (data.getGhcOptions() == null) {

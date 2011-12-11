@@ -23,23 +23,6 @@ public final class HaddockLocation {
         this.exe = exe;
     }
 
-    @Nullable
-    private static String getPathFor(String name) {
-        String path = System.getenv("PATH");
-        String exeName = GHCUtil.getExeName(name);
-        StringTokenizer stringTokenizer = new StringTokenizer(path, File.pathSeparator);
-        while (stringTokenizer.hasMoreElements()) {
-            String dir = stringTokenizer.nextToken();
-            File directory = new File(dir);
-            if (directory.isDirectory()) {
-                File file = new File(directory, exeName);
-                if (file.exists())
-                    return new File(directory, name).getAbsolutePath();
-            }
-        }
-        return null;
-    }
-
     private static boolean equalVersion(@NotNull List<Integer> v1, @NotNull List<Integer> v2) {
         int size = v1.size();
         if (size != v2.size())
@@ -125,7 +108,7 @@ public final class HaddockLocation {
 
     public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
         AskUtil ask = AskUtil.get(module, MAIN_FILE);
-        String cabalPath = getPathFor("cabal"); // todo: get from SDK settings
+        String cabalPath = ask.getCabalPath();
         if (cabalPath == null)
             return null;
         try {

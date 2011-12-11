@@ -26,17 +26,19 @@ public final class HaskellSdkType extends SdkType {
     }
 
     public String suggestHomePath() {
-        File haskellProgDir;
-        String[] ghcDirs;
+        File versionsRoot;
+        String[] versions;
+        String append;
         if (SystemInfo.isLinux) {
-            haskellProgDir = new File("/usr/lib");
-            if (!haskellProgDir.isDirectory())
+            versionsRoot = new File("/usr/lib");
+            if (!versionsRoot.isDirectory())
                 return null;
-            ghcDirs = haskellProgDir.list(new FilenameFilter() {
+            versions = versionsRoot.list(new FilenameFilter() {
                 public boolean accept(File dir, String name) {
                     return name.toLowerCase().startsWith("ghc") && new File(dir, name).isDirectory();
                 }
             });
+            append = null;
         } else if (SystemInfo.isWindows) {
             String progFiles = System.getenv("ProgramFiles(x86)");
             if (progFiles == null) {
@@ -44,18 +46,31 @@ public final class HaskellSdkType extends SdkType {
             }
             if (progFiles == null)
                 return null;
-            haskellProgDir = new File(progFiles, "Haskell Platform");
-            if (!haskellProgDir.isDirectory())
+            versionsRoot = new File(progFiles, "Haskell Platform");
+            if (!versionsRoot.isDirectory())
                 return progFiles;
-            ghcDirs = haskellProgDir.list();
+            versions = versionsRoot.list();
+            append = null;
+        } else if (SystemInfo.isMac) {
+            versionsRoot = new File("/Library/Frameworks/GHC.framework/Versions");
+            if (!versionsRoot.isDirectory())
+                return null;
+            versions = versionsRoot.list();
+            append = "usr";
         } else {
-            // todo: Mac branch
             return null;
         }
-        String latestVersion = getLatestVersion(ghcDirs);
-        return latestVersion == null
-            ? null
-            : new File(haskellProgDir, latestVersion).getAbsolutePath();
+        String latestVersion = getLatestVersion(versions);
+        if (latestVersion == null)
+            return null;
+        File versionDir = new File(versionsRoot, latestVersion);
+        File homeDir;
+        if (append != null) {
+            homeDir = new File(versionDir, append);
+        } else {
+            homeDir = versionDir;
+        }
+        return homeDir.getAbsolutePath();
     }
 
     private static String getLatestVersion(String[] names) {
@@ -88,7 +103,7 @@ public final class HaskellSdkType extends SdkType {
 
     public static boolean checkForGhc(File path) {
         File bin = new File(path, "bin");
-        if (!bin.exists())
+        if (!bin.isDirectory())
             return false;
         File[] children = bin.listFiles(new FileFilter() {
             public boolean accept(File f) {
@@ -139,7 +154,7 @@ public final class HaskellSdkType extends SdkType {
 
     @Nullable
     public static String getGhcVersion(String homePath) {
-        if (homePath == null || !new File(homePath).exists()) {
+        if (homePath == null || !new File(homePath).isDirectory()) {
             return null;
         }
         try {
