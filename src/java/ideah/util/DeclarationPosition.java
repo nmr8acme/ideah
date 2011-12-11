@@ -34,7 +34,7 @@ public final class DeclarationPosition {
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;
-        String sourcePath = LocationUtil.rootsAsString(module, false);
+        String sourcePath = GHCUtil.rootsAsString(module, false);
         ProcessLauncher launcher = new ProcessLauncher(
             false, null,
             compiler.exe,

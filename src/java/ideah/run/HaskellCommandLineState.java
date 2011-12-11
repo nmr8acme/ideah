@@ -14,7 +14,7 @@ import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.util.Computable;
 import ideah.sdk.HaskellSdkType;
-import ideah.util.LocationUtil;
+import ideah.util.GHCUtil;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -91,7 +91,7 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         commandLine.setWorkDirectory(parameters.getWorkingDirectory());
 
-                        commandLine.addParameter("-i" + LocationUtil.rootsAsString(configuration.getModule(), false));
+                        commandLine.addParameter("-i" + GHCUtil.rootsAsString(configuration.getModule(), false));
                         commandLine.addParameter(mainFile); // todo
 
                         // todo: set other parameters/rt flags

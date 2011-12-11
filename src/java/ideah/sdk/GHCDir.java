@@ -1,8 +1,8 @@
 package ideah.sdk;
 
-import ideah.util.LocationUtil;
+import ideah.util.GHCUtil;
 
-import java.util.ArrayList;
+import java.util.List;
 
 final class GHCDir {
 
@@ -11,7 +11,7 @@ final class GHCDir {
 
     GHCDir(String name) {
         this.name = name;
-        ArrayList<Integer> versionList = LocationUtil.getVersion(name);
+        List<Integer> versionList = GHCUtil.getVersion(name);
         version = versionList.toArray(new Integer[versionList.size()]);
     }
 }

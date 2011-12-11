@@ -49,7 +49,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             return null;
         }
         try {
-            String sourcePath = LocationUtil.rootsAsString(module, false);
+            String sourcePath = GHCUtil.rootsAsString(module, false);
             ProcessLauncher idLauncher = new ProcessLauncher(
                 false, null,
                 compiler.exe,

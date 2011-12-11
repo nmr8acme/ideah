@@ -4,7 +4,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.projectRoots.SdkModel;
-import ideah.util.LocationUtil;
+import ideah.util.GHCUtil;
 import org.jdom.Element;
 
 import java.io.File;
@@ -39,12 +39,13 @@ public final class HaskellSdkAdditionalData implements SdkAdditionalData {
             SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
             if (sdkAdditionalData instanceof HaskellSdkAdditionalData) {
                 HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+                // todo: changed in GHC 7?
                 if (new File(data.getLibPath(), "package.conf.d").isDirectory()) {
                     haskellSdkConfigurable.reset(); // todo: ignored?! (produce error message analogous to ghc home)
                     throw new ConfigurationException("Invalid GHC lib directory (should contain 'package.conf.d' folder).");
                 }
-                String cabal = LocationUtil.getExeName("cabal");
-                if (!new File(data.getCabalPath()).getName().equals(cabal)) {
+                String cabal = GHCUtil.getExeName("cabal");
+                if (!new File(data.getCabalPath()).getName().equals(cabal)) { // todo: WTF???
                     haskellSdkConfigurable.reset(); // todo
                     throw new ConfigurationException("Please indicate the full " + cabal + " file path.");
                 }

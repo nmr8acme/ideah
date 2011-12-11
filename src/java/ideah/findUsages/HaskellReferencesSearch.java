@@ -51,7 +51,7 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 args.addAll(Arrays.asList(compiler.exe,
                     "-m", "FindUsages",
                     "-g", compiler.libPath,
-                    "-s", LocationUtil.rootsAsString(module, false),
+                    "-s", GHCUtil.rootsAsString(module, false),
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
                     "-f", virtualFile.getPath()));
                 final List<String> srcFiles = new ArrayList<String>();

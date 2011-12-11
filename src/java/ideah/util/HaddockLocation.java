@@ -3,21 +3,14 @@ package ideah.util;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.util.io.StreamUtil;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.io.StringReader;
+import java.util.*;
 
 public final class HaddockLocation {
 
@@ -30,77 +23,126 @@ public final class HaddockLocation {
         this.exe = exe;
     }
 
-    public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
-        LocationUtil.cabalCheckAndInstall(indicator, "haddock-2.9.2");
-        if (module == null)
-            return null;
-        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
-        if (sdk == null)
-            return null;
-        VirtualFile ghcHome = sdk.getHomeDirectory();
-        if (ghcHome == null)
-            return null;
-        try {
-            // todo: cache result somewhere (or better store in SDK settings)
-            String ghcCommandPath = LocationUtil.getGhcCommandPath(ghcHome);
-            if (ghcCommandPath == null)
-                return null;
-        } catch (Exception e) {
-            LOG.error(e);
-        }
-        try {
-            File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
-            pluginPath.mkdirs();
-            File haddockExe = new File(pluginPath, LocationUtil.getExeName(MAIN_FILE));
-            if (LocationUtil.needRecompile(haddockExe)) {
-                if (!compileHs(module.getProject(), pluginPath, ghcHome, haddockExe))
-                    return null;
+    @Nullable
+    private static String getPathFor(String name) {
+        String path = System.getenv("PATH");
+        String exeName = GHCUtil.getExeName(name);
+        StringTokenizer stringTokenizer = new StringTokenizer(path, File.pathSeparator);
+        while (stringTokenizer.hasMoreElements()) {
+            String dir = stringTokenizer.nextToken();
+            File directory = new File(dir);
+            if (directory.isDirectory()) {
+                File file = new File(directory, exeName);
+                if (file.exists())
+                    return new File(directory, name).getAbsolutePath();
             }
-            if (haddockExe.exists())
-                return new HaddockLocation(haddockExe.getAbsolutePath());
-            else
-                return null;
-        } catch (Exception ex) {
-            LOG.error(ex);
-            return null;
+        }
+        return null;
+    }
+
+    private static boolean equalVersion(@NotNull List<Integer> v1, @NotNull List<Integer> v2) {
+        int size = v1.size();
+        if (size != v2.size())
+            return false;
+        for (int i = 0; i < size; i++) {
+            if (!v1.get(i).equals(v2.get(i)))
+                return false;
+        }
+        return true;
+    }
+
+    private static List<String> getMissingPackages(@NotNull String cabalPath, String... packages) throws IOException, InterruptedException {
+        List<String> args = new ArrayList<String>();
+        args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
+        TreeMap<String, String> argsPackages = new TreeMap<String, String>();
+        for (String pkg : packages) {
+            argsPackages.put(pkg, pkg.substring(0, pkg.lastIndexOf('-')));
+        }
+        args.addAll(argsPackages.values()); // For "haddock list --installed <package name>", the package name should not include the version
+        List<String> packageList = new ArrayList<String>(Arrays.asList(packages));
+        Collections.sort(packageList);
+        List<String> missingPackages = new ArrayList<String>();
+        Iterator<String> iterator = packageList.iterator();
+        ProcessLauncher getMissingPackagesLauncher = new ProcessLauncher(true, null, args);
+        BufferedReader reader = new BufferedReader(new StringReader(getMissingPackagesLauncher.getStdOut()));
+        String line = reader.readLine();
+        while (line != null && iterator.hasNext()) {
+            String next = iterator.next();
+            if (!(line.startsWith(argsPackages.get(next)) && equalVersion(GHCUtil.getVersion(next), GHCUtil.getVersion(line)))) {
+                missingPackages.add(next);
+            } else {
+                line = reader.readLine();
+            }
+        }
+        return missingPackages;
+    }
+
+    private static void runCabal(@NotNull String cabalPath, List<String> cabalArgsList) throws IOException, InterruptedException {
+        Process cabalProcess = Runtime.getRuntime().exec(cabalPath, cabalArgsList.toArray(new String[cabalArgsList.size()]));
+        cabalProcess.waitFor();
+    }
+
+    private static void cabalInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, @NotNull List<String> packages) throws IOException, InterruptedException {
+        if (packages.isEmpty())
+            return;
+        if (indicator != null) {
+            StringBuilder buf = new StringBuilder("Installing missing package" + (packages.size() > 1 ? "s" : "") + " (");
+            for (int i = 0; i < packages.size(); i++) {
+                if (i > 0) {
+                    buf.append(", ");
+                }
+                buf.append(packages.get(i));
+            }
+            buf.append(")...");
+            indicator.setText(buf.toString());
+        }
+        runCabal(cabalPath, Arrays.asList("update"));
+        if (indicator == null) {
+            List<String> cabalArgsList = new ArrayList<String>();
+            cabalArgsList.add("install");
+            cabalArgsList.addAll(packages);
+            runCabal(cabalPath, cabalArgsList);
+        } else {
+            double progress = 1.0 / packages.size();
+            for (String pkg : packages) {
+                runCabal(cabalPath, Arrays.asList("install", pkg));
+                indicator.setFraction(indicator.getFraction() + progress);
+            }
         }
     }
 
-    private static boolean compileHs(@Nullable Project project, @NotNull final File pluginPath, @Nullable VirtualFile ghcHome, File exe) throws IOException, InterruptedException { // todo: not sure about @NotNull
-        exe.delete();
-        String ghcExe = LocationUtil.getGhcCommandPath(ghcHome);
-        if (ghcExe == null)
-            return false;
-        StatusBar.Info.set("Compiling " + MAIN_FILE + "...", project);
-        try {
-            LocationUtil.listHaskellSources(new LocationUtil.HsCallback() {
-                public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
-                    File outFile = new File(pluginPath, entry.getName());
-                    OutputStream os = new FileOutputStream(outFile);
-                    try {
-                        StreamUtil.copyStreamContent(zis, os);
-                    } finally {
-                        os.close();
-                    }
-                }
-            });
-            String mainHs = MAIN_FILE + ".hs";
-            ProcessLauncher launcher = new ProcessLauncher(
-                true, null, ghcExe,
-                "--make", "-cpp", "-O", "-package", "ghc",
-                "-i" + pluginPath.getAbsolutePath(),
-                new File(pluginPath, mainHs).getAbsolutePath()
-            );
-            for (int i = 0; i < 3; i++) {
-                if (exe.exists())
-                    return true;
-                Thread.sleep(100);
+    // todo: HTTP proxy settings
+    private static void cabalCheckAndInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, String... packages) {
+        if (packages.length > 0) {
+            try {
+                List<String> missingPackages = getMissingPackages(cabalPath, packages);
+                cabalInstall(cabalPath, indicator, missingPackages);
+            } catch (Exception e) {
+                LOG.error(e);
             }
-            String stdErr = launcher.getStdErr();
-            LOG.error("Compiling " + mainHs + ":\n" + stdErr);
-            return false;
-        } finally {
-            StatusBar.Info.set("Done compiling " + MAIN_FILE, project);
+        }
+    }
+
+    public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
+        AskUtil ask = AskUtil.get(module, MAIN_FILE);
+        String cabalPath = getPathFor("cabal"); // todo: get from SDK settings
+        if (cabalPath == null)
+            return null;
+        try {
+            if (ask.needRecompile()) {
+                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2");
+                if (!ask.compileHs())
+                    return null;
+            }
+            File exe = ask.getExe();
+            if (exe != null) {
+                return new HaddockLocation(exe.getAbsolutePath());
+            } else {
+                return null;
+            }
+        } catch (Exception ex) {
+            LOG.error(ex);
+            return null;
         }
     }
 }
