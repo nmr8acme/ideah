@@ -2,18 +2,16 @@ module FindUsages (findUsages) where
 
 import Control.Monad (when)
 import System.Exit
-import FastString (unpackFS)
 import System.FilePath
 
 import GHC
 import MonadUtils
 import Name hiding (varName)
-import Id
+import FastString (unpackFS)
 import Var (varName)
 
 import HUtil
 import Walker
-import GetDeclPos
 
 findUsages :: String -> FilePath -> (Int, Int) -> FilePath -> [FilePath] -> IO ()
 findUsages srcPath ghcPath (line, col) srcFile files =

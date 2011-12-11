@@ -6,8 +6,8 @@ import System.Exit
 import GHC
 import MonadUtils
 import Name (nameSrcLoc)
+import FastString (unpackFS)
 import Id
-import Var (varName)
 
 import HUtil
 import Walker
@@ -21,7 +21,7 @@ extractPos line col var loc _ = liftIO $
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
         let loc' = nameSrcLoc $ idName var
         putStrLn $ locStr loc'
-        putStrLn $ show $ srcLocFile loc'
+        putStrLn $ unpackFS $ srcLocFile loc'
         exitSuccess
 
 doExtractPos :: Int -> Int -> TypecheckedModule -> Ghc ()
