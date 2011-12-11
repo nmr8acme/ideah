@@ -25,6 +25,12 @@
         <pathelement path="${lib.dir}/idea.jar"/>
     </path>
 
+    <path id="idea.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
     <target name="init">
         <echo message="Building ${ant.project.name} with JDK ${java.version}"/>
         <!-- Create the time stamp -->
@@ -42,11 +48,13 @@
         <zip destfile="${classes.dir}/ask_ghc.jar" basedir="${hs.dir}" includes="**/*.hs"/>
     </target>
 
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.classpath"/>
+
     <target name="compile" depends="init">
-        <javac srcdir="${src.dir}" destdir="${classes.dir}" debug="true" includeantruntime="false">
+        <javac2 srcdir="${src.dir}" destdir="${classes.dir}" debug="true" includeantruntime="false">
             <classpath refid="project.classpath"/>
             <compilerarg line="${javac.options}"/>
-        </javac>
+        </javac2>
     </target>
 
     <target name="src">

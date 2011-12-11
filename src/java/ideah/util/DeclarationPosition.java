@@ -46,12 +46,11 @@ public final class DeclarationPosition {
         );
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
         String lineCol = reader.readLine();
-        String moduleLine = reader.readLine();
-        if (lineCol != null && moduleLine != null) {
+        String moduleName = reader.readLine();
+        if (lineCol != null && moduleName != null) {
             LineCol declCoord = LineCol.parse(lineCol);
             if (declCoord == null)
                 return null;
-            String moduleName = moduleLine.replaceAll("\"", "");
             return new DeclarationPosition(declCoord, moduleName);
         } else {
             return null;
