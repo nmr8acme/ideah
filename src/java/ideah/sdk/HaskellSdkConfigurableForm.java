@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class HaskellSdkConfigurableForm {
+public final class HaskellSdkConfigurableForm {
 
     private JPanel myContentPanel;
     private JTextField myGhcOptionsTextField;

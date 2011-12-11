@@ -11,7 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import ideah.repl.HaskellConsoleRunner;
 
-public class RunHaskellConsoleAction extends AnAction implements DumbAware {
+public final class RunHaskellConsoleAction extends AnAction implements DumbAware {
 
     @Override
     public void update(AnActionEvent e) {
