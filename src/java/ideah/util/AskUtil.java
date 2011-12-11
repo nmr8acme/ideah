@@ -7,6 +7,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.zip.ZipEntry;
@@ -21,13 +22,18 @@ final class AskUtil {
 
     private static Long sourcesLastModified = null;
 
+    @NotNull
     private final Module module;
+    @NotNull
     private final VirtualFile ghcHome;
+    @NotNull
     private final File pluginPath;
+    @NotNull
     private final File exe;
+    @NotNull
     private final String mainFile;
 
-    private AskUtil(Module module, VirtualFile ghcHome, File pluginPath, File exe, String mainFile) {
+    private AskUtil(@NotNull Module module, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
         this.module = module;
         this.ghcHome = ghcHome;
         this.pluginPath = pluginPath;
@@ -115,7 +121,7 @@ final class AskUtil {
         }
     }
 
-    boolean compileHs() throws IOException, InterruptedException { // todo: not sure about @NotNull
+    boolean compileHs() throws IOException, InterruptedException {
         exe.delete();
         String ghcExe = GHCUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
