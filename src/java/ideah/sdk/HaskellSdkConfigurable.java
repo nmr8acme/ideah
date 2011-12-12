@@ -67,7 +67,7 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
     @Nullable
     private static String suggestCabalPath(@Nullable String libPath) {
         String cabalExe = GHCUtil.getExeName("cabal");
-        if (SystemInfo.isLinux || SystemInfo.isMac) {
+        if (SystemInfo.isUnix) {
             try {
                 ProcessLauncher getCabalDir = new ProcessLauncher(true, null, "which", "cabal");
                 File cabal = new File(getCabalDir.getStdOut().trim(), cabalExe);
@@ -83,30 +83,12 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
                 if (cabal.isFile())
                     return cabal.getPath();
             }
-            return getPathFor(cabalExe);
         }
-        return null;
+        return getPathFor(cabalExe);
     }
 
     public void setSdk(Sdk sdk) {
         mySdk = sdk;
-        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
-        if (sdkAdditionalData instanceof HaskellSdkAdditionalData) {
-            // todo: возможно это будет сохраняться, так что лучше не здесь заполнять, а в форме редактирования?
-            HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
-            String libPath = data.getLibPath();
-            if (libPath == null) {
-                libPath = suggestLibPath(sdk);
-                data.setLibPath(libPath == null ? "" : libPath);
-            }
-            if (data.getCabalPath() == null) {
-                String cabalPath = suggestCabalPath(libPath);
-                data.setCabalPath(cabalPath == null ? "" : cabalPath);
-            }
-            if (data.getGhcOptions() == null) {
-                data.setGhcOptions("");
-            }
-        }
     }
 
     public JComponent createComponent() {
@@ -114,21 +96,14 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
     }
 
     public boolean isModified() {
-        SdkAdditionalData sdkAdditionalData = mySdk.getSdkAdditionalData();
-        if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
-            return true;
-        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
-        // todo: warning - can be null
-        return !(data.getCabalPath().equals(myForm.getCabalPath())
-            && data.getGhcOptions().equals(myForm.getGhcOptions())
-            && data.getLibPath().equals(myForm.getLibPath()));
+        return myForm.isModified();
     }
 
     public void apply() {
         String libPath = myForm.getLibPath();
         String cabalPath = myForm.getCabalPath();
         String ghcOptions = myForm.getGhcOptions();
-        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(libPath, cabalPath, ghcOptions, this);
+        HaskellSdkAdditionalData newData = new HaskellSdkAdditionalData(libPath, cabalPath, ghcOptions);
         final SdkModificator modificator = mySdk.getSdkModificator();
         modificator.setSdkAdditionalData(newData);
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
@@ -136,14 +111,33 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
                 modificator.commitChanges();
             }
         });
+        myForm.setModified(false);
     }
 
     public void reset() {
         SdkAdditionalData data = mySdk.getSdkAdditionalData();
-        if (!(data instanceof HaskellSdkAdditionalData))
-            return;
-        HaskellSdkAdditionalData ghcData = (HaskellSdkAdditionalData) data;
-        myForm.init(ghcData.getLibPath(), ghcData.getCabalPath(), ghcData.getGhcOptions());
+        HaskellSdkAdditionalData ghcData;
+        if (data != null) {
+            if (!(data instanceof HaskellSdkAdditionalData))
+                return;
+            ghcData = (HaskellSdkAdditionalData) data;
+        } else {
+            ghcData = null;
+        }
+        boolean modified = false;
+        String libPath = ghcData == null ? null : ghcData.getLibPath();
+        if (libPath == null) {
+            libPath = suggestLibPath(mySdk);
+            modified = true;
+        }
+        String cabalPath = ghcData == null ? null : ghcData.getCabalPath();
+        if (cabalPath == null) {
+            cabalPath = suggestCabalPath(libPath);
+            modified = true;
+        }
+        String ghcOptions = ghcData == null ? null : ghcData.getGhcOptions();
+        myForm.init(libPath, cabalPath, ghcOptions);
+        myForm.setModified(modified);
     }
 
     public void disposeUIResources() {

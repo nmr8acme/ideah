@@ -1,7 +1,6 @@
 package ideah.sdk;
 
 import com.intellij.openapi.options.ConfigurationException;
-import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.projectRoots.SdkModel;
 import ideah.util.GHCUtil;
@@ -18,39 +17,27 @@ public final class HaskellSdkAdditionalData implements SdkAdditionalData {
     private String libPath;
     private String cabalPath;
     private String ghcOptions;
-    private final HaskellSdkConfigurable haskellSdkConfigurable;
 
-    public HaskellSdkAdditionalData(String libPath, String cabalPath, String ghcOptions, HaskellSdkConfigurable haskellSdkConfigurable) {
+    public HaskellSdkAdditionalData(String libPath, String cabalPath, String ghcOptions) {
         this.libPath = libPath;
         this.cabalPath = cabalPath;
         this.ghcOptions = ghcOptions;
-        this.haskellSdkConfigurable = haskellSdkConfigurable;
     }
 
     public HaskellSdkAdditionalData(Element element) {
         this.libPath = element.getAttributeValue(LIB_PATH);
         this.cabalPath = element.getAttributeValue(CABAL_PATH);
         this.ghcOptions = element.getAttributeValue(GHC_OPTIONS);
-        this.haskellSdkConfigurable = null;
     }
 
     public void checkValid(SdkModel sdkModel) throws ConfigurationException {
-        for (Sdk sdk : sdkModel.getSdks()) {
-            // todo: must check this.properties?
-            SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
-            if (sdkAdditionalData instanceof HaskellSdkAdditionalData) {
-                HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
-                // todo: changed in GHC 7?
-                if (!new File(data.getLibPath(), "package.conf.d").isDirectory()) {
-                    haskellSdkConfigurable.reset(); // todo: ignored?! (produce error message analogous to ghc home)
-                    throw new ConfigurationException("Invalid GHC lib directory (should contain 'package.conf.d' folder)");
-                }
-                String cabal = GHCUtil.getExeName("cabal");
-                if (!new File(data.getCabalPath()).getName().equals(cabal)) { // todo: WTF???
-                    haskellSdkConfigurable.reset(); // todo
-                    throw new ConfigurationException("Please indicate the full " + cabal + " file path");
-                }
-            }
+        // todo: changed in GHC 7?
+        if (libPath == null || !new File(libPath, "package.conf.d").exists()) {
+            throw new ConfigurationException("Invalid GHC lib directory (should contain 'package.conf.d')");
+        }
+        String cabal = GHCUtil.getExeName("cabal");
+        if (cabalPath == null || !new File(cabalPath).getName().equals(cabal) || !new File(cabalPath).isFile()) {
+            throw new ConfigurationException("Please indicate the full " + cabal + " file path");
         }
     }
 

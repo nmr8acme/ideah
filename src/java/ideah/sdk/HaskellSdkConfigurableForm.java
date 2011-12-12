@@ -5,6 +5,8 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public final class HaskellSdkConfigurableForm {
 
@@ -16,11 +18,34 @@ public final class HaskellSdkConfigurableForm {
     private JLabel cabalLabel;
     private JLabel ghcOptionsLabel;
 
+    private boolean modified = false;
+
     public HaskellSdkConfigurableForm() {
         myGhcLibPathTFWBB.addBrowseFolderListener("Path to GHC lib directory", "Path to GHC lib Directory",
             null, new FileChooserDescriptor(false, true, false, false, false, false));
         myCabalTFWBB.addBrowseFolderListener("Path to cabal executable", "Path to Cabal Executable",
             null, new FileChooserDescriptor(true, false, false, false, false, false));
+        DocumentListener listener = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                modify();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                modify();
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                modify();
+            }
+        };
+        myGhcOptionsTextField.getDocument().addDocumentListener(listener);
+        myGhcLibPathTFWBB.getTextField().getDocument().addDocumentListener(listener);
+        myCabalTFWBB.getTextField().getDocument().addDocumentListener(listener);
+    }
+
+    private void modify() {
+        modified = true;
     }
 
     @NotNull
@@ -44,5 +69,13 @@ public final class HaskellSdkConfigurableForm {
         myGhcLibPathTFWBB.setText(libPath);
         myCabalTFWBB.setText(cabalPath);
         myGhcOptionsTextField.setText(ghcOptions);
+    }
+
+    void setModified(boolean modified) {
+        this.modified = modified;
+    }
+
+    boolean isModified() {
+        return modified;
     }
 }
