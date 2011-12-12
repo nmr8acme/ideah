@@ -7,7 +7,7 @@
     <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">
         ideah.plugin@gmail.com
     </vendor>
-    <idea-version since-build="99.18"/>
+    <idea-version since-build="99.18" until-build="107.999"/>
 
     <application-components>
         <component>
