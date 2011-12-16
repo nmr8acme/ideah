@@ -58,6 +58,10 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
             newName = newName.substring(0, length);
             length--;
         }
+        String suffix = "." + ext;
+        if (newName.toLowerCase().endsWith(suffix)) {
+            newName = newName.substring(0, newName.length() - suffix.length());
+        }
         String[] fileNames = newName.split("\\.");
         int depth = fileNames.length;
         String moduleName = fileNames[depth - 1];
