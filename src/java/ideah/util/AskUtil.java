@@ -26,8 +26,6 @@ final class AskUtil {
     private static Long sourcesLastModified = null;
 
     @NotNull
-    private final Module module;
-    @NotNull
     private final Sdk sdk;
     @NotNull
     private final VirtualFile ghcHome;
@@ -38,8 +36,7 @@ final class AskUtil {
     @NotNull
     private final String mainFile;
 
-    private AskUtil(@NotNull Module module, @NotNull Sdk sdk, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
-        this.module = module;
+    private AskUtil(@NotNull Sdk sdk, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
         this.sdk = sdk;
         this.ghcHome = ghcHome;
         this.pluginPath = pluginPath;
@@ -60,7 +57,7 @@ final class AskUtil {
         File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
-        return new AskUtil(module, sdk, ghcHome, pluginPath, exe, mainFile);
+        return new AskUtil(sdk, ghcHome, pluginPath, exe, mainFile);
     }
 
     private HaskellSdkAdditionalData getData() {
