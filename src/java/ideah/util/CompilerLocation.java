@@ -1,17 +1,18 @@
 package ideah.util;
 
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class CompilerLocation {
 
@@ -43,27 +44,31 @@ public final class CompilerLocation {
             return null;
         try {
             if (ask.needRecompile()) {
-                final boolean[] exeExists = new boolean[1];
-                final Application application = ApplicationManager.getApplication();
-                application.invokeLater(new Runnable() {
-                    public void run() {
-                        new ProgressManagerImpl(application).runProcessWithProgressSynchronously(new Runnable() {
+                FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
+                    public Boolean call() throws Exception {
+                        // call() is invoked in Event Dispatch Thread
+                        final AtomicBoolean exeExists = new AtomicBoolean();
+                        ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
                             public void run() {
+                                // run() is invoked in worker thread
                                 try {
                                     ProgressIndicator indicator =
                                         ProgressManager.getInstance().getProgressIndicator();
                                     indicator.setText("Preparing " + MAIN_FILE + " compilation...");
                                     indicator.setFraction(0.1);
-                                    exeExists[0] = ask.compileHs(indicator);
+                                    exeExists.set(ask.compileHs(indicator));
                                     indicator.setFraction(1.0);
                                 } catch (Exception e) {
                                     LOG.error(e.getMessage());
                                 }
                             }
                         }, "Compiling " + MAIN_FILE, true, module.getProject());
+                        return exeExists.get();
                     }
                 });
-                if (!exeExists[0])
+                ApplicationManager.getApplication().invokeLater(task);
+                Boolean exeExists = task.get();
+                if (!exeExists.booleanValue())
                     return null;
             }
             File exe = ask.getExe();

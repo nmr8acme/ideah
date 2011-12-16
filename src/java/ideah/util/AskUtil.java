@@ -176,7 +176,7 @@ final class AskUtil {
         }
     }
 
-    static void increaseIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
+    private static void increaseIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
         if (indicator != null) {
             indicator.setFraction(indicator.getFraction() + step);
             if (message != null) {
