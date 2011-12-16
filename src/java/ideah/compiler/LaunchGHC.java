@@ -23,7 +23,7 @@ public final class LaunchGHC {
         try {
             CompilerLocation compiler = CompilerLocation.get(module);
             if (compiler == null)
-                return Collections.emptyList(); // todo: produce error
+                return Collections.emptyList();
             List<String> args = new ArrayList<String>();
             args.add(compiler.exe);
             args.addAll(Arrays.asList(
