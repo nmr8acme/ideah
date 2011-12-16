@@ -50,11 +50,13 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 List<String> args = new ArrayList<String>();
                 args.add(compiler.exe);
                 AskUtil.addGhcOptions(module, args);
-                args.addAll(Arrays.asList("-m", "FindUsages",
+                args.addAll(Arrays.asList(
+                    "-m", "FindUsages",
                     "-g", compiler.libPath,
                     "-s", GHCUtil.rootsAsString(module, false),
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-                    "-f", virtualFile.getPath()));
+                    "-f", virtualFile.getPath()
+                ));
                 final List<String> srcFiles = new ArrayList<String>();
                 fileIndex.iterateContent(new ContentIterator() {
                     public boolean processFile(VirtualFile virtualFile) {

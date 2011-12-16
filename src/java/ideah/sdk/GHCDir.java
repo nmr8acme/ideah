@@ -1,17 +1,15 @@
 package ideah.sdk;
 
 import ideah.util.GHCUtil;
-
-import java.util.List;
+import ideah.util.GHCVersion;
 
 final class GHCDir {
 
     final String name;
-    final Integer[] version;
+    final GHCVersion version;
 
     GHCDir(String name) {
         this.name = name;
-        List<Integer> versionList = GHCUtil.getVersion(name);
-        version = versionList.toArray(new Integer[versionList.size()]);
+        this.version = GHCUtil.getVersion(name);
     }
 }

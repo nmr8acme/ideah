@@ -71,7 +71,7 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
         for (int i = 0; i < depth - 1; i++) {
             String fileName = fileNames[i];
             if ("".equals(fileName)) {
-                throw new IncorrectOperationException("File name cannot be empty.");
+                throw new IncorrectOperationException("File name cannot be empty");
             }
             char oldChar = fileName.charAt(0);
             String dirName = fileName.replace(oldChar, Character.toUpperCase(oldChar));

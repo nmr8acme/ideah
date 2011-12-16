@@ -55,11 +55,13 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             List<String> args = new ArrayList<String>();
             args.add(compiler.exe);
             AskUtil.addGhcOptions(module, args);
-            args.addAll(Arrays.asList("-m", "GetIdType",
+            args.addAll(Arrays.asList(
+                "-m", "GetIdType",
                 "-g", compiler.libPath,
                 "-s", sourcePath,
                 "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-                file.getPath()));
+                file.getPath()
+            ));
             ProcessLauncher idLauncher = new ProcessLauncher(false, null, args);
             String stdOut = idLauncher.getStdOut();
             if (stdOut.trim().isEmpty())

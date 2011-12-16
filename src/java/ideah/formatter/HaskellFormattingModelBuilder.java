@@ -55,9 +55,11 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         List<String> args = new ArrayList<String>();
         args.add(compiler.exe);
         AskUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList("-m", "ParseTree",
+        args.addAll(Arrays.asList(
+            "-m", "ParseTree",
             "-g", compiler.libPath,
-            virtualFile.getPath()));
+            virtualFile.getPath()
+        ));
         ProcessLauncher launcher = new ProcessLauncher(false, virtualFile.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         if (stdOut.trim().isEmpty())

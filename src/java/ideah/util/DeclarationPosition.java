@@ -41,11 +41,13 @@ public final class DeclarationPosition {
         List<String> args = new ArrayList<String>();
         args.add(compiler.exe);
         AskUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList("-m", "GetDeclPos",
+        args.addAll(Arrays.asList(
+            "-m", "GetDeclPos",
             "-g", compiler.libPath,
             "-s", sourcePath,
             "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-            file.getPath()));
+            file.getPath()
+        ));
         ProcessLauncher launcher = new ProcessLauncher(false, null, args);
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
         String lineCol = reader.readLine();

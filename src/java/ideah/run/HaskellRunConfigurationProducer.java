@@ -71,9 +71,11 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         List<String> args = new ArrayList<String>();
         args.add(compiler.exe);
         AskUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList("-m", "CheckMain",
+        args.addAll(Arrays.asList(
+            "-m", "CheckMain",
             "-g", compiler.libPath,
-            file.getPath()));
+            file.getPath()
+        ));
         ProcessLauncher launcher = new ProcessLauncher(false, file.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         return stdOut != null && stdOut.contains("t");

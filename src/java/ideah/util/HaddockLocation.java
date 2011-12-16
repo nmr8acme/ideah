@@ -23,17 +23,6 @@ public final class HaddockLocation {
         this.exe = exe;
     }
 
-    private static boolean equalVersion(@NotNull List<Integer> v1, @NotNull List<Integer> v2) {
-        int size = v1.size();
-        if (size != v2.size())
-            return false;
-        for (int i = 0; i < size; i++) {
-            if (!v1.get(i).equals(v2.get(i)))
-                return false;
-        }
-        return true;
-    }
-
     private static List<String> getMissingPackages(@NotNull String cabalPath, String... packages) throws IOException, InterruptedException {
         List<String> args = new ArrayList<String>();
         args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
@@ -51,7 +40,7 @@ public final class HaddockLocation {
         String line = reader.readLine();
         while (line != null && iterator.hasNext()) {
             String next = iterator.next();
-            if (line.startsWith(argsPackages.get(next)) && equalVersion(GHCUtil.getVersion(next), GHCUtil.getVersion(line))) {
+            if (line.startsWith(argsPackages.get(next)) && GHCUtil.getVersion(next).equals(GHCUtil.getVersion(line))) {
                 line = reader.readLine();
             } else {
                 missingPackages.add(next);
