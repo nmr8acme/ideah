@@ -53,8 +53,12 @@ public final class HaddockLocation {
     }
 
     private static void runCabal(@NotNull String cabalPath, List<String> cabalArgsList) throws IOException, InterruptedException {
-        Process cabalProcess = Runtime.getRuntime().exec(cabalPath, cabalArgsList.toArray(new String[cabalArgsList.size()]));
-        cabalProcess.waitFor();
+        List<String> args = new ArrayList<String>();
+        args.add(cabalPath);
+        args.addAll(cabalArgsList);
+        new ProcessLauncher(
+            true, null, args
+        );
     }
 
     private static void cabalInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, @NotNull List<String> packages) throws IOException, InterruptedException {
