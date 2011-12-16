@@ -28,7 +28,7 @@ public final class HaddockLocation {
         args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
         TreeMap<String, String> argsPackages = new TreeMap<String, String>();
         for (String pkg : packages) {
-            argsPackages.put(pkg, getPackageBaseName(pkg));
+            argsPackages.put(pkg, pkg.substring(0, pkg.lastIndexOf('-')));
         }
         args.addAll(argsPackages.values()); // For "haddock list --installed <package name>", the package name should not include the version
         List<String> packageList = new ArrayList<String>(Arrays.asList(packages));
@@ -50,10 +50,6 @@ public final class HaddockLocation {
             missingPackages.add(iterator.next());
         }
         return missingPackages;
-    }
-
-    private static String getPackageBaseName(String pkg) {
-        return pkg.substring(0, pkg.lastIndexOf('-'));
     }
 
     private static void runCabal(@NotNull String cabalPath, List<String> cabalArgsList) throws IOException, InterruptedException {
@@ -81,7 +77,7 @@ public final class HaddockLocation {
         } else {
             double step = getFractionRange(indicator, maxIndicatorFraction) / size;
             for (String pkg : packages) {
-                GHCUtil.updateIndicatorText(indicator, "Installing package " + getPackageBaseName(pkg) + "...");
+                GHCUtil.updateIndicatorText(indicator, "Installing package " + pkg + "...");
                 runCabal(cabalPath, Arrays.asList("install", pkg));
                 GHCUtil.increaseIndicatorFraction(indicator, step);
             }
