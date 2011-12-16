@@ -42,13 +42,13 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
     }
 
     protected void checkBeforeCreate(String newName, PsiDirectory directory) throws IncorrectOperationException {
+        if ("".equals(newName)) {
+            throw new IncorrectOperationException("A name should be specified");
+        }
     }
 
     @NotNull
     protected PsiElement[] create(String newName, PsiDirectory directory) throws Exception {
-        if ("".equals(newName)) {
-            throw new IncorrectOperationException("A name should be specified");
-        }
         HaskellFileType type = HaskellFileType.INSTANCE;
         String ext = type.getDefaultExtension();
         Project project = directory.getProject();
@@ -69,10 +69,12 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
                 : parentPackages + "."
         );
         for (int i = 0; i < depth - 1; i++) {
-            String dirName = fileNames[i];
-            if ("".equals(dirName)) {
+            String fileName = fileNames[i];
+            if ("".equals(fileName)) {
                 throw new IncorrectOperationException("File name cannot be empty.");
             }
+            char oldChar = fileName.charAt(0);
+            String dirName = fileName.replace(oldChar, Character.toUpperCase(oldChar));
             PsiDirectory subDir = moduleDir.findSubdirectory(dirName);
             moduleDir = subDir == null ? moduleDir.createSubdirectory(dirName) : subDir;
             if (needsModuleName) {

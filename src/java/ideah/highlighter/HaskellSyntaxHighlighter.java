@@ -32,6 +32,8 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
     @NonNls
     static final String KEYWORD_ID = "Keyword";
     @NonNls
+    static final String STD_FUNCTION_ID = "Standard function";
+    @NonNls
     static final String KEY_SYM_ID = "Special symbol";
     @NonNls
     static final String TYCON_ID = "Type or constructor";
@@ -57,10 +59,10 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
     }
 
     static final TextAttributesKey STRING_ATTR = TextAttributesKey.createTextAttributesKey(
-        STRING_ID, SyntaxHighlighterColors.STRING.getDefaultAttributes()
+        STRING_ID, modify(SyntaxHighlighterColors.STRING, new Color(0xa13290))
     );
     static final TextAttributesKey NUMBER_ATTR = TextAttributesKey.createTextAttributesKey(
-        NUMBER_ID, SyntaxHighlighterColors.NUMBER.getDefaultAttributes()
+        NUMBER_ID, modify(SyntaxHighlighterColors.NUMBER, new Color(0x2da1a2))
     );
     static final TextAttributesKey LINE_COMMENT_ATTR = TextAttributesKey.createTextAttributesKey(
         COMMENT_ID, SyntaxHighlighterColors.LINE_COMMENT.getDefaultAttributes()
@@ -71,11 +73,14 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
     static final TextAttributesKey KEYWORD_ATTR = TextAttributesKey.createTextAttributesKey(
         KEYWORD_ID, SyntaxHighlighterColors.KEYWORD.getDefaultAttributes()
     );
+    static final TextAttributesKey STD_FUNCTION_ATTR = TextAttributesKey.createTextAttributesKey(
+        STD_FUNCTION_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.BLACK)
+    );
     static final TextAttributesKey KEYSYM_ATTR = TextAttributesKey.createTextAttributesKey(
-        KEY_SYM_ID, SyntaxHighlighterColors.KEYWORD.getDefaultAttributes() // todo: ???
+        KEY_SYM_ID, modify(SyntaxHighlighterColors.KEYWORD, new Color(0xa86e0a)) // todo: ???
     );
     static final TextAttributesKey CON_ATTR = TextAttributesKey.createTextAttributesKey(
-        TYCON_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.MAGENTA.darker()) // todo: ???
+        TYCON_ID, modify(SyntaxHighlighterColors.KEYWORD, new Color(0x268bd3)) // todo: ???
     );
     static final TextAttributesKey SYM_ATTR = TextAttributesKey.createTextAttributesKey(
         SYM_ID, SyntaxHighlighterColors.OPERATION_SIGN.getDefaultAttributes()
@@ -104,6 +109,7 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
     private static final TokenSet TS_LINE_COMMENT = TokenSet.create(COMMENT);
     private static final TokenSet TS_ML_COMMENT = TokenSet.create(ML_COMMENT);
     private static final TokenSet TS_KEYWORD = TokenSet.create(KEYWORD);
+    private static final TokenSet TS_STD_FUNCTION = TokenSet.create(STD_FUNCTION);
     private static final TokenSet TS_KEYSYM = TokenSet.create(KEY_OP, SPECIAL, COMMA);
     private static final TokenSet TS_CON = TokenSet.create(CON_ID);
     private static final TokenSet TS_SYM = TokenSet.create(VAR_SYM, CON_SYM);
@@ -120,6 +126,7 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
         fillMap(ATTRIBUTES, TS_LINE_COMMENT, LINE_COMMENT_ATTR);
         fillMap(ATTRIBUTES, TS_ML_COMMENT, ML_COMMENT_ATTR);
         fillMap(ATTRIBUTES, TS_KEYWORD, KEYWORD_ATTR);
+        fillMap(ATTRIBUTES, TS_STD_FUNCTION, STD_FUNCTION_ATTR);
         fillMap(ATTRIBUTES, TS_KEYSYM, KEYSYM_ATTR);
         fillMap(ATTRIBUTES, TS_CON, CON_ATTR);
         fillMap(ATTRIBUTES, TS_SYM, SYM_ATTR);

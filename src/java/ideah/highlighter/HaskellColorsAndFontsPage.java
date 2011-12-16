@@ -37,6 +37,7 @@ public final class HaskellColorsAndFontsPage implements ColorSettingsPage {
             new AttributesDescriptor(HaskellSyntaxHighlighter.COMMENT_ID, HaskellSyntaxHighlighter.LINE_COMMENT_ATTR),
             new AttributesDescriptor(HaskellSyntaxHighlighter.ML_COMMENT_ID, HaskellSyntaxHighlighter.ML_COMMENT_ATTR),
             new AttributesDescriptor(HaskellSyntaxHighlighter.KEYWORD_ID, HaskellSyntaxHighlighter.KEYWORD_ATTR),
+            new AttributesDescriptor(HaskellSyntaxHighlighter.STD_FUNCTION_ID, HaskellSyntaxHighlighter.STD_FUNCTION_ATTR),
             new AttributesDescriptor(HaskellSyntaxHighlighter.KEY_SYM_ID, HaskellSyntaxHighlighter.KEYSYM_ATTR),
             new AttributesDescriptor(HaskellSyntaxHighlighter.TYCON_ID, HaskellSyntaxHighlighter.CON_ATTR),
             new AttributesDescriptor(HaskellSyntaxHighlighter.SYM_ID, HaskellSyntaxHighlighter.SYM_ATTR),

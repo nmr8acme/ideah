@@ -7,6 +7,7 @@ public interface HaskellTokenTypes {
     HaskellTokenType ML_COMMENT = new HaskellTokenType("block comment");
     HaskellTokenType COMMENT = new HaskellTokenType("line comment");
     HaskellTokenType KEYWORD = new HaskellTokenType("keyword");
+    HaskellTokenType STD_FUNCTION = new HaskellTokenType("standard function");
     HaskellTokenType KEY_OP = new HaskellTokenType("key operator");
     HaskellTokenType L_PAREN = new HaskellTokenType("left paren");
     HaskellTokenType R_PAREN = new HaskellTokenType("right paren");
