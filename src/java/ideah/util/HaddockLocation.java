@@ -51,11 +51,14 @@ public final class HaddockLocation {
         String line = reader.readLine();
         while (line != null && iterator.hasNext()) {
             String next = iterator.next();
-            if (!(line.startsWith(argsPackages.get(next)) && equalVersion(GHCUtil.getVersion(next), GHCUtil.getVersion(line)))) {
-                missingPackages.add(next);
-            } else {
+            if (line.startsWith(argsPackages.get(next)) && equalVersion(GHCUtil.getVersion(next), GHCUtil.getVersion(line))) {
                 line = reader.readLine();
+            } else {
+                missingPackages.add(next);
             }
+        }
+        while (iterator.hasNext()) {
+            missingPackages.add(iterator.next());
         }
         return missingPackages;
     }
@@ -113,7 +116,7 @@ public final class HaddockLocation {
             return null;
         try {
             if (ask.needRecompile()) {
-                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2");
+                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2", "uu-parsinglib-2.7.3");
                 if (!ask.compileHs())
                     return null;
             }
