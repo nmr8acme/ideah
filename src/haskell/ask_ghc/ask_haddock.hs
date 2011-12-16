@@ -22,6 +22,7 @@ options =
     , Option ['s'] ["sourcepath"]     (ReqArg (\path opt -> opt {sourcePath = path}) "DIR") "source path"
     , Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "line number"
     , Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "column number"
+    , Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = words opts}) "String") "GHC options"
     ]
 
 main = do
@@ -29,4 +30,4 @@ main = do
     let (opts', files, errors) = getOpt Permute options args
     unless (null errors) $ ioError $ userError $ concat errors
     let opts = foldl (\opt f -> f opt) defaultOpts opts'
-    getDocu (sourcePath opts) (ghcPath opts) (position opts) $ moduleFile opts
+    getDocu (compilerOptions opts) (sourcePath opts) (ghcPath opts) (position opts) $ moduleFile opts

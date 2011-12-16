@@ -9,10 +9,10 @@ import Walker
 import HUtil
 import HDebugUtil
 
-parseTree ghcPath file = runGhc (Just ghcPath) parseTree'
+parseTree compOpts ghcPath file = runGhc (Just ghcPath) parseTree'
     where 
         parseTree' = do
-            setupFlags True ["-cpp"]
+            setupFlags True $ "-cpp" : compOpts
             buffer <- liftIO loadStdin
             result <- parseHsFile buffer file
             case result of

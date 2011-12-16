@@ -5,10 +5,10 @@ import MonadUtils
 
 import HUtil
 
-checkMain ghcPath file = runGhc (Just ghcPath) checkMain'
+checkMain compOpts ghcPath file = runGhc (Just ghcPath) checkMain'
     where 
         checkMain' = do
-            setupFlags True []
+            setupFlags True compOpts
             buffer <- liftIO loadStdin
             result <- parseHsFile buffer file
             liftIO $ putStrLn $ if hasMain result then "t" else "f"

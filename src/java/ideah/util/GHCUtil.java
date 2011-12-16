@@ -27,7 +27,7 @@ public final class GHCUtil {
         return new File(virBin.getPath(), "ghc").getAbsolutePath();
     }
 
-    public static String rootsAsString(Module module, boolean tests) {
+    public static String rootsAsString(@NotNull Module module, boolean tests) {
         VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(tests);
         StringBuilder buf = new StringBuilder();
         for (VirtualFile root : sourceRoots) {

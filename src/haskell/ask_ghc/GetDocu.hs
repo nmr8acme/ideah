@@ -21,10 +21,10 @@ import HUtil
 
 import Documentation.Haddock
 
-getDocu :: FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
-getDocu srcPath ghcPath loc modFile = do
+getDocu :: [String] -> FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
+getDocu compOpts srcPath ghcPath loc modFile = do
     ifaces <- createInterfaces [ Flag_GhcLibDir ghcPath
-                               , Flag_OptGhc ("-i " ++ srcPath)] [modFile]
+                               , Flag_OptGhc (unwords compOpts ++ " -i " ++ srcPath)] [modFile]
     let (iface : _)       = filter (equalFilePath modFile . ifaceOrigFilename) ifaces
         ifaceMap          = ifaceDeclMap iface
         ifaceKeys         = Data.Map.keys ifaceMap

@@ -10,15 +10,17 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.StatusBar;
 import ideah.sdk.HaskellSdkAdditionalData;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
  * Helper class to build ask_* executables
  */
-final class AskUtil {
+public final class AskUtil {
 
     private static final Logger LOG = Logger.getInstance("ideah.util.AskUtil");
 
@@ -59,6 +61,31 @@ final class AskUtil {
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
         return new AskUtil(module, sdk, ghcHome, pluginPath, exe, mainFile);
+    }
+
+    @Nullable
+    private static String getCompilerOptions(Module module) {
+        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
+        if (sdk != null) {
+            SdkAdditionalData data = sdk.getSdkAdditionalData();
+            if (data instanceof HaskellSdkAdditionalData) {
+                return ((HaskellSdkAdditionalData) data).getGhcOptions();
+            }
+        }
+        return null;
+    }
+
+    public static void addGhcOptions(Module module, List<String> args, @NotNull String initialOptions) {
+        String options = getCompilerOptions(module);
+        String initial = initialOptions + " ";
+        if (options != null) {
+            args.add("-c");
+            args.add(initial + options);
+        }
+    }
+
+    public static void addGhcOptions(Module module, List<String> args) {
+        addGhcOptions(module, args, "");
     }
 
     String getLibDir() {

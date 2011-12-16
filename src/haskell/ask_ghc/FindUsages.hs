@@ -13,9 +13,9 @@ import Var (varName)
 import HUtil
 import Walker
 
-findUsages :: String -> FilePath -> (Int, Int) -> FilePath -> [FilePath] -> IO ()
-findUsages srcPath ghcPath (line, col) srcFile files =
-    runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col) files)
+findUsages :: [String] -> String -> FilePath -> (Int, Int) -> FilePath -> [FilePath] -> IO ()
+findUsages compOpts srcPath ghcPath (line, col) srcFile files =
+    runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col) files)
 
 extractDecl :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Id -> SrcSpan -> Where -> Ghc ()
 extractDecl line col checkedSrc srcFile files var loc _ =
@@ -43,9 +43,9 @@ doExtractLocs line col checkedSrc srcFile files = do
     let cb = defWalkCallback { ident = extractDecl line col checkedSrc srcFile files }
     walkDeclarations cb (typecheckedSource checkedSrc)
 
-doWalk :: String -> FilePath -> Int -> Int -> [FilePath] -> Ghc ()
-doWalk srcPath srcFile line col files = do
-    setupFlags True ["-i" ++ srcPath]
+doWalk :: [String] -> String -> FilePath -> Int -> Int -> [FilePath] -> Ghc ()
+doWalk compOpts srcPath srcFile line col files = do
+    setupFlags True $ ("-i" ++ srcPath) : compOpts
     modSrc     <- loadHsFile srcFile
     parsedSrc  <- parseModule modSrc
     checkedSrc <- typecheckModule parsedSrc

@@ -10,10 +10,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import ideah.parser.HaskellFile;
+import ideah.util.AskUtil;
 import ideah.util.CompilerLocation;
 import ideah.util.ProcessLauncher;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public final class HaskellRunConfigurationProducer extends RuntimeConfigurationProducer {
 
@@ -64,13 +68,13 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         if (compiler == null) {
             return false;
         }
-        ProcessLauncher launcher = new ProcessLauncher(
-            false, file.getInputStream(),
-            compiler.exe,
-            "-m", "CheckMain",
+        List<String> args = new ArrayList<String>();
+        args.add(compiler.exe);
+        AskUtil.addGhcOptions(module, args);
+        args.addAll(Arrays.asList("-m", "CheckMain",
             "-g", compiler.libPath,
-            file.getPath()
-        );
+            file.getPath()));
+        ProcessLauncher launcher = new ProcessLauncher(false, file.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         return stdOut != null && stdOut.contains("t");
     }

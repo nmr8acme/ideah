@@ -44,10 +44,11 @@ main = do
         srcpath    = sourcePath opts
         singleFile = head files
         pos        = position opts
+        compOpts   = compilerOptions opts
     case mode opts of
-        Compile    -> compile (outputPath opts) srcpath ghcpath (compilerOptions opts) files
-        CheckMain  -> checkMain ghcpath singleFile
-        GetIdType  -> getIdType srcpath ghcpath singleFile pos
-        GetDeclPos -> getDeclPos srcpath ghcpath singleFile pos
-        ParseTree  -> parseTree ghcpath singleFile
-        FindUsages -> findUsages srcpath ghcpath pos (moduleFile opts) files
+        Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
+        CheckMain  -> checkMain compOpts ghcpath singleFile
+        GetIdType  -> getIdType compOpts srcpath ghcpath singleFile pos
+        GetDeclPos -> getDeclPos compOpts srcpath ghcpath singleFile pos
+        ParseTree  -> parseTree compOpts ghcpath singleFile
+        FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files

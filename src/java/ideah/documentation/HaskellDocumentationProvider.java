@@ -13,6 +13,8 @@ import ideah.util.*;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class HaskellDocumentationProvider implements DocumentationProvider {
@@ -50,15 +52,15 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         }
         try {
             String sourcePath = GHCUtil.rootsAsString(module, false);
-            ProcessLauncher idLauncher = new ProcessLauncher(
-                false, null,
-                compiler.exe,
-                "-m", "GetIdType",
+            List<String> args = new ArrayList<String>();
+            args.add(compiler.exe);
+            AskUtil.addGhcOptions(module, args);
+            args.addAll(Arrays.asList("-m", "GetIdType",
                 "-g", compiler.libPath,
                 "-s", sourcePath,
                 "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-                file.getPath()
-            );
+                file.getPath()));
+            ProcessLauncher idLauncher = new ProcessLauncher(false, null, args);
             String stdOut = idLauncher.getStdOut();
             if (stdOut.trim().isEmpty())
                 return null;

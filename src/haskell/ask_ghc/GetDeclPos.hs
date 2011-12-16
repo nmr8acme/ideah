@@ -8,13 +8,12 @@ import MonadUtils
 import Name (nameSrcLoc)
 import FastString (unpackFS)
 import Id
-
 import HUtil
 import Walker
 
-getDeclPos :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
-getDeclPos srcPath ghcPath srcFile (line, col) =
-    runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
+getDeclPos :: [String] -> String -> FilePath -> FilePath -> (Int, Int) -> IO ()
+getDeclPos compOpts srcPath ghcPath srcFile (line, col) =
+    runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col))
 
 extractPos :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
 extractPos line col var loc _ = liftIO $
@@ -29,9 +28,9 @@ doExtractPos line col checked = do
     let cb = defWalkCallback { ident = extractPos line col }
     walkDeclarations cb (typecheckedSource checked)
 
-doWalk :: String -> FilePath -> Int -> Int -> Ghc ()
-doWalk srcPath srcFile line col = do
-    setupFlags True ["-i" ++ srcPath]
+doWalk :: [String] -> String -> FilePath -> Int -> Int -> Ghc ()
+doWalk compOpts srcPath srcFile line col = do
+    setupFlags True $ ("-i" ++ srcPath) : compOpts
     mod <- loadHsFile srcFile
     parsed <- parseModule mod
     checked <- typecheckModule parsed

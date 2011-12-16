@@ -36,14 +36,14 @@ doExtractTypes line col checked = do
     --cb <- printCallback defWalkCallback
     walkDeclarations cb (typecheckedSource checked)
 
-doWalk :: String -> FilePath -> Int -> Int -> Ghc ()
-doWalk srcPath srcFile line col = do
-    setupFlags True ["-i" ++ srcPath]
+doWalk :: [String] -> String -> FilePath -> Int -> Int -> Ghc ()
+doWalk compOpts srcPath srcFile line col = do
+    setupFlags True $ ("-i" ++ srcPath) : compOpts
     mod <- loadHsFile srcFile
     parsed <- parseModule mod
     checked <- typecheckModule parsed
     doExtractTypes line col checked
 
-getIdType :: String -> FilePath -> FilePath -> (Int, Int) -> IO ()
-getIdType srcPath ghcPath srcFile (line, col) =
-    runGhc (Just ghcPath) (doWalk srcPath srcFile (lineToGhc line) (colToGhc col))
+getIdType :: [String] -> String -> FilePath -> FilePath -> (Int, Int) -> IO ()
+getIdType compOpts srcPath ghcPath srcFile (line, col) =
+    runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col))

@@ -48,8 +48,9 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 Module module = fileIndex.getModuleForFile(virtualFile);
                 CompilerLocation compiler = CompilerLocation.get(module);
                 List<String> args = new ArrayList<String>();
-                args.addAll(Arrays.asList(compiler.exe,
-                    "-m", "FindUsages",
+                args.add(compiler.exe);
+                AskUtil.addGhcOptions(module, args);
+                args.addAll(Arrays.asList("-m", "FindUsages",
                     "-g", compiler.libPath,
                     "-s", GHCUtil.rootsAsString(module, false),
                     "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
@@ -83,4 +84,5 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
             }
         }
     }
+
 }

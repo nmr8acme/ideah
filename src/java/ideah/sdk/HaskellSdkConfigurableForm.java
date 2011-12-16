@@ -17,6 +17,7 @@ public final class HaskellSdkConfigurableForm {
     private JLabel ghcLibPathLabel;
     private JLabel cabalLabel;
     private JLabel ghcOptionsLabel;
+    private JLabel ghcOptionsExplanation;
 
     private boolean modified = false;
 

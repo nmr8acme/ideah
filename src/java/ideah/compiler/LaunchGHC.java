@@ -3,17 +3,16 @@ package ideah.compiler;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
+import ideah.util.AskUtil;
 import ideah.util.CompilerLocation;
 import ideah.util.GHCUtil;
 import ideah.util.ProcessLauncher;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public final class LaunchGHC {
 
@@ -21,25 +20,28 @@ public final class LaunchGHC {
 
     static final String EOLN = "\n";
 
-    public static List<GHCMessage> getGHCMessages(VirtualFile output, String fileName, Module module, boolean tests) {
+    public static List<GHCMessage> compileAndGetGhcMessages(VirtualFile output, String fileName, @NotNull Module module, boolean tests) {
         try {
             CompilerLocation compiler = CompilerLocation.get(module);
             if (compiler == null)
-                return Collections.emptyList();
+                return Collections.emptyList(); // todo: produce error
             List<String> args = new ArrayList<String>();
             args.add(compiler.exe);
             args.addAll(Arrays.asList(
                 "-m", "Compile",
                 "-g", compiler.libPath,
-                "-c", "-W",
                 "-s", GHCUtil.rootsAsString(module, tests)
             ));
+
+            AskUtil.addGhcOptions(module, args, "-W");
+
             if (output != null) {
                 args.addAll(Arrays.asList(
                     "-o", output.getPath()
                 ));
             }
             args.add(fileName);
+
             ProcessLauncher launcher = new ProcessLauncher(false, null, args);
             String stdOut = launcher.getStdOut();
             return parseMessages(stdOut);
