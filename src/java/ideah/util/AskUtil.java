@@ -8,7 +8,6 @@ import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.io.StreamUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.StatusBar;
 import ideah.sdk.HaskellSdkAdditionalData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -137,42 +136,37 @@ final class AskUtil {
         String ghcExe = GHCUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
             return false;
-        StatusBar.Info.set("Compiling " + mainFile + "...", module.getProject());
         double step = 0;
         if (indicator != null) {
             step = (maxIndicatorFraction - indicator.getFraction()) / 3;
         }
         GHCUtil.updateIndicator(indicator, step, "Collecting source files...");
-        try {
-            listHaskellSources(new AskUtil.HsCallback() {
-                public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
-                    File outFile = new File(pluginPath, entry.getName());
-                    OutputStream os = new FileOutputStream(outFile);
-                    try {
-                        StreamUtil.copyStreamContent(zis, os);
-                    } finally {
-                        os.close();
-                    }
+        listHaskellSources(new AskUtil.HsCallback() {
+            public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
+                File outFile = new File(pluginPath, entry.getName());
+                OutputStream os = new FileOutputStream(outFile);
+                try {
+                    StreamUtil.copyStreamContent(zis, os);
+                } finally {
+                    os.close();
                 }
-            });
-            GHCUtil.updateIndicator(indicator, step, "Compiling " + mainFile + "...");
-            String mainHs = mainFile + ".hs";
-            ProcessLauncher launcher = new ProcessLauncher(true, null, ghcExe,
-                "--make", "-cpp", "-O", "-package", "ghc",
-                "-i" + pluginPath.getAbsolutePath(),
-                new File(pluginPath, mainHs).getAbsolutePath()
-            );
-            GHCUtil.updateIndicator(indicator, step, "Finishing compilation...");
-            for (int i = 0; i < 3; i++) {
-                if (exe.exists())
-                    return true;
-                Thread.sleep(100);
             }
-            String stdErr = launcher.getStdErr();
-            LOG.error("Compiling " + mainHs + ":\n" + stdErr);
-            return false;
-        } finally {
-            StatusBar.Info.set("Done compiling " + mainFile, module.getProject());
+        });
+        GHCUtil.updateIndicator(indicator, step, "Compiling " + mainFile + "...");
+        String mainHs = mainFile + ".hs";
+        ProcessLauncher launcher = new ProcessLauncher(true, null, ghcExe,
+            "--make", "-cpp", "-O", "-package", "ghc",
+            "-i" + pluginPath.getAbsolutePath(),
+            new File(pluginPath, mainHs).getAbsolutePath()
+        );
+        GHCUtil.updateIndicator(indicator, step, "Finishing compilation...");
+        for (int i = 0; i < 3; i++) {
+            if (exe.exists())
+                return true;
+            Thread.sleep(100);
         }
+        String stdErr = launcher.getStdErr();
+        LOG.error("Compiling " + mainHs + ":\n" + stdErr);
+        return false;
     }
 }
