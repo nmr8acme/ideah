@@ -56,8 +56,7 @@ public final class CompilerLocation {
                                         ProgressManager.getInstance().getProgressIndicator();
                                     indicator.setText("Preparing " + MAIN_FILE + " compilation...");
                                     indicator.setFraction(0.1);
-                                    exeExists.set(ask.compileHs(indicator));
-                                    indicator.setFraction(1.0);
+                                    exeExists.set(ask.compileHs(indicator, 1.0));
                                 } catch (Exception e) {
                                     LOG.error(e.getMessage());
                                 }
@@ -85,7 +84,7 @@ public final class CompilerLocation {
 
     private static void compileAskHaddock(final Module module) {
         Project project = module.getProject();
-        final Task haddockBackgroundTask = new Task.Backgroundable(project, "Installing Haddock 2.9.2 if missing", true) {
+        final Task haddockBackgroundTask = new Task.Backgroundable(project, "Installing Haddock if missing", true) {
             public void run(ProgressIndicator indicator) {
                 indicator.setText("Checking Haddock installation...");
                 indicator.setFraction(0.0);

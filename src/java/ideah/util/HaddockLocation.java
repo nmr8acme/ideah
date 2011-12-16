@@ -28,7 +28,7 @@ public final class HaddockLocation {
         args.addAll(Arrays.asList(cabalPath, "list", "--installed", "-v0", "--simple-output"));
         TreeMap<String, String> argsPackages = new TreeMap<String, String>();
         for (String pkg : packages) {
-            argsPackages.put(pkg, pkg.substring(0, pkg.lastIndexOf('-')));
+            argsPackages.put(pkg, getPackageBaseName(pkg));
         }
         args.addAll(argsPackages.values()); // For "haddock list --installed <package name>", the package name should not include the version
         List<String> packageList = new ArrayList<String>(Arrays.asList(packages));
@@ -52,6 +52,10 @@ public final class HaddockLocation {
         return missingPackages;
     }
 
+    private static String getPackageBaseName(String pkg) {
+        return pkg.substring(0, pkg.lastIndexOf('-'));
+    }
+
     private static void runCabal(@NotNull String cabalPath, List<String> cabalArgsList) throws IOException, InterruptedException {
         List<String> args = new ArrayList<String>();
         args.add(cabalPath);
@@ -61,45 +65,46 @@ public final class HaddockLocation {
         );
     }
 
-    private static void cabalInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, @NotNull List<String> packages) throws IOException, InterruptedException {
+    private static void cabalInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, double maxIndicatorFraction, @NotNull List<String> packages) throws IOException, InterruptedException {
         if (packages.isEmpty())
             return;
-        if (indicator != null) {
-            StringBuilder buf = new StringBuilder("Installing missing package" + (packages.size() > 1 ? "s" : "") + " (");
-            for (int i = 0; i < packages.size(); i++) {
-                if (i > 0) {
-                    buf.append(", ");
-                }
-                buf.append(packages.get(i));
-            }
-            buf.append(")...");
-            indicator.setText(buf.toString());
-        }
+        GHCUtil.updateIndicatorText(indicator, "Updating Cabal...");
         runCabal(cabalPath, Arrays.asList("update"));
+        double fractionRange = getFractionRange(indicator, maxIndicatorFraction);
+        int size = packages.size();
+        GHCUtil.increaseIndicatorFraction(indicator, fractionRange / (size + 1));
         if (indicator == null) {
             List<String> cabalArgsList = new ArrayList<String>();
             cabalArgsList.add("install");
             cabalArgsList.addAll(packages);
             runCabal(cabalPath, cabalArgsList);
         } else {
-            double progress = 1.0 / packages.size();
+            double step = getFractionRange(indicator, maxIndicatorFraction) / size;
             for (String pkg : packages) {
+                GHCUtil.updateIndicatorText(indicator, "Installing package " + getPackageBaseName(pkg) + "...");
                 runCabal(cabalPath, Arrays.asList("install", pkg));
-                indicator.setFraction(indicator.getFraction() + progress);
+                GHCUtil.increaseIndicatorFraction(indicator, step);
             }
         }
     }
 
     // todo: HTTP proxy settings
-    private static void cabalCheckAndInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, String... packages) {
+    private static void cabalCheckAndInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, double maxIndicatorFraction, String... packages) {
         if (packages.length > 0) {
             try {
+                GHCUtil.updateIndicatorText(indicator, "Checking installed Cabal packages...");
                 List<String> missingPackages = getMissingPackages(cabalPath, packages);
-                cabalInstall(cabalPath, indicator, missingPackages);
+                double fractionRange = getFractionRange(indicator, maxIndicatorFraction);
+                GHCUtil.increaseIndicatorFraction(indicator, fractionRange / (packages.length + 1));
+                cabalInstall(cabalPath, indicator, maxIndicatorFraction, missingPackages);
             } catch (Exception e) {
                 LOG.error(e);
             }
         }
+    }
+
+    private static double getFractionRange(ProgressIndicator indicator, double maxIndicatorFraction) {
+        return indicator == null ? 0 : maxIndicatorFraction - indicator.getFraction();
     }
 
     public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
@@ -111,8 +116,8 @@ public final class HaddockLocation {
             return null;
         try {
             if (ask.needRecompile()) {
-                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2");
-                if (!ask.compileHs())
+                cabalCheckAndInstall(cabalPath, indicator, 0.7, "haddock-2.9.2");
+                if (!ask.compileHs(indicator, 1.0))
                     return null;
             }
             File exe = ask.getExe();

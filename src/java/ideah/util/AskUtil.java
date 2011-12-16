@@ -129,10 +129,10 @@ final class AskUtil {
     }
 
     boolean compileHs() throws IOException, InterruptedException {
-        return compileHs(null);
+        return compileHs(null, 0);
     }
 
-    boolean compileHs(@Nullable ProgressIndicator indicator) throws IOException, InterruptedException {
+    boolean compileHs(@Nullable ProgressIndicator indicator, double maxIndicatorFraction) throws IOException, InterruptedException {
         exe.delete();
         String ghcExe = GHCUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
@@ -140,9 +140,9 @@ final class AskUtil {
         StatusBar.Info.set("Compiling " + mainFile + "...", module.getProject());
         double step = 0;
         if (indicator != null) {
-            step = (1.0 - indicator.getFraction()) / 3;
+            step = (maxIndicatorFraction - indicator.getFraction()) / 3;
         }
-        increaseIndicator(indicator, step, "Collecting source files...");
+        GHCUtil.updateIndicator(indicator, step, "Collecting source files...");
         try {
             listHaskellSources(new AskUtil.HsCallback() {
                 public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
@@ -155,14 +155,14 @@ final class AskUtil {
                     }
                 }
             });
-            increaseIndicator(indicator, step, "Compiling " + mainFile + "...");
+            GHCUtil.updateIndicator(indicator, step, "Compiling " + mainFile + "...");
             String mainHs = mainFile + ".hs";
             ProcessLauncher launcher = new ProcessLauncher(true, null, ghcExe,
                 "--make", "-cpp", "-O", "-package", "ghc",
                 "-i" + pluginPath.getAbsolutePath(),
                 new File(pluginPath, mainHs).getAbsolutePath()
             );
-            increaseIndicator(indicator, step, "Finishing compilation...");
+            GHCUtil.updateIndicator(indicator, step, "Finishing compilation...");
             for (int i = 0; i < 3; i++) {
                 if (exe.exists())
                     return true;
@@ -173,15 +173,6 @@ final class AskUtil {
             return false;
         } finally {
             StatusBar.Info.set("Done compiling " + mainFile, module.getProject());
-        }
-    }
-
-    private static void increaseIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
-        if (indicator != null) {
-            indicator.setFraction(indicator.getFraction() + step);
-            if (message != null) {
-                indicator.setText(message);
-            }
         }
     }
 }

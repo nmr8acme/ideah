@@ -1,8 +1,6 @@
 package ideah.util;
 
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.util.io.StreamUtil;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;

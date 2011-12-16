@@ -1,6 +1,7 @@
 package ideah.util;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -79,5 +80,22 @@ public final class GHCUtil {
             }
         }
         return new GHCVersion(parts);
+    }
+
+    static void increaseIndicatorFraction(@Nullable ProgressIndicator indicator, double step) {
+        updateIndicator(indicator, step, null);
+    }
+
+    static void updateIndicatorText(@Nullable ProgressIndicator indicator, String message) {
+        updateIndicator(indicator, 0, message);
+    }
+
+    static void updateIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
+        if (indicator != null) {
+            indicator.setFraction(indicator.getFraction() + step);
+            if (message != null) {
+                indicator.setText(message);
+            }
+        }
     }
 }
