@@ -1,10 +1,13 @@
 package ideah.util;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.impl.ProgressManagerImpl;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,8 +28,10 @@ public final class CompilerLocation {
         this.libPath = libPath;
     }
 
-    public static synchronized CompilerLocation get(@Nullable Module module) {
-        AskUtil ask = AskUtil.get(module, MAIN_FILE);
+    public static synchronized CompilerLocation get(@Nullable final Module module) {
+        if (module == null)
+            return null;
+        final AskUtil ask = AskUtil.get(module, MAIN_FILE);
         if (ask == null)
             return null;
         if (!askHaddockChecked) {
@@ -38,8 +43,27 @@ public final class CompilerLocation {
             return null;
         try {
             if (ask.needRecompile()) {
-                // todo: show foreground dialog
-                if (!ask.compileHs())
+                final boolean[] exeExists = new boolean[1];
+                final Application application = ApplicationManager.getApplication();
+                application.invokeLater(new Runnable() {
+                    public void run() {
+                        new ProgressManagerImpl(application).runProcessWithProgressSynchronously(new Runnable() {
+                            public void run() {
+                                try {
+                                    ProgressIndicator indicator =
+                                        ProgressManager.getInstance().getProgressIndicator();
+                                    indicator.setText("Preparing " + MAIN_FILE + " compilation...");
+                                    indicator.setFraction(0.1);
+                                    exeExists[0] = ask.compileHs(indicator);
+                                    indicator.setFraction(1.0);
+                                } catch (Exception e) {
+                                    LOG.error(e.getMessage());
+                                }
+                            }
+                        }, "Compiling " + MAIN_FILE, true, module.getProject());
+                    }
+                });
+                if (!exeExists[0])
                     return null;
             }
             File exe = ask.getExe();

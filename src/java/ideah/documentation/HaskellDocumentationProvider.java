@@ -54,7 +54,7 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
             String sourcePath = GHCUtil.rootsAsString(module, false);
             List<String> args = new ArrayList<String>();
             args.add(compiler.exe);
-            AskUtil.addGhcOptions(module, args);
+            GHCUtil.addGhcOptions(module, args);
             args.addAll(Arrays.asList(
                 "-m", "GetIdType",
                 "-g", compiler.libPath,

@@ -10,8 +10,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import ideah.parser.HaskellFile;
-import ideah.util.AskUtil;
 import ideah.util.CompilerLocation;
+import ideah.util.GHCUtil;
 import ideah.util.ProcessLauncher;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         }
         List<String> args = new ArrayList<String>();
         args.add(compiler.exe);
-        AskUtil.addGhcOptions(module, args);
+        GHCUtil.addGhcOptions(module, args);
         args.addAll(Arrays.asList(
             "-m", "CheckMain",
             "-g", compiler.libPath,

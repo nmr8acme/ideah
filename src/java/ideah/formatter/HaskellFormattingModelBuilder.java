@@ -54,7 +54,7 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
             return null;
         List<String> args = new ArrayList<String>();
         args.add(compiler.exe);
-        AskUtil.addGhcOptions(module, args);
+        GHCUtil.addGhcOptions(module, args);
         args.addAll(Arrays.asList(
             "-m", "ParseTree",
             "-g", compiler.libPath,

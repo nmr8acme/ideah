@@ -3,7 +3,6 @@ package ideah.compiler;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
-import ideah.util.AskUtil;
 import ideah.util.CompilerLocation;
 import ideah.util.GHCUtil;
 import ideah.util.ProcessLauncher;
@@ -33,7 +32,7 @@ public final class LaunchGHC {
                 "-s", GHCUtil.rootsAsString(module, tests)
             ));
 
-            AskUtil.addGhcOptions(module, args, "-W");
+            GHCUtil.addGhcOptions(module, args, "-W");
 
             if (output != null) {
                 args.addAll(Arrays.asList(

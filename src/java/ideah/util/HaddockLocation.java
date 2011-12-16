@@ -1,5 +1,6 @@
 package ideah.util;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -104,12 +105,14 @@ public final class HaddockLocation {
 
     public static synchronized HaddockLocation get(@Nullable Module module, @Nullable ProgressIndicator indicator) {
         AskUtil ask = AskUtil.get(module, MAIN_FILE);
+        if (ask == null)
+            return null;
         String cabalPath = ask.getCabalPath();
         if (cabalPath == null)
             return null;
         try {
             if (ask.needRecompile()) {
-                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2", "uu-parsinglib-2.7.3");
+                cabalCheckAndInstall(cabalPath, indicator, "haddock-2.9.2");
                 if (!ask.compileHs())
                     return null;
             }

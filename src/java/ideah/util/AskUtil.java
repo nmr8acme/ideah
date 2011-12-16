@@ -2,6 +2,7 @@ package ideah.util;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -13,14 +14,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
-import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
  * Helper class to build ask_* executables
  */
-public final class AskUtil {
+final class AskUtil {
 
     private static final Logger LOG = Logger.getInstance("ideah.util.AskUtil");
 
@@ -48,7 +48,8 @@ public final class AskUtil {
         this.mainFile = mainFile;
     }
 
-    static AskUtil get(Module module, String mainFile) {
+    @Nullable
+    static AskUtil get(@Nullable Module module, String mainFile) {
         if (module == null)
             return null;
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
@@ -61,31 +62,6 @@ public final class AskUtil {
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
         return new AskUtil(module, sdk, ghcHome, pluginPath, exe, mainFile);
-    }
-
-    @Nullable
-    private static String getCompilerOptions(Module module) {
-        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
-        if (sdk != null) {
-            SdkAdditionalData data = sdk.getSdkAdditionalData();
-            if (data instanceof HaskellSdkAdditionalData) {
-                return ((HaskellSdkAdditionalData) data).getGhcOptions();
-            }
-        }
-        return null;
-    }
-
-    public static void addGhcOptions(Module module, List<String> args, @NotNull String initialOptions) {
-        String options = getCompilerOptions(module);
-        String initial = initialOptions + " ";
-        if (options != null) {
-            args.add("-c");
-            args.add(initial + options);
-        }
-    }
-
-    public static void addGhcOptions(Module module, List<String> args) {
-        addGhcOptions(module, args, "");
     }
 
     String getLibDir() {
@@ -153,11 +129,20 @@ public final class AskUtil {
     }
 
     boolean compileHs() throws IOException, InterruptedException {
+        return compileHs(null);
+    }
+
+    boolean compileHs(@Nullable ProgressIndicator indicator) throws IOException, InterruptedException {
         exe.delete();
         String ghcExe = GHCUtil.getGhcCommandPath(ghcHome);
         if (ghcExe == null)
             return false;
         StatusBar.Info.set("Compiling " + mainFile + "...", module.getProject());
+        double step = 0;
+        if (indicator != null) {
+            step = (1.0 - indicator.getFraction()) / 3;
+        }
+        increaseIndicator(indicator, step, "Collecting source files...");
         try {
             listHaskellSources(new AskUtil.HsCallback() {
                 public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
@@ -170,13 +155,14 @@ public final class AskUtil {
                     }
                 }
             });
+            increaseIndicator(indicator, step, "Compiling " + mainFile + "...");
             String mainHs = mainFile + ".hs";
-            ProcessLauncher launcher = new ProcessLauncher(
-                true, null, ghcExe,
+            ProcessLauncher launcher = new ProcessLauncher(true, null, ghcExe,
                 "--make", "-cpp", "-O", "-package", "ghc",
                 "-i" + pluginPath.getAbsolutePath(),
                 new File(pluginPath, mainHs).getAbsolutePath()
             );
+            increaseIndicator(indicator, step, "Finishing compilation...");
             for (int i = 0; i < 3; i++) {
                 if (exe.exists())
                     return true;
@@ -187,6 +173,15 @@ public final class AskUtil {
             return false;
         } finally {
             StatusBar.Info.set("Done compiling " + mainFile, module.getProject());
+        }
+    }
+
+    static void increaseIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
+        if (indicator != null) {
+            indicator.setFraction(indicator.getFraction() + step);
+            if (message != null) {
+                indicator.setText(message);
+            }
         }
     }
 }

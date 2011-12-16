@@ -35,5 +35,5 @@ public interface HaskellTokenTypes {
     TokenSet COMMENTS = TokenSet.create(COMMENT, ML_COMMENT);
     TokenSet WHITESPACES = TokenSet.create(WHITESPACE);
     TokenSet STRINGS = TokenSet.create(STRING, ERROR_STRING);
-    TokenSet IDS = TokenSet.create(VAR_ID, VAR_SYM, CON_ID, CON_SYM);
+    TokenSet IDS = TokenSet.create(VAR_ID, VAR_SYM, CON_ID, CON_SYM, STD_FUNCTION);
 }

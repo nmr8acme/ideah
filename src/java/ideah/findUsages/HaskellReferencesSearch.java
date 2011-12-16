@@ -49,7 +49,7 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                 CompilerLocation compiler = CompilerLocation.get(module);
                 List<String> args = new ArrayList<String>();
                 args.add(compiler.exe);
-                AskUtil.addGhcOptions(module, args);
+                GHCUtil.addGhcOptions(module, args);
                 args.addAll(Arrays.asList(
                     "-m", "FindUsages",
                     "-g", compiler.libPath,

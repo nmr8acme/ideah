@@ -1,9 +1,12 @@
 package ideah.util;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import ideah.sdk.HaskellSdkAdditionalData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,6 +15,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GHCUtil {
+
+    public static void addGhcOptions(Module module, List<String> args, @NotNull String initialOptions) {
+        String options = getCompilerOptions(module);
+        String initial = initialOptions + " ";
+        if (options != null) {
+            args.add("-c");
+            args.add(initial + options);
+        }
+    }
+
+    @Nullable
+    private static String getCompilerOptions(Module module) {
+        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
+        if (sdk != null) {
+            SdkAdditionalData data = sdk.getSdkAdditionalData();
+            if (data instanceof HaskellSdkAdditionalData) {
+                return ((HaskellSdkAdditionalData) data).getGhcOptions();
+            }
+        }
+        return null;
+    }
+
+    public static void addGhcOptions(Module module, List<String> args) {
+        addGhcOptions(module, args, "");
+    }
 
     public static String getExeName(String file) {
         return SystemInfo.isWindows
