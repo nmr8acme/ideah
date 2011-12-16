@@ -63,20 +63,21 @@ final class AskUtil {
         return new AskUtil(module, sdk, ghcHome, pluginPath, exe, mainFile);
     }
 
-    String getLibDir() {
+    private HaskellSdkAdditionalData getData() {
         SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
         if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
             return null;
-        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
-        return data.getLibPath();
+        return (HaskellSdkAdditionalData) sdkAdditionalData;
+    }
+
+    String getLibDir() {
+        HaskellSdkAdditionalData data = getData();
+        return data == null ? null : data.getLibPath();
     }
 
     String getCabalPath() {
-        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
-        if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
-            return null;
-        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
-        return data.getCabalPath();
+        HaskellSdkAdditionalData data = getData();
+        return data == null ? null : data.getCabalPath();
     }
 
     File getExe() {
@@ -125,10 +126,6 @@ final class AskUtil {
         } else {
             return true;
         }
-    }
-
-    boolean compileHs() throws IOException, InterruptedException {
-        return compileHs(null, 0);
     }
 
     boolean compileHs(@Nullable ProgressIndicator indicator, double maxIndicatorFraction) throws IOException, InterruptedException {
