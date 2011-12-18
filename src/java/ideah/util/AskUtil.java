@@ -26,9 +26,10 @@ final class AskUtil {
     private static Long sourcesLastModified = null;
 
     @NotNull
-    private final Sdk sdk;
-    @NotNull
     private final VirtualFile ghcHome;
+    @NotNull
+    private final String libDir;
+    private final String cabalPath;
     @NotNull
     private final File pluginPath;
     @NotNull
@@ -36,9 +37,10 @@ final class AskUtil {
     @NotNull
     private final String mainFile;
 
-    private AskUtil(@NotNull Sdk sdk, @NotNull VirtualFile ghcHome, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
-        this.sdk = sdk;
+    private AskUtil(@NotNull VirtualFile ghcHome, @NotNull String libDir, String cabalPath, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
         this.ghcHome = ghcHome;
+        this.libDir = libDir;
+        this.cabalPath = cabalPath;
         this.pluginPath = pluginPath;
         this.exe = exe;
         this.mainFile = mainFile;
@@ -54,27 +56,25 @@ final class AskUtil {
         VirtualFile ghcHome = sdk.getHomeDirectory();
         if (ghcHome == null)
             return null;
-        File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
-        pluginPath.mkdirs();
-        File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
-        return new AskUtil(sdk, ghcHome, pluginPath, exe, mainFile);
-    }
-
-    private HaskellSdkAdditionalData getData() {
         SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
         if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
             return null;
-        return (HaskellSdkAdditionalData) sdkAdditionalData;
+        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+        String libDir = data.getLibPath();
+        if (libDir == null)
+            return null;
+        File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
+        pluginPath.mkdirs();
+        File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
+        return new AskUtil(ghcHome, libDir, data.getCabalPath(), pluginPath, exe, mainFile);
     }
 
     String getLibDir() {
-        HaskellSdkAdditionalData data = getData();
-        return data == null ? null : data.getLibPath();
+        return libDir;
     }
 
     String getCabalPath() {
-        HaskellSdkAdditionalData data = getData();
-        return data == null ? null : data.getCabalPath();
+        return cabalPath;
     }
 
     File getExe() {

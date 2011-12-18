@@ -13,10 +13,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.projectRoots.SdkType;
 import com.intellij.openapi.util.Computable;
+import ideah.HaskellFileType;
 import ideah.sdk.HaskellSdkType;
 import ideah.util.GHCUtil;
 
-import java.nio.charset.Charset;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 final class HaskellCommandLineState extends CommandLineState {
@@ -70,7 +73,7 @@ final class HaskellCommandLineState extends CommandLineState {
                         }
 
                         String exePath = ghc.getHomePath() + "/bin/runhaskell"; // todo
-                        if (exePath == null) {
+                        if (!new File(exePath).isFile()) {
                             throw new CantRunException("Cannot find runhaskell executable");
                         }
                         String mainFile = parameters.getMainFile();
@@ -80,8 +83,7 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         GeneralCommandLine commandLine = new GeneralCommandLine();
                         commandLine.setExePath(exePath);
-                        Charset charset = Charset.forName("UTF-8");
-                        commandLine.setCharset(charset);
+                        commandLine.setCharset(HaskellFileType.HASKELL_CHARSET);
 
                         Map<String, String> env = parameters.getEnv();
                         if (env != null) {
@@ -92,6 +94,9 @@ final class HaskellCommandLineState extends CommandLineState {
                         commandLine.setWorkDirectory(parameters.getWorkingDirectory());
 
                         commandLine.addParameter("-i" + GHCUtil.rootsAsString(configuration.getModule(), false));
+                        List<String> options = new ArrayList<String>();
+                        //GHCUtil.addGhcOptions(null, options); // todo!!!
+                        commandLine.addParameters(options);
                         commandLine.addParameter(mainFile); // todo
 
                         // todo: set other parameters/rt flags

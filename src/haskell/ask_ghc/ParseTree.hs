@@ -12,7 +12,7 @@ import HDebugUtil
 parseTree compOpts ghcPath file = runGhc (Just ghcPath) parseTree'
     where 
         parseTree' = do
-            setupFlags True $ "-cpp" : compOpts
+            setupFlags True compOpts
             buffer <- liftIO loadStdin
             result <- parseHsFile buffer file
             case result of

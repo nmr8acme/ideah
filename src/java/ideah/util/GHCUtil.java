@@ -19,8 +19,8 @@ public final class GHCUtil {
 
     public static void addGhcOptions(Module module, List<String> args, @NotNull String initialOptions) {
         String options = getCompilerOptions(module);
-        String initial = initialOptions + " ";
         if (options != null) {
+            String initial = initialOptions.isEmpty() ? "" : initialOptions + " ";
             args.add("-c");
             args.add(initial + options);
         }

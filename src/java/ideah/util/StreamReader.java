@@ -1,6 +1,7 @@
 package ideah.util;
 
 import com.intellij.openapi.diagnostic.Logger;
+import ideah.HaskellFileType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ final class StreamReader extends Thread {
 
     public synchronized void run() {
         try {
-            BufferedReader rdr = new BufferedReader(new InputStreamReader(stream, "UTF8"));
+            BufferedReader rdr = new BufferedReader(new InputStreamReader(stream, HaskellFileType.HASKELL_CHARSET));
             while (true) {
                 int c = rdr.read();
                 if (c < 0)

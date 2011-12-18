@@ -63,12 +63,16 @@ loadHsFile file = do
     addTargetFile file
     load LoadAllTargets
     summaries <- depanal [] False
-    mods <- filterM (\sum -> do
-          absoluteSummary <- liftIO $ canonicalizePath $ ms_hspp_file sum
-          absoluteFile    <- liftIO $ canonicalizePath file
-          return $ equalFilePath absoluteFile absoluteSummary)
-        summaries
-    return $ head mods
+    absoluteFile <- liftIO $ canonicalizePath file
+    mods <- filterM (moduleIsFile absoluteFile) summaries
+    return $ if null mods then error $ "Cannot load module: " ++ file
+                          else head mods
+    where 
+        moduleIsFile file modSum = liftIO $ case ml_hs_file $ ms_location modSum of
+            (Just path) -> do
+                absolutePath <- canonicalizePath path
+                return $ equalFilePath file absolutePath
+            Nothing -> return False
 
 parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
 parseHsFile buffer fileName = do

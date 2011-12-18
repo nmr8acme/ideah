@@ -39,9 +39,6 @@ public final class CompilerLocation {
             compileAskHaddock(module);
             askHaddockChecked = true;
         }
-        String ghcLib = ask.getLibDir();
-        if (ghcLib == null)
-            return null;
         try {
             if (ask.needRecompile()) {
                 FutureTask<Boolean> task = new FutureTask<Boolean>(new Callable<Boolean>() {
@@ -72,7 +69,7 @@ public final class CompilerLocation {
             }
             File exe = ask.getExe();
             if (exe != null) {
-                return new CompilerLocation(exe.getAbsolutePath(), ghcLib);
+                return new CompilerLocation(exe.getAbsolutePath(), ask.getLibDir());
             } else {
                 return null;
             }
