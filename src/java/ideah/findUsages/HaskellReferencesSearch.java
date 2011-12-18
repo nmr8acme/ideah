@@ -47,6 +47,8 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
                     return;
                 Module module = fileIndex.getModuleForFile(virtualFile);
                 CompilerLocation compiler = CompilerLocation.get(module);
+                if (compiler == null)
+                    return;
                 List<String> args = new ArrayList<String>();
                 args.add(compiler.exe);
                 GHCUtil.addGhcOptions(module, args);
