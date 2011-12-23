@@ -39,6 +39,8 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
             PsiFile file = element.getContainingFile();
             try {
                 DeclarationPosition declaration = DeclarationPosition.get(file, LineCol.fromOffset(file, element.getTextOffset()));
+                if (declaration == null)
+                    return;
                 LineCol coord = declaration.coord;
                 VirtualFile virtualFile = file.getVirtualFile();
                 Project project = file.getProject();
@@ -88,5 +90,4 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
             }
         }
     }
-
 }
