@@ -16,13 +16,18 @@ import com.intellij.psi.tree.IElementType;
 import ideah.lexer.HaskellLexer;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.tree.*;
-import ideah.util.*;
+import ideah.util.CompilerLocation;
+import ideah.util.DeclarationPosition;
+import ideah.util.LineColRange;
+import ideah.util.ProcessLauncher;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.*;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public final class HaskellFormattingModelBuilder implements FormattingModelBuilder {
 
@@ -52,14 +57,10 @@ public final class HaskellFormattingModelBuilder implements FormattingModelBuild
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return null;
-        List<String> args = new ArrayList<String>();
-        args.add(compiler.exe);
-        GHCUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList(
+        List<String> args = compiler.getCompileOptionsList(
             "-m", "ParseTree",
-            "-g", compiler.libPath,
             virtualFile.getPath()
-        ));
+        );
         ProcessLauncher launcher = new ProcessLauncher(false, virtualFile.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         if (stdOut.trim().isEmpty())

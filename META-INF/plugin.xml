@@ -74,6 +74,7 @@
         <lang.parserDefinition language="Haskell" implementationClass="ideah.parser.HaskellParserDefinition"/>
         <indexPatternBuilder implementation="ideah.highlighter.HaskellIndexPatternBuilder"/>
         <referencesSearch implementation="ideah.findUsages.HaskellReferencesSearch"/>
+        <elementDescriptionProvider implementation="ideah.findUsages.HaskellElementDescriptionProvider"/>
         <lang.formatter language="Haskell"
                         implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->

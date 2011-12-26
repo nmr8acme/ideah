@@ -12,8 +12,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public final class DeclarationPosition {
@@ -38,16 +36,12 @@ public final class DeclarationPosition {
         if (compiler == null)
             return null;
         String sourcePath = GHCUtil.rootsAsString(module, false);
-        List<String> args = new ArrayList<String>();
-        args.add(compiler.exe);
-        GHCUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList(
+        List<String> args = compiler.getCompileOptionsList(
             "-m", "GetDeclPos",
-            "-g", compiler.libPath,
             "-s", sourcePath,
             "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
             file.getPath()
-        ));
+        );
         ProcessLauncher launcher = new ProcessLauncher(false, null, args);
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
         String lineCol = reader.readLine();

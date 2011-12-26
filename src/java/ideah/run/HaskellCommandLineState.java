@@ -95,7 +95,7 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         commandLine.addParameter("-i" + GHCUtil.rootsAsString(configuration.getModule(), false));
                         List<String> options = new ArrayList<String>();
-                        //GHCUtil.addGhcOptions(null, options); // todo!!!
+                        //GHCUtil.getGhcOptions(null, options); // todo!!!
                         commandLine.addParameters(options);
                         commandLine.addParameter(mainFile); // todo
 

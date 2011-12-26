@@ -17,7 +17,8 @@ import java.util.List;
 
 public final class GHCUtil {
 
-    public static void addGhcOptions(Module module, List<String> args, @NotNull String initialOptions) {
+    public static List<String> getGhcOptions(Module module, @NotNull String initialOptions) {
+        List<String> args = new ArrayList<String>();
         String options = getCompilerOptions(module);
         if (options != null) {
             String initial = initialOptions.isEmpty() ? "" : initialOptions + " ";
@@ -27,10 +28,11 @@ public final class GHCUtil {
                 args.add(allOptions);
             }
         }
+        return args;
     }
 
     @Nullable
-    private static String getCompilerOptions(Module module) {
+    static String getCompilerOptions(Module module) {
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         if (sdk != null) {
             SdkAdditionalData data = sdk.getSdkAdditionalData();
@@ -41,8 +43,8 @@ public final class GHCUtil {
         return null;
     }
 
-    public static void addGhcOptions(Module module, List<String> args) {
-        addGhcOptions(module, args, "");
+    public static List<String> getGhcOptions(Module module) {
+        return getGhcOptions(module, "");
     }
 
     public static String getExeName(String file) {

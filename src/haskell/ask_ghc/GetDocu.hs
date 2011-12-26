@@ -130,7 +130,7 @@ docToStr d =
 
 #else
 
-getDocu :: FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
+getDocu :: [String] -> FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
 getDocu _ _ _ _ = return ()
 
 #endif

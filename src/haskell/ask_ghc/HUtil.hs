@@ -12,7 +12,7 @@ import Lexer
 import StringBuffer
 import FastString
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Help
     deriving Read
 
 data Options = Options
@@ -27,7 +27,7 @@ data Options = Options
 
 defaultOpts :: Options
 defaultOpts = Options
-    { mode            = Compile
+    { mode            = Help
     , ghcPath         = ""
     , outputPath      = ""
     , sourcePath      = ""

@@ -10,6 +10,9 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,10 +24,12 @@ public final class CompilerLocation {
 
     private static boolean askHaddockChecked = false;
 
+    public final String sdkArgs;
     public final String exe;
     public final String libPath;
 
-    private CompilerLocation(String exe, String libPath) {
+    private CompilerLocation(Module module, String exe, String libPath) {
+        sdkArgs = GHCUtil.getCompilerOptions(module);
         this.exe = exe;
         this.libPath = libPath;
     }
@@ -69,7 +74,7 @@ public final class CompilerLocation {
             }
             File exe = ask.getExe();
             if (exe != null) {
-                return new CompilerLocation(exe.getAbsolutePath(), ask.getLibDir());
+                return new CompilerLocation(module, exe.getAbsolutePath(), ask.getLibDir());
             } else {
                 return null;
             }
@@ -94,5 +99,18 @@ public final class CompilerLocation {
                 haddockBackgroundTask.queue();
             }
         });
+    }
+
+    public List<String> getCompileOptionsList(String ghcOptions, List<String> additionalOptions) {
+        List<String> args = new ArrayList<String>();
+        args.add(exe);
+        args.addAll(Arrays.asList("-g", libPath,
+            "-c", (ghcOptions == null ? "" : ghcOptions + " ") + sdkArgs));
+        args.addAll(additionalOptions);
+        return args;
+    }
+
+    public List<String> getCompileOptionsList(String... additionalOptions) {
+        return getCompileOptionsList(null, Arrays.asList(additionalOptions));
     }
 }

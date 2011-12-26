@@ -11,12 +11,9 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import ideah.parser.HaskellFile;
 import ideah.util.CompilerLocation;
-import ideah.util.GHCUtil;
 import ideah.util.ProcessLauncher;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public final class HaskellRunConfigurationProducer extends RuntimeConfigurationProducer {
@@ -68,14 +65,10 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         if (compiler == null) {
             return false;
         }
-        List<String> args = new ArrayList<String>();
-        args.add(compiler.exe);
-        GHCUtil.addGhcOptions(module, args);
-        args.addAll(Arrays.asList(
+        List<String> args = compiler.getCompileOptionsList(
             "-m", "CheckMain",
-            "-g", compiler.libPath,
             file.getPath()
-        ));
+        );
         ProcessLauncher launcher = new ProcessLauncher(false, file.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         return stdOut != null && stdOut.contains("t");

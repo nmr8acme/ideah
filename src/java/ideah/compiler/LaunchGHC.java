@@ -27,23 +27,16 @@ public final class LaunchGHC {
             CompilerLocation compiler = CompilerLocation.get(module);
             if (compiler == null)
                 return Collections.emptyList();
-            List<String> args = new ArrayList<String>();
-            args.add(compiler.exe);
-            args.addAll(Arrays.asList(
-                "-m", "Compile",
-                "-g", compiler.libPath,
-                "-s", GHCUtil.rootsAsString(module, tests)
-            ));
-
-            GHCUtil.addGhcOptions(module, args, "-W");
-
+            List<String> args = compiler.getCompileOptionsList("-W",
+                Arrays.asList("-m", "Compile",
+                    "-s", GHCUtil.rootsAsString(module, tests))
+            );
             if (output != null) {
                 args.addAll(Arrays.asList(
                     "-o", output.getPath()
                 ));
             }
             args.add(fileName);
-
             ProcessLauncher launcher = new ProcessLauncher(false, null, args);
             String stdOut = launcher.getStdOut();
             return parseMessages(stdOut);
