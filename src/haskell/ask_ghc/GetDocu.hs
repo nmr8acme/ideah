@@ -131,6 +131,6 @@ docToStr d =
 #else
 
 getDocu :: [String] -> FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
-getDocu _ _ _ _ = return ()
+getDocu _ _ _ _ _ = return ()
 
 #endif
