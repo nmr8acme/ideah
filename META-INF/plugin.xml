@@ -70,12 +70,17 @@
         <colorSettingsPage implementation="ideah.highlighter.HaskellColorsAndFontsPage"/>
         <lang.braceMatcher language="Haskell"
                            implementationClass="ideah.highlighter.HaskellBraceMatcher"/>
+        <quoteHandler fileType="Haskell" className="ideah.editor.HaskellQuoteHandler"/>
+        <copyPastePreProcessor implementation="ideah.editor.HaskellStringCopyPasteProcessor"/>
         <lang.commenter language="Haskell" implementationClass="ideah.highlighter.HaskellCommenter"/>
+
         <lang.parserDefinition language="Haskell" implementationClass="ideah.parser.HaskellParserDefinition"/>
         <indexPatternBuilder implementation="ideah.highlighter.HaskellIndexPatternBuilder"/>
+
         <referencesSearch implementation="ideah.findUsages.HaskellReferencesSearch"/>
-        <lang.formatter language="Haskell"
-                        implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>
+        <gotoClassContributor implementation="ideah.gotoSymbol.HaskellGotoContributor"/>
+        <!--<lang.formatter language="Haskell"-->
+                        <!--implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>-->
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->
         <!--order="before EnterBetweenBracesHandler"/>-->
         <externalAnnotator implementationClass="ideah.annotator.GHCMessageHighlighter" language="Haskell"/>
@@ -90,6 +95,5 @@
 
         <configurationType implementation="ideah.run.HaskellRunConfigurationType"/>
         <configurationProducer implementation="ideah.run.HaskellRunConfigurationProducer"/>
-        <!-- Add your extensions here -->
     </extensions>
 </idea-plugin>
