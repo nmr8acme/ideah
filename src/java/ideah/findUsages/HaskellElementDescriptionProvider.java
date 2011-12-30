@@ -6,11 +6,12 @@ import com.intellij.psi.PsiElement;
 import ideah.psi.impl.HPIdentImpl;
 import org.jetbrains.annotations.NotNull;
 
-public class HaskellElementDescriptionProvider implements ElementDescriptionProvider {
+public final class HaskellElementDescriptionProvider implements ElementDescriptionProvider {
 
-    public String getElementDescription(@NotNull PsiElement psiElement, @NotNull ElementDescriptionLocation elementDescriptionLocation) {
-        if (psiElement instanceof HPIdentImpl) {
-            return psiElement.getText();
+    public String getElementDescription(@NotNull PsiElement element, @NotNull ElementDescriptionLocation location) {
+        if (element instanceof HPIdentImpl) {
+            // todo: text depends on location (need only UsageViewLongNameLocation overriden)
+            return element.getText();
         }
         return null;
     }

@@ -72,9 +72,9 @@ final class HaskellCommandLineState extends CommandLineState {
                             throw new CantRunException(NO_GHC);
                         }
 
-                        String exePath = ghc.getHomePath() + "/bin/runhaskell"; // todo
+                        String exePath = ghc.getHomePath() + "/bin/" + GHCUtil.getExeName("runghc"); // todo
                         if (!new File(exePath).isFile()) {
-                            throw new CantRunException("Cannot find runhaskell executable");
+                            throw new CantRunException("Cannot find runghc executable");
                         }
                         String mainFile = parameters.getMainFile();
                         if (mainFile == null) {
@@ -93,8 +93,8 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         commandLine.setWorkDirectory(parameters.getWorkingDirectory());
 
-                        commandLine.addParameter("-i" + GHCUtil.rootsAsString(configuration.getModule(), false));
                         List<String> options = new ArrayList<String>();
+                        options.add("-i" + GHCUtil.rootsAsString(configuration.getModule(), false));
                         //GHCUtil.getGhcOptions(null, options); // todo!!!
                         commandLine.addParameters(options);
                         commandLine.addParameter(mainFile); // todo

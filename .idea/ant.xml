@@ -9,7 +9,7 @@
       <maximumHeapSize value="128" />
       <maximumStackSize value="2" />
       <properties />
-      <executeOn event="afterCompilation" target="pack_hs" />
+      <executeOn event="beforeCompilation" target="pack_hs" />
     </buildFile>
   </component>
 </project>

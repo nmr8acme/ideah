@@ -64,11 +64,11 @@ public final class HaddockLocation {
     private static void cabalInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, double maxIndicatorFraction, @NotNull List<String> packages) throws IOException, InterruptedException {
         if (packages.isEmpty())
             return;
-        GHCUtil.updateIndicatorText(indicator, "Updating Cabal...");
+        AskUtil.updateIndicatorText(indicator, "Updating Cabal...");
         runCabal(cabalPath, Arrays.asList("update"));
         double fractionRange = getFractionRange(indicator, maxIndicatorFraction);
         int size = packages.size();
-        GHCUtil.increaseIndicatorFraction(indicator, fractionRange / (size + 1));
+        AskUtil.increaseIndicatorFraction(indicator, fractionRange / (size + 1));
         if (indicator == null) {
             List<String> cabalArgsList = new ArrayList<String>();
             cabalArgsList.add("install");
@@ -77,9 +77,9 @@ public final class HaddockLocation {
         } else {
             double step = getFractionRange(indicator, maxIndicatorFraction) / size;
             for (String pkg : packages) {
-                GHCUtil.updateIndicatorText(indicator, "Installing package " + pkg + "...");
+                AskUtil.updateIndicatorText(indicator, "Installing package " + pkg + "...");
                 runCabal(cabalPath, Arrays.asList("install", pkg));
-                GHCUtil.increaseIndicatorFraction(indicator, step);
+                AskUtil.increaseIndicatorFraction(indicator, step);
             }
         }
     }
@@ -88,10 +88,10 @@ public final class HaddockLocation {
     private static void cabalCheckAndInstall(@NotNull String cabalPath, @Nullable ProgressIndicator indicator, double maxIndicatorFraction, String... packages) {
         if (packages.length > 0) {
             try {
-                GHCUtil.updateIndicatorText(indicator, "Checking installed Cabal packages...");
+                AskUtil.updateIndicatorText(indicator, "Checking installed Cabal packages...");
                 List<String> missingPackages = getMissingPackages(cabalPath, packages);
                 double fractionRange = getFractionRange(indicator, maxIndicatorFraction);
-                GHCUtil.increaseIndicatorFraction(indicator, fractionRange / (packages.length + 1));
+                AskUtil.increaseIndicatorFraction(indicator, fractionRange / (packages.length + 1));
                 cabalInstall(cabalPath, indicator, maxIndicatorFraction, missingPackages);
             } catch (Exception e) {
                 LOG.error(e);

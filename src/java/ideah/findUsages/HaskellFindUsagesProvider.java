@@ -26,12 +26,12 @@ public final class HaskellFindUsagesProvider implements FindUsagesProvider {
 
     @NotNull
     public String getType(@NotNull PsiElement psiElement) {
-        return "symbol"; // todo
+        return "symbol";
     }
 
     @NotNull
     public String getDescriptiveName(@NotNull PsiElement psiElement) {
-        return "name"; // todo
+        return "name"; // todo!!!
     }
 
     @NotNull

@@ -30,6 +30,7 @@ final class AskUtil {
     @NotNull
     private final String libDir;
     private final String cabalPath;
+    private final String ghcOptions;
     @NotNull
     private final File pluginPath;
     @NotNull
@@ -37,10 +38,11 @@ final class AskUtil {
     @NotNull
     private final String mainFile;
 
-    private AskUtil(@NotNull VirtualFile ghcHome, @NotNull String libDir, String cabalPath, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
+    private AskUtil(@NotNull VirtualFile ghcHome, @NotNull String libDir, String cabalPath, String ghcOptions, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
         this.ghcHome = ghcHome;
         this.libDir = libDir;
         this.cabalPath = cabalPath;
+        this.ghcOptions = ghcOptions;
         this.pluginPath = pluginPath;
         this.exe = exe;
         this.mainFile = mainFile;
@@ -66,7 +68,7 @@ final class AskUtil {
         File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
-        return new AskUtil(ghcHome, libDir, data.getCabalPath(), pluginPath, exe, mainFile);
+        return new AskUtil(ghcHome, libDir, data.getCabalPath(), data.getGhcOptions(), pluginPath, exe, mainFile);
     }
 
     String getLibDir() {
@@ -75,6 +77,10 @@ final class AskUtil {
 
     String getCabalPath() {
         return cabalPath;
+    }
+
+    String getGhcOptions() {
+        return ghcOptions;
     }
 
     File getExe() {
@@ -92,9 +98,6 @@ final class AskUtil {
 
     private static void listHaskellSources(HsCallback callback) throws IOException {
         InputStream is = CompilerLocation.class.getResourceAsStream("/ask_ghc.jar");
-        if (is == null) {
-            LOG.error("???"); //todo
-        }
         ZipInputStream zis = new ZipInputStream(is);
         while (true) {
             ZipEntry entry = zis.getNextEntry();
@@ -137,7 +140,7 @@ final class AskUtil {
         if (indicator != null) {
             step = (maxIndicatorFraction - indicator.getFraction()) / 3;
         }
-        GHCUtil.updateIndicator(indicator, step, "Collecting source files...");
+        updateIndicator(indicator, step, "Collecting source files...");
         listHaskellSources(new AskUtil.HsCallback() {
             public void run(ZipInputStream zis, ZipEntry entry) throws IOException {
                 File outFile = new File(pluginPath, entry.getName());
@@ -149,14 +152,14 @@ final class AskUtil {
                 }
             }
         });
-        GHCUtil.updateIndicator(indicator, step, "Compiling " + mainFile + "...");
+        updateIndicator(indicator, step, "Compiling " + mainFile + "...");
         String mainHs = mainFile + ".hs";
         ProcessLauncher launcher = new ProcessLauncher(true, null, ghcExe,
             "--make", "-cpp", "-O", "-package", "ghc",
             "-i" + pluginPath.getAbsolutePath(),
             new File(pluginPath, mainHs).getAbsolutePath()
         );
-        GHCUtil.updateIndicator(indicator, step, "Finishing compilation...");
+        updateIndicator(indicator, step, "Finishing compilation...");
         for (int i = 0; i < 3; i++) {
             if (exe.exists())
                 return true;
@@ -165,5 +168,22 @@ final class AskUtil {
         String stdErr = launcher.getStdErr();
         LOG.error("Compiling " + mainHs + ":\n" + stdErr);
         return false;
+    }
+
+    static void increaseIndicatorFraction(@Nullable ProgressIndicator indicator, double step) {
+        updateIndicator(indicator, step, null);
+    }
+
+    static void updateIndicatorText(@Nullable ProgressIndicator indicator, String message) {
+        updateIndicator(indicator, 0, message);
+    }
+
+    private static void updateIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
+        if (indicator != null) {
+            indicator.setFraction(indicator.getFraction() + step);
+            if (message != null) {
+                indicator.setText(message);
+            }
+        }
     }
 }

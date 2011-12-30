@@ -24,14 +24,14 @@ public final class CompilerLocation {
 
     private static boolean askHaddockChecked = false;
 
-    public final String sdkArgs;
-    public final String exe;
+    private final String exe;
     public final String libPath;
+    private final String ghcOptions;
 
-    private CompilerLocation(Module module, String exe, String libPath) {
-        sdkArgs = GHCUtil.getCompilerOptions(module);
+    private CompilerLocation(String exe, String libPath, String ghcOptions) {
         this.exe = exe;
         this.libPath = libPath;
+        this.ghcOptions = ghcOptions;
     }
 
     public static synchronized CompilerLocation get(@Nullable final Module module) {
@@ -67,14 +67,18 @@ public final class CompilerLocation {
                         return exeExists.get();
                     }
                 });
-                ApplicationManager.getApplication().invokeLater(task);
+                if (ApplicationManager.getApplication().isDispatchThread()) {
+                    task.run();
+                } else {
+                    ApplicationManager.getApplication().invokeLater(task);
+                }
                 Boolean exeExists = task.get();
                 if (!exeExists.booleanValue())
                     return null;
             }
             File exe = ask.getExe();
             if (exe != null) {
-                return new CompilerLocation(module, exe.getAbsolutePath(), ask.getLibDir());
+                return new CompilerLocation(exe.getAbsolutePath(), ask.getLibDir(), ask.getGhcOptions());
             } else {
                 return null;
             }
@@ -101,16 +105,30 @@ public final class CompilerLocation {
         });
     }
 
-    public List<String> getCompileOptionsList(String ghcOptions, List<String> additionalOptions) {
+    private static void append(StringBuilder buf, String str) {
+        if (str != null && str.length() > 0) {
+            if (buf.length() > 0) {
+                buf.append(' ');
+            }
+            buf.append(str);
+        }
+    }
+
+    public List<String> getCompileOptionsList(String initialOptions, List<String> additionalArgs) {
         List<String> args = new ArrayList<String>();
         args.add(exe);
-        args.addAll(Arrays.asList("-g", libPath,
-            "-c", (ghcOptions == null ? "" : ghcOptions + " ") + sdkArgs));
-        args.addAll(additionalOptions);
+        args.addAll(Arrays.asList("-g", libPath));
+        StringBuilder buf = new StringBuilder();
+        append(buf, initialOptions);
+        append(buf, ghcOptions);
+        if (buf.length() > 0) {
+            args.addAll(Arrays.asList("-c", buf.toString()));
+        }
+        args.addAll(additionalArgs);
         return args;
     }
 
-    public List<String> getCompileOptionsList(String... additionalOptions) {
-        return getCompileOptionsList(null, Arrays.asList(additionalOptions));
+    public List<String> getCompileOptionsList(String... additionalArgs) {
+        return getCompileOptionsList(null, Arrays.asList(additionalArgs));
     }
 }

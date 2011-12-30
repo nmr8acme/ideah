@@ -1,13 +1,9 @@
 package ideah.util;
 
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import ideah.sdk.HaskellSdkAdditionalData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,36 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GHCUtil {
-
-    public static List<String> getGhcOptions(Module module, @NotNull String initialOptions) {
-        List<String> args = new ArrayList<String>();
-        String options = getCompilerOptions(module);
-        if (options != null) {
-            String initial = initialOptions.isEmpty() ? "" : initialOptions + " ";
-            String allOptions = initial + options;
-            if (!allOptions.isEmpty()) {
-                args.add("-c");
-                args.add(allOptions);
-            }
-        }
-        return args;
-    }
-
-    @Nullable
-    static String getCompilerOptions(Module module) {
-        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
-        if (sdk != null) {
-            SdkAdditionalData data = sdk.getSdkAdditionalData();
-            if (data instanceof HaskellSdkAdditionalData) {
-                return ((HaskellSdkAdditionalData) data).getGhcOptions();
-            }
-        }
-        return null;
-    }
-
-    public static List<String> getGhcOptions(Module module) {
-        return getGhcOptions(module, "");
-    }
 
     public static String getExeName(String file) {
         return SystemInfo.isWindows
@@ -85,22 +51,5 @@ public final class GHCUtil {
             }
         }
         return new GHCVersion(parts);
-    }
-
-    static void increaseIndicatorFraction(@Nullable ProgressIndicator indicator, double step) {
-        updateIndicator(indicator, step, null);
-    }
-
-    static void updateIndicatorText(@Nullable ProgressIndicator indicator, String message) {
-        updateIndicator(indicator, 0, message);
-    }
-
-    static void updateIndicator(@Nullable ProgressIndicator indicator, double step, String message) {
-        if (indicator != null) {
-            indicator.setFraction(indicator.getFraction() + step);
-            if (message != null) {
-                indicator.setText(message);
-            }
-        }
     }
 }
