@@ -15,10 +15,11 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         "..", ":", "::", "=", "\\", "|", "<-", "->", "@", "~", "=>"
     ));
     private static final List<String> ESCAPES = Arrays.asList(
-        "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK",
-        "BEL", "BS", "HT", "LF", "VT", "FF", "CR", "SO", "SI", "DLE",
-        "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", "CAN",
-        "EM", "SUB", "ESC", "FS", "GS", "RS", "US", "SP", "DEL"
+        "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", // 0-7
+        "BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",  // 8-15
+        "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", // 16-23
+        "CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US",  // 24-31
+        "SP",  "DEL"                                            // 32, 127
     );
     private static final Set<String> STANDARD_FUNCTIONS = new HashSet<String>(Arrays.asList(
         "abs", "acos", "acosh", "all", "and", "any", "appendFile", "asTypeOf", "asin", "asinh", "atan", "atan2", "atanh",
@@ -35,8 +36,9 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         "scanr1", "seq", "sequence", "sequence_", "show", "showChar", "showList", "showParen", "showString", "shows", "showsPrec",
         "significand", "signum", "sin", "sinh", "snd", "span", "splitAt", "sqrt", "subtract", "succ", "sum", "tail", "take",
         "takeWhile", "tan", "tanh", "toEnum", "toInteger", "toRational", "truncate", "uncurry", "undefined", "unlines", "until",
-        "unwords", "unzip", "unzip3", "userError", "words", "writeFile", "zip", "zip3", "zipWith", "zipWith3"));
-        // todo: not highlight if hidden ("import Prelude hiding (...)")
+        "unwords", "unzip", "unzip3", "userError", "words", "writeFile", "zip", "zip3", "zipWith", "zipWith3"
+    ));
+    // todo: not highlight if hidden ("import Prelude hiding (...)")
 
     private final LookaheadBuffer la;
 
@@ -527,30 +529,64 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         }
     }
 
-    private boolean escape(StringBuilder buf, boolean amp) {
+    private boolean escape(StringBuilder buf, boolean amp, Unescaper unescaper) {
+        buf.append('\\');
+        la.next();
         int c = la.peek();
         if (isWhitechar(c)) {
             // gap
             skipSpaces(buf);
-            return la.match('\\');
+            if (la.match('\\')) {
+                buf.append('\\');
+                return true;
+            } else {
+                return false;
+            }
         } else {
             if ("abfnrtv\\\"'".indexOf(c) >= 0 || (amp && c == '&')) {
                 // single-char escape
                 append(buf, c);
+                if (unescaper != null) {
+                    unescaper.singleChar((char) c);
+                }
                 la.next();
                 return true;
             } else if (c == 'o') {
                 // octal escape
                 la.next();
-                return octal(buf);
+                if (unescaper != null) {
+                    StringBuilder oct = new StringBuilder();
+                    boolean ok = octal(oct);
+                    if (ok) {
+                        unescaper.octal(oct.toString());
+                    }
+                    buf.append(oct);
+                    return ok;
+                } else {
+                    return octal(buf);
+                }
             } else if (c == 'x') {
                 // hex escape
                 la.next();
-                return hex(buf);
+                if (unescaper != null) {
+                    StringBuilder hex = new StringBuilder();
+                    boolean ok = hex(hex);
+                    if (ok) {
+                        unescaper.hex(hex.toString());
+                    }
+                    buf.append(hex);
+                    return ok;
+                } else {
+                    return hex(buf);
+                }
             } else if (isDigit(c)) {
                 // decimal escape
                 la.next();
-                buf.append(decimal(c));
+                String decimal = decimal(c);
+                buf.append(decimal);
+                if (unescaper != null) {
+                    unescaper.decimal(decimal);
+                }
                 return true;
             } else if (c == '^') {
                 append(buf, c);
@@ -558,6 +594,9 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
                 int c1 = la.peek();
                 if (c1 >= 'A' && c1 <= 'Z' || "@[\\]^_".indexOf(c1) >= 0) {
                     append(buf, c1);
+                    if (unescaper != null) {
+                        unescaper.control((char) c1);
+                    }
                     la.next();
                     return true;
                 } else {
@@ -566,7 +605,9 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
             } else {
                 // control escapes
                 if (c >= 'A' && c <= 'Z') {
-                    for (String escape : ESCAPES) {
+                    Integer longestEscape = null;
+                    for (int i = 0; i < ESCAPES.size(); i++) {
+                        String escape = ESCAPES.get(i);
                         boolean match = true;
                         for (int j = 0; j < escape.length(); j++) {
                             if (la.peek(j) != escape.charAt(j)) {
@@ -575,12 +616,21 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
                             }
                         }
                         if (match) {
-                            for (int j = 0; j < escape.length(); j++) {
-                                la.next();
+                            if (longestEscape == null || escape.length() > ESCAPES.get(longestEscape.intValue()).length()) {
+                                longestEscape = i;
                             }
-                            buf.append(escape);
-                            return true;
                         }
+                    }
+                    if (longestEscape != null) {
+                        String escape = ESCAPES.get(longestEscape.intValue());
+                        for (int j = 0; j < escape.length(); j++) {
+                            la.next();
+                        }
+                        buf.append(escape);
+                        if (unescaper != null) {
+                            unescaper.namedControl(longestEscape.intValue());
+                        }
+                        return true;
                     }
                 }
                 return false;
@@ -588,7 +638,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
         }
     }
 
-    private HaskellToken string(int start) {
+    HaskellToken string(int start, Unescaper unescaper) {
         if (la.match('"')) {
             StringBuilder buf = new StringBuilder();
             buf.append('"');
@@ -596,18 +646,18 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
             while (true) {
                 int c = la.peek();
                 if (c == '\\') {
-                    buf.append('\\');
-                    la.next();
-                    if (!escape(buf, true)) {
+                    if (!escape(buf, true, unescaper)) {
                         error = true;
                     }
                 } else if (c >= ' ' && c != '"') {
                     append(buf, c);
+                    if (unescaper != null) {
+                        unescaper.normalChar((char) c);
+                    }
                     la.next();
                 } else {
                     break;
                 }
-
             }
             if (!la.match('"')) {
                 error = true;
@@ -631,9 +681,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
             int c = la.peek();
             boolean error = false;
             if (c == '\\') {
-                buf.append('\\');
-                la.next();
-                if (!escape(buf, false)) {
+                if (!escape(buf, false, null)) {
                     error = true;
                 }
             } else if (c >= ' ' && c != '\'') {
@@ -698,7 +746,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
             output(t);
             return true;
         }
-        t = string(start);
+        t = string(start, null);
         if (t != null) {
             output(t);
             return true;
@@ -766,6 +814,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
                 "0123E10\n" +
                 "\"xyzzy^A\"\n" +
                 "\"xyzzy\\r\\nabba\"\n" +
+                "\"xyzzy\\\n\\abba\"" +
                 "'\\f'\n" +
                 "'X'";
         lexer.init(str, 0, str.length());
