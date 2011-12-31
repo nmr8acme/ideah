@@ -1,38 +1,24 @@
 package ideah.lexer;
 
-public final class Unescaper {
+public final class Unescaper implements Escaping {
 
     private final StringBuilder buf = new StringBuilder();
     private boolean error = false;
 
     private static char unescape(char c) {
-        switch (c) {
-        case 'a': return 7;
-        case 'b': return '\b';
-        case 'f': return '\f';
-        case 'n': return '\n';
-        case 'r': return '\r';
-        case 't': return '\t';
-        case 'v': return 11;
-        }
-        return c;
+        int i = SINGLE_ESCAPES.indexOf(c);
+        return i >= 0 ? SINGLE_UNESCAPES.charAt(i) : 0;
     }
 
     public static char escape(char c) {
-        switch (c) {
-        case 7: return 'a';
-        case '\b': return 'b';
-        case '\f': return 'f';
-        case '\n': return 'n';
-        case '\r': return 'r';
-        case '\t': return 't';
-        case 11: return 'v';
-        }
-        return 0;
+        int i = SINGLE_UNESCAPES.indexOf(c);
+        return i >= 0 ? SINGLE_ESCAPES.charAt(i) : 0;
     }
 
     void singleChar(char c) {
-        append(unescape(c));
+        if (c != '&') {
+            append(unescape(c));
+        }
     }
 
     private void append(int code) {
@@ -66,11 +52,7 @@ public final class Unescaper {
     }
 
     void namedControl(int index) {
-        if (index > ' ') {
-            append(127);
-        } else {
-            append(index);
-        }
+        append(index);
     }
 
     void normalChar(char c) {

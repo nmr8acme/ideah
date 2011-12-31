@@ -2,7 +2,7 @@ package ideah.lexer;
 
 import java.util.*;
 
-final class HaskellLexerImpl implements HaskellTokenTypes {
+final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
 
     private static final String SPECIALS = "(),;[]`{}";
     private static final String ASC_SYMBOLS = "!#$%&*+./<=>?@\\^|-~:";
@@ -14,13 +14,6 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
     private static final Set<String> RESERVED_OPS = new HashSet<String>(Arrays.asList(
         "..", ":", "::", "=", "\\", "|", "<-", "->", "@", "~", "=>"
     ));
-    private static final List<String> ESCAPES = Arrays.asList(
-        "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL", // 0-7
-        "BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",  // 8-15
-        "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB", // 16-23
-        "CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US",  // 24-31
-        "SP",  "DEL"                                            // 32, 127
-    );
     private static final Set<String> STANDARD_FUNCTIONS = new HashSet<String>(Arrays.asList(
         "abs", "acos", "acosh", "all", "and", "any", "appendFile", "asTypeOf", "asin", "asinh", "atan", "atan2", "atanh",
         "break", "catch", "ceiling", "compare", "concat", "concatMap", "const", "cos", "cosh", "curry", "cycle", "decodeFloat",
@@ -543,7 +536,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
                 return false;
             }
         } else {
-            if ("abfnrtv\\\"'".indexOf(c) >= 0 || (amp && c == '&')) {
+            if (SINGLE_ESCAPES.indexOf(c) >= 0 || (amp && c == '&')) {
                 // single-char escape
                 append(buf, c);
                 if (unescaper != null) {
@@ -622,13 +615,14 @@ final class HaskellLexerImpl implements HaskellTokenTypes {
                         }
                     }
                     if (longestEscape != null) {
-                        String escape = ESCAPES.get(longestEscape.intValue());
+                        int i = longestEscape.intValue();
+                        String escape = ESCAPES.get(i);
                         for (int j = 0; j < escape.length(); j++) {
                             la.next();
                         }
                         buf.append(escape);
                         if (unescaper != null) {
-                            unescaper.namedControl(longestEscape.intValue());
+                            unescaper.namedControl(i > 32 ? 127 : i);
                         }
                         return true;
                     }

@@ -86,27 +86,29 @@ public final class HaskellStringCopyPasteProcessor implements CopyPastePreProces
         boolean prevHex = false;
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
-            char escaped = Unescaper.escape(ch);
             boolean nextPrevHex = false;
-            if (escaped != 0) {
-                buf.append('\\').append(escaped);
+            if (ch == '\'') {
+                buf.append(ch);
             } else {
-                if (ch == '\\' || ch == '"') {
-                    buf.append("\\").append(ch);
-                } else if (Character.isISOControl(ch)) {
-                    String hexCode = Integer.toHexString(ch).toUpperCase();
-                    buf.append("\\x");
-                    int paddingCount = 4 - hexCode.length();
-                    while (paddingCount-- > 0) {
-                        buf.append('0');
-                    }
-                    buf.append(hexCode);
-                    nextPrevHex = true;
+                char escaped = Unescaper.escape(ch);
+                if (escaped != 0) {
+                    buf.append('\\').append(escaped);
                 } else {
-                    if (prevHex && (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f')) {
-                        buf.append('\\').append('&');
+                    if (Character.isISOControl(ch)) {
+                        String hexCode = Integer.toHexString(ch).toUpperCase();
+                        buf.append("\\x");
+                        int paddingCount = 4 - hexCode.length();
+                        while (paddingCount-- > 0) {
+                            buf.append('0');
+                        }
+                        buf.append(hexCode);
+                        nextPrevHex = true;
+                    } else {
+                        if (prevHex && (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'F' || ch >= 'a' && ch <= 'f')) {
+                            buf.append('\\').append('&');
+                        }
+                        buf.append(ch);
                     }
-                    buf.append(ch);
                 }
             }
             prevHex = nextPrevHex;
