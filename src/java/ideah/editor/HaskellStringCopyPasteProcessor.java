@@ -17,6 +17,7 @@ import ideah.lexer.HaskellTokenTypes;
 import ideah.lexer.Unescaper;
 import ideah.util.LineCol;
 
+// todo: for IDEA 11 override StringLiteralCopyPasteProcessor
 public final class HaskellStringCopyPasteProcessor implements CopyPastePreProcessor {
 
     public String preprocessOnCopy(PsiFile file, int[] startOffsets, int[] endOffsets, String text) {
