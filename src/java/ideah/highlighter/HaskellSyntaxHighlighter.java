@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.awt.font.TextAttribute;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,6 +59,12 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
         return attrs;
     }
 
+    private static TextAttributes modify(TextAttributesKey key, Color color, int fontType) {
+        TextAttributes attrs = modify(key, color);
+        attrs.setFontType(fontType);
+        return attrs;
+    }
+
     static final TextAttributesKey STRING_ATTR = TextAttributesKey.createTextAttributesKey(
         STRING_ID, SyntaxHighlighterColors.STRING.getDefaultAttributes()
     );
@@ -83,7 +90,7 @@ public final class HaskellSyntaxHighlighter extends SyntaxHighlighterBase implem
         SYM_ID, SyntaxHighlighterColors.OPERATION_SIGN.getDefaultAttributes() // todo: ???
     );
     static final TextAttributesKey STD_FUNCTION_ATTR = TextAttributesKey.createTextAttributesKey(
-        STD_FUNCTION_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.BLACK) // todo: ???
+        STD_FUNCTION_ID, modify(SyntaxHighlighterColors.KEYWORD, Color.black, Font.BOLD | Font.ITALIC)
     );
     static final TextAttributesKey PAREN_ATTR = TextAttributesKey.createTextAttributesKey(
         PAREN_ID, SyntaxHighlighterColors.PARENTHS.getDefaultAttributes()

@@ -27,11 +27,8 @@ public final class LaunchGHC {
             CompilerLocation compiler = CompilerLocation.get(module);
             if (compiler == null)
                 return Collections.emptyList();
-            List<String> args = compiler.getCompileOptionsList("-W",
-                Arrays.asList(
-                    "-m", "Compile",
+            List<String> args = compiler.getCompileOptionsList("-m", "Compile",
                     "-s", GHCUtil.rootsAsString(module, tests)
-                )
             );
             if (output != null) {
                 args.addAll(Arrays.asList(

@@ -135,7 +135,8 @@ public final class HaskellSdkConfigurable implements AdditionalDataConfigurable 
             cabalPath = suggestCabalPath(libPath);
             modified = true;
         }
-        String ghcOptions = ghcData == null ? null : ghcData.getGhcOptions();
+        String initialGhcOptions = "-W";
+        String ghcOptions = ghcData == null ? initialGhcOptions : ghcData.getGhcOptions();
         myForm.init(libPath, cabalPath, ghcOptions);
         myForm.setModified(modified);
     }

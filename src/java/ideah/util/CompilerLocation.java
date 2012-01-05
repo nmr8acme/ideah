@@ -114,21 +114,16 @@ public final class CompilerLocation {
         }
     }
 
-    public List<String> getCompileOptionsList(String initialOptions, List<String> additionalArgs) {
+    public List<String> getCompileOptionsList(String... additionalArgs) {
         List<String> args = new ArrayList<String>();
         args.add(exe);
         args.addAll(Arrays.asList("-g", libPath));
         StringBuilder buf = new StringBuilder();
-        append(buf, initialOptions);
         append(buf, ghcOptions);
         if (buf.length() > 0) {
             args.addAll(Arrays.asList("-c", buf.toString()));
         }
-        args.addAll(additionalArgs);
+        args.addAll(Arrays.asList(additionalArgs));
         return args;
-    }
-
-    public List<String> getCompileOptionsList(String... additionalArgs) {
-        return getCompileOptionsList(null, Arrays.asList(additionalArgs));
     }
 }
