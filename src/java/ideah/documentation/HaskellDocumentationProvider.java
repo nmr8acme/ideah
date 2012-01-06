@@ -50,13 +50,13 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
         }
         try {
             String sourcePath = GHCUtil.rootsAsString(module, false);
-            List<String> args = compiler.getCompileOptionsList(
+            List<String> compilerArgs = compiler.getCompileOptionsList(
                 "-m", "GetIdType",
                 "-s", sourcePath,
                 "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
                 file.getPath()
             );
-            ProcessLauncher idLauncher = new ProcessLauncher(false, null, args);
+            ProcessLauncher idLauncher = new ProcessLauncher(false, null, compilerArgs);
             String stdOut = idLauncher.getStdOut();
             if (stdOut.trim().isEmpty())
                 return null;
@@ -79,16 +79,14 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     + "Type: <code>" + type + "</code><br>");
             DeclarationPosition declaration = DeclarationPosition.get(psiFile, coord);
             if (declaration != null) {
-                ProcessLauncher documentationLauncher = new ProcessLauncher(
-                    false, null,
-                    HaddockLocation.get(module, null).exe,
-                    "-g", compiler.libPath,
+                List<String> haddockArgs = HaddockLocation.get(module, null).getCompileOptionsList(
                     "-s", sourcePath,
                     "--line-number",
                     String.valueOf(declaration.coord.line),
                     "--column-number", String.valueOf(declaration.coord.column),
                     "--module", declaration.module
                 );
+                ProcessLauncher documentationLauncher = new ProcessLauncher(false, null, haddockArgs);
                 BufferedReader reader = new BufferedReader(new StringReader(documentationLauncher.getStdOut()));
                 while (true) {
                     String l = reader.readLine();

@@ -12,15 +12,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
-public final class HaddockLocation {
+public final class HaddockLocation extends LocationUtil {
 
     private static final Logger LOG = Logger.getInstance("ideah.util.HaddockLocation");
     private static final String MAIN_FILE = "ask_haddock";
 
-    public final String exe;
-
-    private HaddockLocation(String exe) {
-        this.exe = exe;
+    private HaddockLocation(String exe, String libPath, String ghcOptions) {
+        super(exe, libPath, ghcOptions);
     }
 
     private static List<String> getMissingPackages(@NotNull String cabalPath, String... packages) throws IOException, InterruptedException {
@@ -118,7 +116,7 @@ public final class HaddockLocation {
             }
             File exe = ask.getExe();
             if (exe != null) {
-                return new HaddockLocation(exe.getAbsolutePath());
+                return new HaddockLocation(exe.getAbsolutePath(), ask.getLibDir(), ask.getGhcOptions());
             } else {
                 return null;
             }

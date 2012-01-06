@@ -13,7 +13,7 @@ import StringBuffer
 import FastString
 
 data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Help
-    deriving Read
+    deriving (Show, Read, Enum, Bounded)
 
 data Options = Options
     { mode            :: Mode

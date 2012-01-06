@@ -5,6 +5,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.NotNull;
 
 final class HaskellParameters extends SimpleProgramParameters {
 
@@ -36,11 +37,11 @@ final class HaskellParameters extends SimpleProgramParameters {
         this.rtFlags = rtFlags;
     }
 
-    public void configureByModule(Module module) {
+    public void configureByModule(@NotNull Module module) {
         setGhc(getModuleGhc(module));
     }
 
-    public static Sdk getModuleGhc(Module module) {
+    public static Sdk getModuleGhc(@NotNull Module module) {
         Sdk ghc = ModuleRootManager.getInstance(module).getSdk();
         if (ghc == null)
             return null;
