@@ -31,7 +31,7 @@ options =
         maxMode :: Mode
         maxMode = maxBound
     in  [ Option ['m'] ["main-func-mode"] (ReqArg (\mod opt  -> opt {mode = read mod}) "Mode")
-            ("Compilation mode. Possible arguments: " ++ (concat $ intersperse ", " $ map show [minMode..maxMode]))
+            ("Compilation mode. Possible arguments:\n" ++ (concat $ intersperse ", " $ map show [minMode..maxMode]))
         , Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {moduleFile = modf}) "String") "Module for specified line and column numers"
         , Option ['g'] ["ghcpath"]        (ReqArg (\path opt -> opt {ghcPath = path}) "DIR") "GHC lib path"
         , Option ['o'] ["outpath"]        (ReqArg (\path opt -> opt {outputPath = path}) "DIR") "Output path"
@@ -52,10 +52,11 @@ main = do
         pos        = position opts
         compOpts   = compilerOptions opts
     case mode opts of
-        Help       -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files..." options
+        Help       -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files...\n" options
         Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
         CheckMain  -> checkMain compOpts ghcpath singleFile
         GetIdType  -> getIdType compOpts srcpath ghcpath singleFile pos
         GetDeclPos -> getDeclPos compOpts srcpath ghcpath singleFile pos
         ParseTree  -> parseTree compOpts ghcpath singleFile
         FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files
+        Test       -> print compOpts

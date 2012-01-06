@@ -12,7 +12,7 @@ import Lexer
 import StringBuffer
 import FastString
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Help
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help
     deriving (Show, Read, Enum, Bounded)
 
 data Options = Options
