@@ -3,7 +3,6 @@ module Main where
 import Control.Monad
 import System.Environment
 import System.Console.GetOpt
-import Data.List (intersperse)
 
 import HUtil
 import Compile
@@ -25,20 +24,14 @@ import FindUsages
 --    <files>             # files to be compiled
 
 options :: [OptDescr (Options -> Options)]
-options =
-    let minMode :: Mode
-        minMode = minBound
-        maxMode :: Mode
-        maxMode = maxBound
-    in  [ Option ['m'] ["main-func-mode"] (ReqArg (\mod opt  -> opt {mode = read mod}) "Mode")
-            ("Compilation mode. Possible arguments:\n" ++ (concat $ intersperse ", " $ map show [minMode..maxMode]))
-        , Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {moduleFile = modf}) "String") "Module for specified line and column numers"
-        , Option ['g'] ["ghcpath"]        (ReqArg (\path opt -> opt {ghcPath = path}) "DIR") "GHC lib path"
-        , Option ['o'] ["outpath"]        (ReqArg (\path opt -> opt {outputPath = path}) "DIR") "Output path"
-        , Option ['s'] ["sourcepath"]     (ReqArg (\path opt -> opt {sourcePath = path}) "DIR") "Source path"
-        , Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = words opts}) "String") "GHC options"
-        , Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "Line number"
-        , Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "Column number"
+options = [ mainFuncModeOption
+        , moduleOption
+        , ghcpathOption
+        , outpathOption
+        , sourcepathOption
+        , ghcoptionsOption
+        , lineNumberOption
+        , columnNumberOption
         ]
 
 main = do

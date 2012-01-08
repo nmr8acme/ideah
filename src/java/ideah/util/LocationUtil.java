@@ -1,5 +1,7 @@
 package ideah.util;
 
+import com.intellij.execution.configurations.CommandLineTokenizer;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,23 +18,13 @@ public class LocationUtil {
         this.ghcOptions = ghcOptions;
     }
 
-    private static void append(StringBuilder buf, String str) {
-        if (str != null && str.length() > 0) {
-            if (buf.length() > 0) {
-                buf.append(' ');
-            }
-            buf.append(str);
-        }
-    }
-
     public List<String> getCompileOptionsList(String... additionalArgs) {
         List<String> args = new ArrayList<String>();
         args.add(exe);
         args.addAll(Arrays.asList("-g", libPath));
-        StringBuilder buf = new StringBuilder();
-        append(buf, ghcOptions);
-        if (buf.length() > 0) {
-            args.addAll(Arrays.asList("-c", buf.toString()));
+        CommandLineTokenizer tokenizer = new CommandLineTokenizer(ghcOptions, " ");
+        while (tokenizer.hasMoreTokens()) {
+            args.addAll(Arrays.asList("-c", tokenizer.nextToken()));
         }
         args.addAll(Arrays.asList(additionalArgs));
         return args;
