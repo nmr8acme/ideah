@@ -25,7 +25,6 @@ import java.util.Map;
 final class HaskellCommandLineState extends CommandLineState {
 
     private static final String NO_GHC = "GHC valid location not specified";
-    private static final String NO_CONFIGURATION = "Project configuration not specified";
 
     private HaskellParameters myParams;
 
@@ -46,8 +45,9 @@ final class HaskellCommandLineState extends CommandLineState {
     private HaskellParameters createHaskellParameters() {
         HaskellParameters params = new HaskellParameters();
         Module module = configuration.getModule();
-        if (module == null)
+        if (module == null) {
             return null;
+        }
         ProgramParametersUtil.configureConfiguration(params, configuration);
         params.configureByModule(module);
         params.setMainFile(configuration.getMainFile());
@@ -66,7 +66,7 @@ final class HaskellCommandLineState extends CommandLineState {
                     try {
                         HaskellParameters parameters = getHaskellParameters();
                         if (parameters == null) {
-                            throw new CantRunException(NO_CONFIGURATION);
+                            throw new CantRunException("Configuration parameters not specified");
                         }
                         Sdk ghc = parameters.getGhc();
                         if (ghc == null) {
