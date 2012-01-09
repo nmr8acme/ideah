@@ -41,20 +41,22 @@ public final class CompilerLocation extends LocationUtil {
                     public Boolean call() throws Exception {
                         // call() is invoked in Event Dispatch Thread
                         final AtomicBoolean exeExists = new AtomicBoolean();
+                        final String description = "Haskell code analysis module";
                         ProgressManager.getInstance().runProcessWithProgressSynchronously(new Runnable() {
                             public void run() {
                                 // run() is invoked in worker thread
                                 try {
                                     ProgressIndicator indicator =
                                         ProgressManager.getInstance().getProgressIndicator();
-                                    indicator.setText("Preparing " + MAIN_FILE + " compilation...");
+                                    indicator.setText("Please wait while building " + description + "...");
+                                    indicator.setText2("Preparing compilation of " + MAIN_FILE + "...");
                                     indicator.setFraction(0.1);
                                     exeExists.set(ask.compileHs(indicator, 1.0));
                                 } catch (Exception e) {
                                     LOG.error(e.getMessage());
                                 }
                             }
-                        }, "Compiling " + MAIN_FILE, true, module.getProject());
+                        }, description + " compilation", true, module.getProject());
                         return exeExists.get();
                     }
                 });
@@ -81,9 +83,10 @@ public final class CompilerLocation extends LocationUtil {
 
     private static void compileAskHaddock(final Module module) {
         Project project = module.getProject();
-        final Task haddockBackgroundTask = new Task.Backgroundable(project, "Installing Haddock if missing", true) {
+        final Task haddockBackgroundTask = new Task.Backgroundable(project, "Setting up Haddock", true) {
             public void run(ProgressIndicator indicator) {
-                indicator.setText("Checking Haddock installation...");
+                indicator.setText("Please wait while setting up Haddock (Haskell documentation tool) installation...");
+                indicator.setText2("Checking Haddock installation...");
                 indicator.setFraction(0.0);
                 HaddockLocation.get(module, indicator);
                 indicator.setFraction(1.0);

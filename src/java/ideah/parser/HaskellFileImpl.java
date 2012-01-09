@@ -22,10 +22,4 @@ public final class HaskellFileImpl extends PsiFileBase implements HaskellFile {
     public void accept(@NotNull PsiElementVisitor visitor) {
         visitor.visitFile(this); // todo
     }
-
-    public boolean isMainModule() {
-        String name = getName();
-        String baseName = FileUtil.getNameWithoutExtension(name);
-        return "Main".equals(baseName) || (baseName.length() > 0 && Character.isLowerCase(baseName.charAt(0)));
-    }
 }

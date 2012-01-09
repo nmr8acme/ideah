@@ -35,8 +35,6 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         if (!(file instanceof HaskellFile))
             return null;
         HaskellFile hsFile = (HaskellFile) file;
-        if (!hsFile.isMainModule())
-            return null;
         try {
             VirtualFile virtualFile = file.getVirtualFile();
             if (virtualFile == null)

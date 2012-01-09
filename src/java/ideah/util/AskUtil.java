@@ -182,7 +182,7 @@ final class AskUtil {
         if (indicator != null) {
             indicator.setFraction(indicator.getFraction() + step);
             if (message != null) {
-                indicator.setText(message);
+                indicator.setText2(message);
             }
         }
     }
