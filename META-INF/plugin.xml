@@ -19,7 +19,6 @@
         <component>
             <implementation-class>ideah.compiler.HaskellCompilerProjectComponent</implementation-class>
         </component>
-        <!-- Add your project components here -->
     </project-components>
 
     <actions>
@@ -78,7 +77,7 @@
         <indexPatternBuilder implementation="ideah.highlighter.HaskellIndexPatternBuilder"/>
 
         <referencesSearch implementation="ideah.findUsages.HaskellReferencesSearch"/>
-        <gotoClassContributor implementation="ideah.gotoSymbol.HaskellGotoContributor"/>
+        <!--<gotoClassContributor implementation="ideah.gotoSymbol.HaskellGotoContributor"/>-->
         <!--<lang.formatter language="Haskell"-->
                         <!--implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>-->
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->

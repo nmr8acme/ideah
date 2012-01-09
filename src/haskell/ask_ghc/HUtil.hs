@@ -38,7 +38,7 @@ moduleOption       = Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {
 ghcpathOption      = Option ['g'] ["ghcpath"]        (ReqArg (\path opt -> opt {ghcPath = path}) "DIR") "GHC lib path"
 outpathOption      = Option ['o'] ["outpath"]        (ReqArg (\path opt -> opt {outputPath = path}) "DIR") "Output path"
 sourcepathOption   = Option ['s'] ["sourcepath"]     (ReqArg (\path opt -> opt {sourcePath = path}) "DIR") "Source path"
-ghcoptionsOption   = Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = compilerOptions opt  ++ words opts}) "String") "GHC options"
+ghcoptionsOption   = Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = compilerOptions opt  ++ [opts]}) "String") "GHC options"
 lineNumberOption   = Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "Line number"
 columnNumberOption = Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "Column number"
 

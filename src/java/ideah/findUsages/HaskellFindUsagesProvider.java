@@ -31,7 +31,7 @@ public final class HaskellFindUsagesProvider implements FindUsagesProvider {
 
     @NotNull
     public String getDescriptiveName(@NotNull PsiElement psiElement) {
-        return psiElement.getText(); //
+        return psiElement.getText();
     }
 
     @NotNull
