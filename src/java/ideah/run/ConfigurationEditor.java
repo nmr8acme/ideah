@@ -10,9 +10,10 @@ import java.awt.*;
 final class ConfigurationEditor extends SettingsEditor<HaskellRunConfiguration> {
 
     private final JPanel mainPanel = new JPanel(new BorderLayout());
-    private final ProgramParamsPanel programParams = new ProgramParamsPanel();
+    private final ProgramParamsPanel programParams;
 
     ConfigurationEditor(Project project) {
+        programParams = new ProgramParamsPanel();
         mainPanel.add(programParams);
         // todo: selection of main module
         // todo: runtime flags

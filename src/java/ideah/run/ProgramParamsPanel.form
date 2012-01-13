@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="ideah.run.ProgramParamsPanel">
+  <grid id="27dc6" binding="myContentPanel" layout-manager="GridLayoutManager" row-count="6" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="272"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="fbfec" class="com.intellij.openapi.ui.LabeledComponent" binding="mainFileComponent">
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="com.intellij.openapi.ui.TextFieldWithBrowseButton"/>
+          <text value="Main file"/>
+        </properties>
+      </component>
+      <component id="4ff05" class="com.intellij.openapi.ui.LabeledComponent" binding="programParametersComponent">
+        <constraints>
+          <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="com.intellij.ui.RawCommandLineEditor"/>
+          <text value="Program parameters"/>
+        </properties>
+      </component>
+      <component id="f6b4d" class="com.intellij.openapi.ui.LabeledComponent" binding="workingDirectoryComponent">
+        <constraints>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="com.intellij.openapi.ui.TextFieldWithBrowseButton"/>
+          <text value="Working directory"/>
+        </properties>
+      </component>
+      <component id="f8175" class="com.intellij.execution.configuration.EnvironmentVariablesComponent" binding="environmentVariables">
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+      </component>
+      <component id="ede07" class="com.intellij.openapi.ui.LabeledComponent" binding="moduleComponent">
+        <constraints>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="javax.swing.JComboBox"/>
+          <text value="Module (?)"/>
+        </properties>
+      </component>
+      <component id="19a37" class="com.intellij.openapi.ui.LabeledComponent" binding="runtimeFlagsComponent">
+        <constraints>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <componentClass value="com.intellij.ui.RawCommandLineEditor"/>
+          <text value="GHC runtime flags"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
