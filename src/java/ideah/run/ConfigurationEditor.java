@@ -5,16 +5,13 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 
 final class ConfigurationEditor extends SettingsEditor<HaskellRunConfiguration> {
 
-    private final JPanel mainPanel = new JPanel(new BorderLayout());
     private final ProgramParamsPanel programParams;
 
     ConfigurationEditor(Project project) {
-        programParams = new ProgramParamsPanel();
-        mainPanel.add(programParams);
+        programParams = new ProgramParamsPanel(project);
         // todo: selection of main module
         // todo: runtime flags
     }
@@ -29,7 +26,7 @@ final class ConfigurationEditor extends SettingsEditor<HaskellRunConfiguration> 
 
     @NotNull
     protected JComponent createEditor() {
-        return mainPanel;
+        return programParams.getVisual();
     }
 
     protected void disposeEditor() {
