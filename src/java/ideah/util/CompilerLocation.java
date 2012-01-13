@@ -13,11 +13,14 @@ import java.io.File;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 public final class CompilerLocation extends LocationUtil {
 
     private static final Logger LOG = Logger.getInstance("ideah.util.CompilerLocation");
     private static final String MAIN_FILE = "ask_ghc";
+
+    private static final ReentrantLock LOCK = new ReentrantLock();
 
     private static boolean askHaddockChecked = false;
 
@@ -25,7 +28,7 @@ public final class CompilerLocation extends LocationUtil {
         super(exe, libPath, ghcOptions);
     }
 
-    public static synchronized CompilerLocation get(@Nullable final Module module) {
+    private static CompilerLocation doGet(@Nullable final Module module) {
         if (module == null)
             return null;
         final AskUtil ask = AskUtil.get(module, MAIN_FILE);
@@ -81,6 +84,28 @@ public final class CompilerLocation extends LocationUtil {
         }
     }
 
+    public static CompilerLocation get(@Nullable Module module) {
+        if (ApplicationManager.getApplication().isDispatchThread()) {
+            // trying not to block EDT...
+            if (LOCK.tryLock()) {
+                try {
+                    return doGet(module);
+                } finally {
+                    LOCK.unlock();
+                }
+            } else {
+                return null;
+            }
+        } else {
+            LOCK.lock();
+            try {
+                return doGet(module);
+            } finally {
+                LOCK.unlock();
+            }
+        }
+    }
+
     private static void compileAskHaddock(final Module module) {
         Project project = module.getProject();
         final Task haddockBackgroundTask = new Task.Backgroundable(project, "Setting up Haddock", true) {
@@ -98,5 +123,4 @@ public final class CompilerLocation extends LocationUtil {
             }
         });
     }
-
 }
