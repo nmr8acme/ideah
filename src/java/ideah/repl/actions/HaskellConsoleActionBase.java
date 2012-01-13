@@ -11,6 +11,8 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.editor.CaretModel;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -18,10 +20,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.NotNullFunction;
 import ideah.parser.HaskellFile;
-import ideah.repl.HaskellConsole;
-import ideah.repl.HaskellConsoleExecuteActionHandler;
-import ideah.repl.HaskellConsoleProcessHandler;
-import ideah.repl.HaskellConsoleView;
+import ideah.repl.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -49,6 +48,14 @@ abstract class HaskellConsoleActionBase extends AnAction {
 
     protected static void executeCommand(Project project, String command) {
         HaskellConsoleProcessHandler processHandler = findRunningHaskellConsole(project);
+
+        // if a console isn't runnning, start one
+        if (processHandler == null) {
+            Module module = RunHaskellConsoleAction.getModule(project);
+            processHandler = HaskellConsoleRunner.run(module);
+            if (processHandler == null)
+                return;
+        }
 
         // implement a command
         LanguageConsoleImpl languageConsole = processHandler.getLanguageConsole();

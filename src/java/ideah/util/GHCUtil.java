@@ -20,12 +20,16 @@ public final class GHCUtil {
     }
 
     public static String getGhcCommandPath(VirtualFile ghcHome) {
+        return getCommandPath(ghcHome, "ghc");
+    }
+
+    public static String getCommandPath(VirtualFile ghcHome, String executable) {
         if (ghcHome == null)
             return null;
         VirtualFile virBin = ghcHome.findChild("bin");
         if (virBin == null)
             return null;
-        return new File(virBin.getPath(), "ghc").getAbsolutePath();
+        return new File(virBin.getPath(), executable).getAbsolutePath();
     }
 
     public static String rootsAsString(@NotNull Module module, boolean tests) {

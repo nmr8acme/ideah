@@ -35,19 +35,21 @@
 
             <action id="ideah.repl.actions.LoadHaskellFileInConsoleAction"
                     class="ideah.repl.actions.LoadHaskellFileInConsoleAction"
-                    text="Load file to REPL">
+                    text="Load/Reload Current File in REPL...">
                 <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift L"/>
             </action>
+
+
+            <action id="ideah.repl.actions.RunHaskellConsoleAction"
+                    class="ideah.repl.actions.RunHaskellConsoleAction"
+                    text="Start Haskell REPL" description="Runs Haskell REPL">
+                <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift F10"/>
+            </action>
+
 
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </group>
 
-        <action id="ideah.repl.actions.RunHaskellConsoleAction"
-                class="ideah.repl.actions.RunHaskellConsoleAction"
-                text="Start Haskell Console" description="Runs Haskell REPL">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift F10"/>
-        </action>
 
         <action id="Haskell.Console.Execute"
                 class="com.intellij.openapi.actionSystem.EmptyAction"
@@ -79,7 +81,7 @@
         <referencesSearch implementation="ideah.findUsages.HaskellReferencesSearch"/>
         <!--<gotoClassContributor implementation="ideah.gotoSymbol.HaskellGotoContributor"/>-->
         <!--<lang.formatter language="Haskell"-->
-                        <!--implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>-->
+        <!--implementationClass="ideah.formatter.HaskellFormattingModelBuilder"/>-->
         <!--<enterHandlerDelegate implementation="ideah.formatter.HaskellEnterHandler"-->
         <!--order="before EnterBetweenBracesHandler"/>-->
         <externalAnnotator implementationClass="ideah.annotator.GHCMessageHighlighter" language="Haskell"/>

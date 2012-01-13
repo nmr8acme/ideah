@@ -12,14 +12,20 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import ideah.sdk.HaskellSdkType;
+import ideah.util.GHCUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -37,7 +43,7 @@ public final class HaskellConsoleRunner {
     private final ConsoleHistoryModel historyModel;
 
     private HaskellConsoleView consoleView;
-    private ProcessHandler processHandler;
+    private HaskellConsoleProcessHandler processHandler;
 
     private HaskellConsoleExecuteActionHandler executeHandler;
     private AnAction runAction;
@@ -52,18 +58,25 @@ public final class HaskellConsoleRunner {
         this.historyModel = new ConsoleHistoryModel();
     }
 
-    public static void run(@NotNull Module module,
-                           String workingDir,
-                           String... statements2execute) {
+    public static HaskellConsoleProcessHandler run(@NotNull Module module) {
+        String srcRoot = ModuleRootManager.getInstance(module).getContentRoots()[0].getPath();
+        String path = srcRoot + File.separator + "src";
+        return run(module, path);
+    }
+
+    public static HaskellConsoleProcessHandler run(@NotNull Module module,
+                                                   String workingDir,
+                                                   String... statements2execute) {
         HaskellConsoleRunner runner = new HaskellConsoleRunner(module, REPL_TITLE, workingDir);
         try {
-            runner.initAndRun(statements2execute);
+            return runner.initAndRun(statements2execute);
         } catch (ExecutionException e) {
             ExecutionHelper.showErrors(module.getProject(), Arrays.<Exception>asList(e), REPL_TITLE, null);
+            return null;
         }
     }
 
-    private void initAndRun(String... statements2execute) throws ExecutionException {
+    private HaskellConsoleProcessHandler initAndRun(String... statements2execute) throws ExecutionException {
         // Create Server process
         GeneralCommandLine cmdline = createCommandLine(module, workingDir);
         Process process = cmdline.createProcess();
@@ -135,6 +148,8 @@ public final class HaskellConsoleRunner {
             HaskellConsoleHighlightingUtil.processOutput(console, st, ProcessOutputTypes.SYSTEM);
             executeHandler.processLine(st);
         }
+
+        return processHandler;
     }
 
     private void createAndRegisterEnterAction(JPanel panel) {
@@ -210,10 +225,17 @@ public final class HaskellConsoleRunner {
         return new HaskellConsoleView(project, consoleTitle, historyModel);
     }
 
-    private GeneralCommandLine createCommandLine(Module module, String workingDir) throws CantRunException {
+    private static GeneralCommandLine createCommandLine(Module module, String workingDir) throws CantRunException {
+        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
+        VirtualFile homePath;
+        if (sdk == null || !(sdk.getSdkType() instanceof HaskellSdkType) || sdk.getHomePath() == null) {
+            throw new CantRunException("Invalid SDK Home path set. Please set your SDK path correctly.");
+        } else {
+            homePath = sdk.getHomeDirectory();
+        }
+
         GeneralCommandLine line = new GeneralCommandLine();
-        line.setExePath("C:\\Haskell\\bin\\ghci.exe"); // todo
-        // todo: create command line for ghci
+        line.setExePath(GHCUtil.getCommandPath(homePath, "ghci"));
         line.setWorkDirectory(workingDir);
         return line;
     }

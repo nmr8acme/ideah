@@ -8,7 +8,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import ideah.repl.HaskellConsoleRunner;
 
 public final class RunHaskellConsoleAction extends AnAction implements DumbAware {
@@ -29,21 +28,26 @@ public final class RunHaskellConsoleAction extends AnAction implements DumbAware
     @Override
     public void actionPerformed(AnActionEvent event) {
         Module module = getModule(event);
-        String path = ModuleRootManager.getInstance(module).getContentRoots()[0].getPath();
-        HaskellConsoleRunner.run(module, path);
+        HaskellConsoleRunner.run(module);
     }
 
-    private static Module getModule(AnActionEvent e) {
+    static Module getModule(Project project) {
+        if (project == null)
+            return null;
+        Module[] modules = ModuleManager.getInstance(project).getModules();
+        if (modules.length > 0) {
+            return modules[0];
+        }
+        return null;
+    }
+
+    static Module getModule(AnActionEvent e) {
         Module module = e.getData(DataKeys.MODULE);
         if (module == null) {
             Project project = e.getData(DataKeys.PROJECT);
-            if (project == null)
-                return null;
-            Module[] modules = ModuleManager.getInstance(project).getModules();
-            if (modules.length > 0) {
-                module = modules[0];
-            }
+            return getModule(project);
+        } else {
+            return module;
         }
-        return module;
     }
 }
