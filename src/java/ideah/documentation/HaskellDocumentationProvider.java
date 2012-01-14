@@ -93,14 +93,14 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
                     if (l == null || l.startsWith(newMsgIndicator))
                         break;
                 }
-                String newLineHtml = "<br>";
                 while (true) {
                     String l = reader.readLine();
                     if (l != null) {
-                        documentation.append(l).append(newLineHtml);
-                    } else break;
+                        documentation.append(l).append("<br>");
+                    } else {
+                        break;
+                    }
                 }
-                documentation.substring(0, documentation.lastIndexOf(newLineHtml));
             }
             return documentation.toString();
         } catch (Exception ex) {

@@ -52,11 +52,11 @@ final class ProgramParamsPanel {
     }
 
     private void setMainFile(String mainFile) {
-        mainFileComponent.getComponent().setText(mainFile); // todo: system slashes
+        mainFileComponent.getComponent().setText(mainFile);
     }
 
     private void setWorkingDirectory(String workingDirectory) {
-        workingDirectoryComponent.getComponent().setText(workingDirectory); // todo: system slashes
+        workingDirectoryComponent.getComponent().setText(workingDirectory);
     }
 
     private void setProgramParameters(String programParameters) {

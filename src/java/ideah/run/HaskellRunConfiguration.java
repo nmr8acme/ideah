@@ -2,6 +2,7 @@ package ideah.run;
 
 import com.intellij.execution.CommonProgramRunConfigurationParameters;
 import com.intellij.execution.Executor;
+import com.intellij.execution.ExternalizablePath;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -87,11 +88,11 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     }
 
     public void setWorkingDirectory(@Nullable String value) {
-        workingDir = value;
+        workingDir = ExternalizablePath.urlValue(value);
     }
 
     public String getWorkingDirectory() {
-        return workingDir;
+        return ExternalizablePath.localPathValue(workingDir);
     }
 
     public void setEnvs(@NotNull Map<String, String> envs) {
@@ -113,7 +114,7 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     }
 
     public String getMainFile() {
-        return mainFile;
+        return ExternalizablePath.localPathValue(mainFile);
     }
 
     public void setMainFile(HaskellFile mainFile) {
