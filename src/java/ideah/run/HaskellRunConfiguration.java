@@ -7,6 +7,7 @@ import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.components.PathMacroManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
@@ -18,10 +19,13 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import ideah.parser.HaskellFile;
 import ideah.util.DeclarationPosition;
+import org.apache.velocity.runtime.log.Log;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -36,6 +40,8 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     private boolean passParentEnvs = true;
 
     private final Map<String, String> myEnvs = new LinkedHashMap<String, String>();
+
+    private static final Logger LOG = Logger.getInstance("ideah.run.HaskellRunConfiguration");
 
     public HaskellRunConfiguration(String name, Project project, ConfigurationFactory factory) {
         super(name, new RunConfigurationModule(project), factory);
@@ -73,8 +79,16 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
         super.checkConfiguration();
-        // todo: check if mainFile exists?
-        // todo: check if still has main function
+        if (!new File(mainFile).exists())
+            throw new RuntimeConfigurationException("Main file does not exist");
+        boolean hasMain = false;
+        try {
+            hasMain = HaskellRunConfigurationProducer.hasMain(mainFile, getModule());
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+        }
+        if (!hasMain)
+            throw new RuntimeConfigurationException(mainFile + " is not a valid main file (does not have `main' function)");
     }
 
     // getters/setters
