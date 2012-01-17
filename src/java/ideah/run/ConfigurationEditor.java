@@ -1,5 +1,6 @@
 package ideah.run;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
@@ -10,10 +11,8 @@ final class ConfigurationEditor extends SettingsEditor<HaskellRunConfiguration> 
 
     private final ProgramParamsPanel programParams;
 
-    ConfigurationEditor(Project project) {
-        programParams = new ProgramParamsPanel(project);
-        // todo: selection of main module
-        // todo: runtime flags
+    ConfigurationEditor(Module[] modules, Module module) {
+        programParams = new ProgramParamsPanel(modules, module);
     }
 
     protected void applyEditorTo(HaskellRunConfiguration s) {

@@ -6,9 +6,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.RawCommandLineEditor;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicComboBoxEditor;
+import java.awt.*;
+import java.awt.event.ActionListener;
 
 final class ProgramParamsPanel {
 
@@ -16,22 +20,24 @@ final class ProgramParamsPanel {
     private LabeledComponent<TextFieldWithBrowseButton> mainFileComponent;
     private LabeledComponent<RawCommandLineEditor> programParametersComponent;
     private LabeledComponent<TextFieldWithBrowseButton> workingDirectoryComponent;
-    private LabeledComponent<JComboBox> moduleComponent;
     private EnvironmentVariablesComponent environmentVariables;
     private LabeledComponent<RawCommandLineEditor> runtimeFlagsComponent;
+    private JComboBox moduleComboBox;
 
-    ProgramParamsPanel(Project project) {
+    ProgramParamsPanel(Module[] modules, Module module) {
         mainFileComponent.getComponent().addBrowseFolderListener("Main file", "Main File", null,
             new FileChooserDescriptor(true, false, false, false, true, false)); // todo: chooseMultiple = false?
         workingDirectoryComponent.getComponent().addBrowseFolderListener("Working directory", "Working Directory",
             null, new FileChooserDescriptor(false, true, false, false, true, false));
-        // todo: moduleComponent
+        moduleComboBox.setModel(new DefaultComboBoxModel(modules));
+        moduleComboBox.setRenderer(new ModuleComboBoxRenderer());
+        moduleComboBox.setSelectedItem(module);
     }
 
     public void applyTo(HaskellRunConfiguration configuration) {
         configuration.setProgramParameters(programParametersComponent.getComponent().getText());
         configuration.setWorkingDirectory(workingDirectoryComponent.getComponent().getText());
-//        configuration.setModule((String) moduleComponent.getComponent().getSelectedItem()); // todo
+        configuration.setModule((Module) moduleComboBox.getSelectedItem());
         configuration.setRuntimeFlags(runtimeFlagsComponent.getComponent().getText());
         configuration.setEnvs(environmentVariables.getEnvs());
         configuration.setPassParentEnvs(environmentVariables.isPassParentEnvs());
@@ -48,7 +54,7 @@ final class ProgramParamsPanel {
     }
 
     private void setModule(Module module) {
-        moduleComponent.getComponent().setSelectedItem(module.getName());
+        moduleComboBox.setSelectedItem(module);
     }
 
     private void setMainFile(String mainFile) {

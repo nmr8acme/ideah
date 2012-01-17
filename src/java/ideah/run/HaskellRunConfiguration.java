@@ -61,7 +61,7 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     }
 
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new ConfigurationEditor(getProject());
+        return new ConfigurationEditor(getModules(), getModule());
     }
 
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) {
