@@ -3,16 +3,11 @@ package ideah.run;
 import com.intellij.execution.configuration.EnvironmentVariablesComponent;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.LabeledComponent;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.RawCommandLineEditor;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicComboBoxEditor;
-import java.awt.*;
-import java.awt.event.ActionListener;
 
 final class ProgramParamsPanel {
 

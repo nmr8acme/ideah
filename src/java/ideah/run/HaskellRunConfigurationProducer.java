@@ -13,7 +13,6 @@ import ideah.parser.HaskellFile;
 import ideah.util.CompilerLocation;
 import ideah.util.ProcessLauncher;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
