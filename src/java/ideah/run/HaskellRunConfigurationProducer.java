@@ -13,7 +13,6 @@ import ideah.parser.HaskellFile;
 import ideah.util.CompilerLocation;
 import ideah.util.ProcessLauncher;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -40,7 +39,7 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
             VirtualFile virtualFile = file.getVirtualFile();
             if (virtualFile == null)
                 return null;
-            if (!hasMain(virtualFile.getPath(), context.getModule()))
+            if (!hasMain(virtualFile, context.getModule()))
                 return null;
             runFile = hsFile;
             Project project = file.getProject();
@@ -59,16 +58,16 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         return null;
     }
 
-    static boolean hasMain(String file, Module module) throws IOException, InterruptedException {
+    static boolean hasMain(VirtualFile file, Module module) throws IOException, InterruptedException {
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null) {
             return false;
         }
         List<String> args = compiler.getCompileOptionsList(
             "-m", "CheckMain",
-            file
+            file.getPath()
         );
-        ProcessLauncher launcher = new ProcessLauncher(false, new FileInputStream(file), args);
+        ProcessLauncher launcher = new ProcessLauncher(false, file.getInputStream(), args);
         String stdOut = launcher.getStdOut();
         return stdOut != null && stdOut.contains("t");
     }

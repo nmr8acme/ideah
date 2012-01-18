@@ -10,8 +10,8 @@ final class ConfigurationEditor extends SettingsEditor<HaskellRunConfiguration> 
 
     private final ProgramParamsPanel programParams;
 
-    ConfigurationEditor(Module[] modules, Module module) {
-        programParams = new ProgramParamsPanel(modules, module);
+    ConfigurationEditor(Module[] modules) {
+        programParams = new ProgramParamsPanel(modules);
     }
 
     protected void applyEditorTo(HaskellRunConfiguration s) {

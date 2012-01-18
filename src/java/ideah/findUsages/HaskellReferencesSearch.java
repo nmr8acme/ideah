@@ -14,6 +14,7 @@ import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Processor;
 import ideah.compiler.HaskellCompiler;
+import ideah.psi.api.HPIdent;
 import ideah.psi.impl.HPIdentImpl;
 import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +35,7 @@ public final class HaskellReferencesSearch extends QueryExecutorBase<PsiReferenc
     @Override
     public void processQuery(@NotNull ReferencesSearch.SearchParameters queryParameters, @NotNull Processor<PsiReference> consumer) {
         PsiElement element = queryParameters.getElementToSearch();
-        if (!(element instanceof HPIdentImpl))
+        if (!(element instanceof HPIdent))
             return;
         PsiFile file = element.getContainingFile();
         try {

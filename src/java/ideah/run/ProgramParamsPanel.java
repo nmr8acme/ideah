@@ -19,20 +19,19 @@ final class ProgramParamsPanel {
     private LabeledComponent<RawCommandLineEditor> runtimeFlagsComponent;
     private JComboBox moduleComboBox;
 
-    ProgramParamsPanel(Module[] modules, Module module) {
+    ProgramParamsPanel(Module[] modules) {
         mainFileComponent.getComponent().addBrowseFolderListener("Main file", "Main File", null,
-            new FileChooserDescriptor(true, false, false, false, true, false)); // todo: chooseMultiple = false?
+            new FileChooserDescriptor(true, false, false, false, true, false));
         workingDirectoryComponent.getComponent().addBrowseFolderListener("Working directory", "Working Directory",
             null, new FileChooserDescriptor(false, true, false, false, true, false));
         moduleComboBox.setModel(new DefaultComboBoxModel(modules));
         moduleComboBox.setRenderer(new ModuleComboBoxRenderer());
-        moduleComboBox.setSelectedItem(module);
     }
 
     public void applyTo(HaskellRunConfiguration configuration) {
         configuration.setProgramParameters(programParametersComponent.getComponent().getText());
         configuration.setWorkingDirectory(workingDirectoryComponent.getComponent().getText());
-        configuration.setModule((Module) moduleComboBox.getSelectedItem());
+        configuration.setMainFile((Module) moduleComboBox.getSelectedItem(), mainFileComponent.getComponent().getText());
         configuration.setRuntimeFlags(runtimeFlagsComponent.getComponent().getText());
         configuration.setEnvs(environmentVariables.getEnvs());
         configuration.setPassParentEnvs(environmentVariables.isPassParentEnvs());

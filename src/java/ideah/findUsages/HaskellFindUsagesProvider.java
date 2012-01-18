@@ -6,7 +6,7 @@ import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.psi.PsiElement;
 import ideah.lexer.HaskellLexer;
 import ideah.parser.HaskellParserDefinition;
-import ideah.psi.impl.HPIdentImpl;
+import ideah.psi.api.HPIdent;
 import org.jetbrains.annotations.NotNull;
 
 public final class HaskellFindUsagesProvider implements FindUsagesProvider {
@@ -17,7 +17,7 @@ public final class HaskellFindUsagesProvider implements FindUsagesProvider {
     }
 
     public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-        return psiElement instanceof HPIdentImpl;
+        return psiElement instanceof HPIdent;
     }
 
     public String getHelpId(@NotNull PsiElement psiElement) {
@@ -36,8 +36,8 @@ public final class HaskellFindUsagesProvider implements FindUsagesProvider {
 
     @NotNull
     public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
-        if (element instanceof HPIdentImpl) {
-            HPIdentImpl ident = (HPIdentImpl) element;
+        if (element instanceof HPIdent) {
+            HPIdent ident = (HPIdent) element;
             String name = ident.getName();
             return name == null ? ident.getText() : name;
         }

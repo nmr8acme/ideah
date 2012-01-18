@@ -15,15 +15,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.JDOMExternalizer;
 import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import ideah.parser.HaskellFile;
 import ideah.util.DeclarationPosition;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -65,7 +64,8 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     }
 
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-        return new ConfigurationEditor(getModules(), getModule());
+        Module[] modules = ModuleManager.getInstance(getProject()).getModules();
+        return new ConfigurationEditor(modules);
     }
 
     public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) {
@@ -77,16 +77,17 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     @Override
     public void checkConfiguration() throws RuntimeConfigurationException {
         super.checkConfiguration();
-        if (!new File(mainFile).exists())
+        VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(this.mainFile);
+        if (file == null || !file.exists())
             throw new RuntimeConfigurationException("Main file does not exist");
         boolean hasMain = false;
         try {
-            hasMain = HaskellRunConfigurationProducer.hasMain(mainFile, getModule());
+            hasMain = HaskellRunConfigurationProducer.hasMain(file, getModule());
         } catch (Exception e) {
             LOG.error(e.getMessage());
         }
         if (!hasMain)
-            throw new RuntimeConfigurationException(mainFile + " is not a valid main file (does not have `main' function)");
+            throw new RuntimeConfigurationException(file.getName() + " is not a valid main file (does not have `main' function)");
     }
 
     // getters/setters
@@ -132,10 +133,15 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
     public void setMainFile(HaskellFile mainFile) {
         VirtualFile file = mainFile.getVirtualFile();
         if (file != null) {
-            this.mainFile = file.getPath();
+            this.mainFile = file.getUrl();
             Module module = DeclarationPosition.getDeclModule(mainFile);
             setModule(module);
         }
+    }
+
+    public void setMainFile(Module module, String path) {
+        setModule(module);
+        this.mainFile = ExternalizablePath.urlValue(path);
     }
 
     public String getRuntimeFlags() {
@@ -154,7 +160,7 @@ public final class HaskellRunConfiguration extends ModuleBasedConfiguration<RunC
         if (mainFile == null) {
             file = null;
         } else {
-            file = LocalFileSystem.getInstance().findFileByPath(mainFile);
+            file = VirtualFileManager.getInstance().findFileByUrl(mainFile);
         }
         if (file == null) {
             return "Unnamed";
