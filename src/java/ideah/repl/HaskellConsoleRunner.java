@@ -1,6 +1,7 @@
 package ideah.repl;
 
 import com.intellij.execution.*;
+import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.console.ConsoleHistoryController;
 import com.intellij.execution.executors.DefaultRunExecutor;
@@ -13,11 +14,13 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import ideah.sdk.HaskellSdkAdditionalData;
 import ideah.sdk.HaskellSdkType;
 import ideah.util.GHCUtil;
 import org.jetbrains.annotations.NotNull;
@@ -233,10 +236,17 @@ public final class HaskellConsoleRunner {
         } else {
             homePath = sdk.getHomeDirectory();
         }
-
         GeneralCommandLine line = new GeneralCommandLine();
         line.setExePath(GHCUtil.getCommandPath(homePath, "ghci"));
         line.setWorkDirectory(workingDir);
+        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
+        if (sdkAdditionalData instanceof HaskellSdkAdditionalData) {
+            HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+            CommandLineTokenizer tokenizer = new CommandLineTokenizer(data.getGhcOptions());
+            while (tokenizer.hasMoreTokens()) {
+                line.addParameter(tokenizer.nextToken());
+            }
+        }
         return line;
     }
 
