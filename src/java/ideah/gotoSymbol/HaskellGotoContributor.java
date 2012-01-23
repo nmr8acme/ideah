@@ -6,6 +6,10 @@ import com.intellij.openapi.project.Project;
 
 public final class HaskellGotoContributor implements GotoClassContributor {
 
+    public String getQualifiedNameSeparator() {
+        return "."; // todo
+    }
+
     public String getQualifiedName(NavigationItem item) {
         return item.getName(); // todo
     }

@@ -22,7 +22,7 @@ public final class LaunchGHC {
 
     static final String EOLN = "\n";
 
-    public static List<GHCMessage> compileAndGetGhcMessages(VirtualFile output, String fileName, @NotNull Module module, boolean tests) {
+    public static List<GHCMessage> compile(VirtualFile output, String fileName, @NotNull Module module, boolean tests) {
         try {
             CompilerLocation compiler = CompilerLocation.get(module);
             if (compiler == null)

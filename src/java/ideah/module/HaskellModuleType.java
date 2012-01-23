@@ -42,6 +42,6 @@ public final class HaskellModuleType extends ModuleType<HaskellModuleBuilder> {
     }
 
     public static ModuleType<?> get(Module module) {
-        return module.getModuleType();
+        return ModuleType.get(module);
     }
 }

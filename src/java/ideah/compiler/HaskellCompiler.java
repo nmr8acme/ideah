@@ -94,7 +94,7 @@ public final class HaskellCompiler implements TranslatingCompiler {
         List<OutputItem> output = new ArrayList<OutputItem>();
         // todo: pass all files to compiler at once (more effective?)
         for (VirtualFile file : toCompile) {
-            for (GHCMessage message : LaunchGHC.compileAndGetGhcMessages(outputDir, file.getPath(), module, tests)) {
+            for (GHCMessage message : LaunchGHC.compile(outputDir, file.getPath(), module, tests)) {
                 VirtualFile errFile = LocalFileSystem.getInstance().findFileByPath(message.getFileName());
                 String url = errFile == null ? message.getFileName() : errFile.getUrl();
                 LineCol coord = message.getRange().start;

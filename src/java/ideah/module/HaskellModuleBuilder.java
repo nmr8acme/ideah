@@ -9,6 +9,10 @@ import com.intellij.openapi.projectRoots.impl.SdkConfigurationUtil;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ProjectRootManager;
 import ideah.sdk.HaskellSdkType;
+import ideah.util.GHCUtil;
+import ideah.util.GHCVersion;
+
+import java.util.Comparator;
 
 // todo: setup page?
 public final class HaskellModuleBuilder extends JavaModuleBuilder {
@@ -35,7 +39,14 @@ public final class HaskellModuleBuilder extends JavaModuleBuilder {
             }
         }
         if (ghc == null) {
-            ghc = SdkConfigurationUtil.findOrCreateSdk(HaskellSdkType.INSTANCE);
+            Comparator<Sdk> sdkComparator = new Comparator<Sdk>() {
+                public int compare(Sdk s1, Sdk s2) {
+                    GHCVersion v1 = GHCUtil.getVersion(s1.getVersionString());
+                    GHCVersion v2 = GHCUtil.getVersion(s2.getVersionString());
+                    return -v1.compareTo(v2);
+                }
+            };
+            ghc = SdkConfigurationUtil.findOrCreateSdk(sdkComparator, HaskellSdkType.INSTANCE);
         }
         if (ghc != null) {
             Project project = rootModel.getProject();

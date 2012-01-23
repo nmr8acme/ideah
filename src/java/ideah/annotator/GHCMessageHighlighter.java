@@ -11,20 +11,38 @@ import ideah.compiler.GHCMessage;
 import ideah.compiler.LaunchGHC;
 import ideah.util.DeclarationPosition;
 import ideah.util.LineColRange;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.List;
 
-public final class GHCMessageHighlighter implements ExternalAnnotator {
+public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, AnnotationResult> {
 
-    public void annotate(PsiFile psiFile, AnnotationHolder annotationHolder) {
+    @Override
+    public PsiFile collectionInformation(@NotNull PsiFile file) {
+        return file;
+    }
+
+    @Override
+    public AnnotationResult doAnnotate(PsiFile psiFile) {
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
-            return;
+            return null;
         Module module = DeclarationPosition.getDeclModule(psiFile);
         if (module == null)
+            return null;
+        List<GHCMessage> ghcMessages = LaunchGHC.compile(null, file.getPath(), module, true);
+        return new AnnotationResult(file, ghcMessages);
+    }
+
+    @Override
+    public void apply(@NotNull PsiFile file, AnnotationResult result, @NotNull AnnotationHolder holder) {
+        if (result == null)
             return;
-        List<GHCMessage> ghcMessages = LaunchGHC.compileAndGetGhcMessages(null, file.getPath(), module, true);
+        showMessages(file, holder, result.file, result.ghcMessages);
+    }
+
+    private static void showMessages(PsiFile psiFile, AnnotationHolder annotationHolder, VirtualFile file, List<GHCMessage> ghcMessages) {
         File mainFile = new File(file.getPath());
         for (GHCMessage ghcMessage : ghcMessages) {
             if (new File(ghcMessage.getFileName()).equals(mainFile)) {
