@@ -34,11 +34,17 @@ public final class GHCUtil {
 
     public static String rootsAsString(@NotNull Module module, boolean tests) {
         VirtualFile[] sourceRoots = ModuleRootManager.getInstance(module).getSourceRoots(tests);
+        if (sourceRoots.length <= 0)
+            return ".";
         StringBuilder buf = new StringBuilder();
-        for (VirtualFile root : sourceRoots) {
-            buf.append(':').append(root.getPath());
+        for (int i = 0; i < sourceRoots.length; i++) {
+            if (i > 0) {
+                buf.append(':');
+            }
+            VirtualFile root = sourceRoots[i];
+            buf.append(root.getPath());
         }
-        return buf.substring(1);
+        return buf.toString();
     }
 
     @NotNull
