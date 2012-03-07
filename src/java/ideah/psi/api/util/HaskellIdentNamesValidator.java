@@ -16,7 +16,15 @@ public class HaskellIdentNamesValidator implements NamesValidator {
         return false;
     }
 
-    public boolean isIdentifier(final String name, final Project project) {
-        return !isKeyword(name, project); // todo: valid identifier name check
+    public boolean isIdentifier(final String name, final Project project) { // todo: use lexer
+        if (!Character.isJavaIdentifierStart(name.charAt(0)))
+            return false;
+        if (name.length() > 1) {
+            for (char c : name.substring(1).toCharArray()) {
+                if (!Character.isJavaIdentifierPart(c))
+                    return false;
+            }
+        }
+        return !isKeyword(name, project); 
     }
 }
