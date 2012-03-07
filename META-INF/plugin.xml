@@ -99,5 +99,7 @@
 
         <projectService serviceInterface="ideah.psi.api.util.HaskellPsiElementFactory"
                         serviceImplementation="ideah.psi.api.util.HaskellPsiElementFactoryImpl"/>
+
+        <lang.namesValidator language="Haskell" implementationClass="ideah.psi.api.util.HaskellIdentNamesValidator"/>
     </extensions>
 </idea-plugin>

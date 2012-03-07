@@ -3,6 +3,8 @@ package ideah.lexer;
 import com.intellij.lexer.LexerBase;
 import com.intellij.psi.tree.IElementType;
 
+import java.util.Set;
+
 public final class HaskellLexer extends LexerBase {
 
     private final HaskellLexerImpl lexer;
@@ -27,6 +29,10 @@ public final class HaskellLexer extends LexerBase {
         nextToken();
     }
 
+    public static Set<String> getKeywords() {
+        return HaskellLexerImpl.getKeywords();
+    }
+    
     public int getState() {
         return 0;
     }

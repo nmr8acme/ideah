@@ -6,6 +6,11 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
 
     private static final String SPECIALS = "(),;[]`{}";
     private static final String ASC_SYMBOLS = "!#$%&*+./<=>?@\\^|-~:";
+
+    static Set<String> getKeywords() {
+        return KEYWORDS;
+    }
+
     private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
         "case", "class", "data", "default", "deriving", "do", "else",
         "foreign", "if", "import", "in", "infix", "infixl", "infixr",
