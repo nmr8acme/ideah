@@ -10,12 +10,16 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.util.IncorrectOperationException;
+import ideah.lexer.HaskellTokenTypes;
+import ideah.psi.api.util.HaskellPsiElementFactory;
 import ideah.psi.api.HPIdent;
 import ideah.util.DeclarationPosition;
 import ideah.util.LineCol;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent, PsiReference {
 
@@ -30,8 +34,15 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
         return this;
     }
 
+    @Nullable
     public PsiElement setName(@NotNull @NonNls String name) throws IncorrectOperationException {
-        return null; // todo
+        Project project = getProject();
+        HaskellPsiElementFactory instance = HaskellPsiElementFactory.getInstance(project);
+        ASTNode newNode = instance.createIdentNodeFromText(name);
+        if (newNode == null)
+            return null;
+        getParent().getNode().replaceChild(getNode(), newNode);
+        return newNode.getPsi();
     }
 
     public PsiElement getElement() {
@@ -81,7 +92,14 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
     }
 
     public PsiElement handleElementRename(String newElementName) throws IncorrectOperationException {
-        return null; // todo
+        PsiElement nameElement = getReferenceNameElement();
+        if (nameElement != null) {
+            ASTNode node = nameElement.getNode();
+            ASTNode newNameNode = HaskellPsiElementFactory.getInstance(getProject()).createIdentNodeFromText(newElementName);
+            assert newNameNode != null && node != null;
+            node.getTreeParent().replaceChild(node, newNameNode);
+        }
+        return this;
     }
 
     public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
@@ -99,5 +117,14 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     public boolean isSoft() {
         return false;
+    }
+
+    public PsiElement getReferenceNameElement() {
+        final ASTNode lastChild = getNode();
+        for (IElementType elementType : HaskellTokenTypes.IDS.getTypes()) { // todo: ?
+            if (lastChild.getElementType() == elementType)
+                return lastChild.getPsi();
+        }
+        return null;
     }
 }

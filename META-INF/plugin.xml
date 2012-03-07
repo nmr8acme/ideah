@@ -96,5 +96,8 @@
 
         <configurationType implementation="ideah.run.HaskellRunConfigurationType"/>
         <configurationProducer implementation="ideah.run.HaskellRunConfigurationProducer"/>
+
+        <projectService serviceInterface="ideah.psi.api.util.HaskellPsiElementFactory"
+                        serviceImplementation="ideah.psi.api.util.HaskellPsiElementFactoryImpl"/>
     </extensions>
 </idea-plugin>
