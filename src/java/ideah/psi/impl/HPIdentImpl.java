@@ -52,7 +52,7 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
     public TextRange getRangeInElement() {
         return new TextRange(0, getTextLength());
     }
-
+    
     public PsiElement resolve() {
         PsiFile psiFile = getContainingFile();
         LineCol coord = LineCol.fromOffset(psiFile, getTextOffset());

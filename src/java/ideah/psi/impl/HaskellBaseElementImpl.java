@@ -32,6 +32,6 @@ public abstract class HaskellBaseElementImpl extends ASTDelegatePsiElement imple
 
     @Override
     public String toString() {
-        return getSrcSpan();
+        return node.getText();
     }
 }

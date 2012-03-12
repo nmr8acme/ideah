@@ -21,7 +21,7 @@ public class HaskellIdentNamesValidator implements NamesValidator {
             return false;
         if (name.length() > 1) {
             for (char c : name.substring(1).toCharArray()) {
-                if (!Character.isJavaIdentifierPart(c))
+                if (!(Character.isLetterOrDigit(c) || c == '_' || c == '\''))
                     return false;
             }
         }
