@@ -8,7 +8,7 @@ import java.lang.String;
 
 public class HaskellIdentNamesValidator implements NamesValidator {
 
-    public boolean isKeyword(final String name, final Project project) {
+    public boolean isKeyword(String name, Project project) {
         for (String s : HaskellLexer.getKeywords()) {
             if (name.equals(s))
                 return true;
@@ -16,7 +16,7 @@ public class HaskellIdentNamesValidator implements NamesValidator {
         return false;
     }
 
-    public boolean isIdentifier(final String name, final Project project) { // todo: use lexer
+    public boolean isIdentifier(String name, Project project) { // todo: use lexer
         if (!Character.isJavaIdentifierStart(name.charAt(0)))
             return false;
         if (name.length() > 1) {
@@ -25,6 +25,6 @@ public class HaskellIdentNamesValidator implements NamesValidator {
                     return false;
             }
         }
-        return !isKeyword(name, project); 
+        return !isKeyword(name, project);
     }
 }

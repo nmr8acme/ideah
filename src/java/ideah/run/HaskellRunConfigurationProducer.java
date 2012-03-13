@@ -1,5 +1,6 @@
 package ideah.run;
 
+import com.intellij.execution.Location;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.junit.RuntimeConfigurationProducer;
@@ -30,7 +31,7 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         return runFile;
     }
 
-    protected RunnerAndConfigurationSettings createConfigurationByElement(com.intellij.execution.Location location, ConfigurationContext context) {
+    protected RunnerAndConfigurationSettings createConfigurationByElement(Location location, ConfigurationContext context) {
         PsiFile file = location.getPsiElement().getContainingFile();
         if (!(file instanceof HaskellFile))
             return null;

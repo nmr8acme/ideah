@@ -22,7 +22,7 @@ public class HaskellPsiElementFactoryImpl extends HaskellPsiElementFactory {
 
     @Nullable
     public ASTNode createIdentNodeFromText(@NotNull String newName) {
-        final HaskellFile dummyFile = createHaskellFileFromText(newName);
+        HaskellFile dummyFile = createHaskellFileFromText(newName);
         PsiElement firstChild = dummyFile.getFirstChild();
         if (firstChild != null)
             return firstChild.getNode();
@@ -31,7 +31,7 @@ public class HaskellPsiElementFactoryImpl extends HaskellPsiElementFactory {
 
     @Override
     public boolean hasSyntacticalErrors(@NotNull String text) {
-        final HaskellFile clojureFile = (HaskellFile) PsiFileFactory.getInstance(getProject()).createFileFromText(DUMMY + HaskellFileType.INSTANCE.getDefaultExtension(), text);
+        HaskellFile clojureFile = (HaskellFile) PsiFileFactory.getInstance(getProject()).createFileFromText(DUMMY + HaskellFileType.INSTANCE.getDefaultExtension(), text);
         return hasErrorElement(clojureFile);
     }
 

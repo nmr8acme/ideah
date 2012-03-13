@@ -136,11 +136,13 @@ public final class HaskellConsoleRunner {
 
         // Request focus
         ToolWindow window = ToolWindowManager.getInstance(project).getToolWindow(defaultExecutor.getId());
-        window.activate(new Runnable() {
-            public void run() {
-                IdeFocusManager.getInstance(project).requestFocus(getLanguageConsole().getCurrentEditor().getContentComponent(), true);
-            }
-        });
+        if (window != null) {
+            window.activate(new Runnable() {
+                public void run() {
+                    IdeFocusManager.getInstance(project).requestFocus(getLanguageConsole().getCurrentEditor().getContentComponent(), true);
+                }
+            });
+        }
 
         // Run
         processHandler.startNotify();
@@ -220,7 +222,7 @@ public final class HaskellConsoleRunner {
         return new CloseAction(defaultExecutor, myDescriptor, project);
     }
 
-    private AnAction createStopAction() {
+    private static AnAction createStopAction() {
         return ActionManager.getInstance().getAction(IdeActions.ACTION_STOP_PROGRAM);
     }
 

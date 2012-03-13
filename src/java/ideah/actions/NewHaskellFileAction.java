@@ -36,15 +36,9 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
             Messages.showErrorDialog(project, "Cannot create " + WHAT + " in non-Haskell project", "Wrong module");
             return new PsiElement[0];
         }
-        MyInputValidator validator = new MyInputValidator(project, directory);
+        MyInputValidator validator = new MyInputValidator(project, directory); // todo: implement good validator
         Messages.showInputDialog(project, "Enter name for new " + WHAT, "New " + WHAT, Messages.getQuestionIcon(), "", validator);
         return validator.getCreatedElements();
-    }
-
-    protected void checkBeforeCreate(String newName, PsiDirectory directory) throws IncorrectOperationException {
-        if ("".equals(newName)) {
-            throw new IncorrectOperationException("A name should be specified");
-        }
     }
 
     @NotNull

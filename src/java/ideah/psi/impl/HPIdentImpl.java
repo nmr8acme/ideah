@@ -52,7 +52,7 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
     public TextRange getRangeInElement() {
         return new TextRange(0, getTextLength());
     }
-    
+
     public PsiElement resolve() {
         PsiFile psiFile = getContainingFile();
         LineCol coord = LineCol.fromOffset(psiFile, getTextOffset());
@@ -120,7 +120,7 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
     }
 
     public PsiElement getReferenceNameElement() {
-        final ASTNode lastChild = getNode();
+        ASTNode lastChild = getNode();
         for (IElementType elementType : HaskellTokenTypes.IDS.getTypes()) { // todo: ?
             if (lastChild.getElementType() == elementType)
                 return lastChild.getPsi();
