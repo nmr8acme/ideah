@@ -23,7 +23,7 @@ public final class LexedIdentifier {
     }
 
     public static void main(String[] args) {
-        LexedIdentifier id = parse("A.B.where");
+        LexedIdentifier id = parse("length");
         System.out.println(id.text);
     }
 }

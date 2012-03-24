@@ -227,8 +227,6 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
             String str = restId(c);
             if (KEYWORDS.contains(str)) {
                 return new StringR(str, new HaskellToken(KEYWORD, str, coords));
-            } else if (STANDARD_FUNCTIONS.contains(str)) {
-                return new StringR(str, new HaskellToken(STD_FUNCTION, str, coords));
             } else {
                 return new StringR(str, null);
             }
@@ -354,8 +352,12 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         }
 
         HaskellToken toToken() {
-            String name = StringUtils.join(parts, '.');
-            return new HaskellToken(type, name, coords);
+            if (type == VAR_ID && parts.size() == 1 && STANDARD_FUNCTIONS.contains(parts.get(0))) {
+                return new HaskellToken(STD_FUNCTION, parts.get(0), coords);
+            } else {
+                String name = StringUtils.join(parts, '.');
+                return new HaskellToken(type, name, coords);
+            }
         }
     }
 
@@ -823,6 +825,8 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         if (ids.size() != 1)
             return null;
         HaskellIdent id = ids.get(0);
+        if (!HaskellTokenTypes.IDS.contains(id.type))
+            return null;
         List<String> parts = id.parts;
         int n1 = parts.size() - 1;
         String lastPart = parts.get(n1);
@@ -838,7 +842,8 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
     public static void main(String[] args) {
         HaskellLexerImpl lexer = new HaskellLexerImpl();
         String str =
-            "Xyzzy.Fyva.add\n" +
+            "length\n" +
+                "Xyzzy.Fyva.add\n" +
                 "Xyzzy.Abba.+--\n" +
                 "Xyzzy.Abba.+-->\n" +
                 "Xyzzy.Abba.-->\n" +
