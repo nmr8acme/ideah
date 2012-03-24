@@ -4,7 +4,7 @@ import com.intellij.extapi.psi.ASTDelegatePsiElement;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.SharedImplUtil;
-import ideah.psi.api.util.HaskellPsiElement;
+import ideah.psi.api.HaskellPsiElement;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class HaskellBaseElementImpl extends ASTDelegatePsiElement implements HaskellPsiElement {

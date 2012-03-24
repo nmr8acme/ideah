@@ -10,7 +10,7 @@ import ideah.parser.HaskellFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class HaskellPsiElementFactoryImpl extends HaskellPsiElementFactory {
+public final class HaskellPsiElementFactoryImpl extends HaskellPsiElementFactory {
 
     private final Project myProject;
 
@@ -29,25 +29,7 @@ public class HaskellPsiElementFactoryImpl extends HaskellPsiElementFactory {
         return null;
     }
 
-    @Override
-    public boolean hasSyntacticalErrors(@NotNull String text) {
-        HaskellFile clojureFile = (HaskellFile) PsiFileFactory.getInstance(getProject()).createFileFromText(DUMMY + HaskellFileType.INSTANCE.getDefaultExtension(), text);
-        return hasErrorElement(clojureFile);
-    }
-
-    private static boolean hasErrorElement(PsiElement element) {
-        if (element instanceof PsiErrorElement) return true;
-        for (PsiElement child : element.getChildren()) {
-            if (hasErrorElement(child)) return true;
-        }
-        return false;
-    }
-
     private HaskellFile createHaskellFileFromText(String text) {
-        return (HaskellFile) PsiFileFactory.getInstance(getProject()).createFileFromText(DUMMY + HaskellFileType.INSTANCE.getDefaultExtension(), text);
-    }
-
-    public Project getProject() {
-        return myProject;
+        return (HaskellFile) PsiFileFactory.getInstance(myProject).createFileFromText(DUMMY + HaskellFileType.INSTANCE.getDefaultExtension(), text);
     }
 }

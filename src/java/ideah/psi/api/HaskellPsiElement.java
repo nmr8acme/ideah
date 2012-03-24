@@ -1,4 +1,4 @@
-package ideah.psi.api.util;
+package ideah.psi.api;
 
 import com.intellij.psi.PsiElement;
 

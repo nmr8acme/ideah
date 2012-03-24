@@ -4,26 +4,19 @@ import com.intellij.lang.refactoring.NamesValidator;
 import com.intellij.openapi.project.Project;
 import ideah.lexer.HaskellLexer;
 
-import java.lang.String;
-
-public class HaskellIdentNamesValidator implements NamesValidator {
+public final class HaskellIdentNamesValidator implements NamesValidator {
 
     public boolean isKeyword(String name, Project project) {
-        for (String s : HaskellLexer.getKeywords()) {
-            if (name.equals(s))
-                return true;
-        }
-        return false;
+        return HaskellLexer.getKeywords().contains(name);
     }
 
     public boolean isIdentifier(String name, Project project) { // todo: use lexer
         if (!Character.isJavaIdentifierStart(name.charAt(0)))
             return false;
-        if (name.length() > 1) {
-            for (char c : name.substring(1).toCharArray()) {
-                if (!(Character.isLetterOrDigit(c) || c == '_' || c == '\''))
-                    return false;
-            }
+        for (int i = 1; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!(Character.isLetterOrDigit(c) || c == '_' || c == '\''))
+                return false;
         }
         return !isKeyword(name, project);
     }

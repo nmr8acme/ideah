@@ -68,6 +68,8 @@ public final class NewHaskellFileAction extends CreateElementActionBase {
         );
         for (int i = 0; i < depth - 1; i++) {
             String fileName = fileNames[i];
+            // todo: check before create
+            // todo: check correct module names
             if ("".equals(fileName)) {
                 throw new IncorrectOperationException("File name cannot be empty");
             }

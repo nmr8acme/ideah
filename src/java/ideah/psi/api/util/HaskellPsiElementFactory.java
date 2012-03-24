@@ -14,6 +14,4 @@ public abstract class HaskellPsiElementFactory {
 
     @Nullable
     public abstract ASTNode createIdentNodeFromText(@NotNull String newName);
-
-    public abstract boolean hasSyntacticalErrors(@NotNull String text);
 }
