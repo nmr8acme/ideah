@@ -823,7 +823,6 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         if (ids.size() != 1)
             return null;
         HaskellIdent id = ids.get(0);
-        boolean isSymbol = id.type == VAR_SYM || id.type == CON_SYM;
         List<String> parts = id.parts;
         int n1 = parts.size() - 1;
         String lastPart = parts.get(n1);
@@ -833,7 +832,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         } else {
             module = StringUtils.join(parts.subList(0, n1), '.');
         }
-        return new LexedIdentifier(isSymbol, module, lastPart);
+        return new LexedIdentifier(id.type, module, lastPart);
     }
 
     public static void main(String[] args) {

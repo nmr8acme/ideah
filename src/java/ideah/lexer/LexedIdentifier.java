@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 public final class LexedIdentifier {
 
-    public final boolean isSymbol;
+    public final HaskellTokenType type;
     /**
      * null for no module
      */
@@ -12,8 +12,8 @@ public final class LexedIdentifier {
     @NotNull
     public final String text;
 
-    LexedIdentifier(boolean symbol, String module, String text) {
-        isSymbol = symbol;
+    LexedIdentifier(HaskellTokenType type, String module, @NotNull String text) {
+        this.type = type;
         this.module = module;
         this.text = text;
     }
@@ -23,7 +23,7 @@ public final class LexedIdentifier {
     }
 
     public static void main(String[] args) {
-        LexedIdentifier id = parse("A.B.C");
+        LexedIdentifier id = parse("A.B.where");
         System.out.println(id.text);
     }
 }
