@@ -30,9 +30,9 @@ public final class HaskellLexer extends LexerBase {
     }
 
     public static Set<String> getKeywords() {
-        return HaskellLexerImpl.getKeywords();
+        return HaskellLexerImpl.KEYWORDS;
     }
-    
+
     public int getState() {
         return 0;
     }

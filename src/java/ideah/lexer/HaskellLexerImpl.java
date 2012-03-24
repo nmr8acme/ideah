@@ -1,5 +1,7 @@
 package ideah.lexer;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.*;
 
 final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
@@ -7,11 +9,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
     private static final String SPECIALS = "(),;[]`{}";
     private static final String ASC_SYMBOLS = "!#$%&*+./<=>?@\\^|-~:";
 
-    static Set<String> getKeywords() {
-        return KEYWORDS;
-    }
-
-    private static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
+    static final Set<String> KEYWORDS = new HashSet<String>(Arrays.asList(
         "case", "class", "data", "default", "deriving", "do", "else",
         "foreign", "if", "import", "in", "infix", "infixl", "infixr",
         "instance", "let", "module", "newtype", "of", "then", "type", "where", "_"
@@ -331,12 +329,42 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         }
     }
 
-    private static HaskellToken consToken(StringBuilder buf, int start) {
-        return new HaskellToken(CON_ID, buf.toString(), start);
+    private static final class HaskellIdent {
+
+        final HaskellTokenType type;
+        final List<String> parts;
+        final int coords;
+
+        private HaskellIdent(HaskellTokenType type, List<String> parts, int coords) {
+            this.type = type;
+            this.parts = parts;
+            this.coords = coords;
+        }
+
+        private HaskellIdent(HaskellTokenType type, String part, int coords) {
+            this.type = type;
+            this.parts = Collections.singletonList(part);
+            this.coords = coords;
+        }
+
+        private HaskellIdent(HaskellToken token) {
+            this.type = token.type;
+            this.parts = Collections.singletonList(token.text);
+            this.coords = token.coords;
+        }
+
+        HaskellToken toToken() {
+            String name = StringUtils.join(parts, '.');
+            return new HaskellToken(type, name, coords);
+        }
     }
 
-    private List<HaskellToken> id(int start) {
-        StringBuilder buf = new StringBuilder();
+    private static HaskellIdent consToken(List<String> buf, int start) {
+        return new HaskellIdent(CON_ID, buf, start);
+    }
+
+    private List<HaskellIdent> id(int start) {
+        List<String> buf = new ArrayList<String>();
         int count = 0;
         while (true) {
             int dotPos;
@@ -353,38 +381,32 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
                 int restPos = la.getCoords();
                 RestId restId = idEnd(restPos);
                 if (restId == null || restId.str.reserved != null) {
-                    List<HaskellToken> tokens = new ArrayList<HaskellToken>(3);
+                    List<HaskellIdent> tokens = new ArrayList<HaskellIdent>(3);
                     if (count > 0) {
                         tokens.add(consToken(buf, start));
                         if (restId == null) {
                             StringR restSym = restSym('.', dotPos);
                             if (restSym.reserved != null) {
-                                tokens.add(restSym.reserved);
+                                tokens.add(new HaskellIdent(restSym.reserved));
                             } else {
-                                tokens.add(new HaskellToken(VAR_SYM, restSym.str, dotPos));
+                                tokens.add(new HaskellIdent(VAR_SYM, restSym.str, dotPos));
                             }
                         } else {
-                            tokens.add(new HaskellToken(VAR_SYM, ".", dotPos));
-                            tokens.add(restId.str.reserved);
+                            tokens.add(new HaskellIdent(VAR_SYM, ".", dotPos));
+                            tokens.add(new HaskellIdent(restId.str.reserved));
                         }
                     } else {
                         if (restId != null) {
-                            tokens.add(restId.str.reserved);
+                            tokens.add(new HaskellIdent(restId.str.reserved));
                         }
                     }
                     return tokens;
                 } else {
-                    if (count > 0) {
-                        buf.append('.');
-                    }
-                    buf.append(restId.str.str);
-                    return Collections.singletonList(new HaskellToken(restId.kind, buf.toString(), start));
+                    buf.add(restId.str.str);
+                    return Collections.singletonList(new HaskellIdent(restId.kind, buf, start));
                 }
             } else {
-                if (count > 0) {
-                    buf.append('.');
-                }
-                buf.append(conId);
+                buf.add(conId);
                 count++;
             }
         }
@@ -710,9 +732,9 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         tokenQueue.addLast(t);
     }
 
-    private void output(List<HaskellToken> tokens) {
-        for (HaskellToken token : tokens) {
-            output(token);
+    private void output(List<HaskellIdent> tokens) {
+        for (HaskellIdent token : tokens) {
+            output(token.toToken());
         }
     }
 
@@ -735,7 +757,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
             output(t);
             return true;
         }
-        List<HaskellToken> tokens = id(start);
+        List<HaskellIdent> tokens = id(start);
         if (tokens.size() > 0) {
             output(tokens);
             return true;
@@ -792,6 +814,26 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
                 return null;
         }
         return tokenQueue.removeFirst();
+    }
+
+    public static LexedIdentifier parseIdent(String str) {
+        HaskellLexerImpl lexer = new HaskellLexerImpl();
+        lexer.init(str, 0, str.length());
+        List<HaskellIdent> ids = lexer.id(0);
+        if (ids.size() != 1)
+            return null;
+        HaskellIdent id = ids.get(0);
+        boolean isSymbol = id.type == VAR_SYM || id.type == CON_SYM;
+        List<String> parts = id.parts;
+        int n1 = parts.size() - 1;
+        String lastPart = parts.get(n1);
+        String module;
+        if (parts.size() == 1) {
+            module = null;
+        } else {
+            module = StringUtils.join(parts.subList(0, n1), '.');
+        }
+        return new LexedIdentifier(isSymbol, module, lastPart);
     }
 
     public static void main(String[] args) {
