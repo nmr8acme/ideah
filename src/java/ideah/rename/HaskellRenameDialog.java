@@ -31,8 +31,8 @@ final class HaskellRenameDialog extends RenameDialog {
             String oldType = newNameUpper ? variable : constructor;
             String newType = newNameUpper ? constructor : variable;
             int yesNoCancel = Messages.showYesNoCancelDialog("You are about to change the identifier type of '" + oldName + "'.\n\n" +
-                "Are you sure you want to change it from a " + oldType + " to a " + newType + "?", "Identifier Type Change", "Yes",
-                "No, refactor without changing case", "Cancel", Messages.getQuestionIcon());
+                "Are you sure you want to change it from a " + oldType + " to a " + newType + "?", "First Letter Case Change", "Yes",
+                "No, rename without changing case", "Cancel", Messages.getQuestionIcon());
             switch (yesNoCancel) {
                 case Messages.YES: performRename(newName); return;
                 case Messages.NO: performRename(newName.replace(c, newNameUpper ? Character.toLowerCase(c) : Character.toUpperCase(c))); return;
