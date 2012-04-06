@@ -97,6 +97,8 @@
         <configurationType implementation="ideah.run.HaskellRunConfigurationType"/>
         <configurationProducer implementation="ideah.run.HaskellRunConfigurationProducer"/>
 
+        <renamePsiElementProcessor implementation="ideah.rename.HaskellRenameProcessor"/>
+
         <projectService serviceInterface="ideah.psi.api.util.HaskellPsiElementFactory"
                         serviceImplementation="ideah.psi.api.util.HaskellPsiElementFactoryImpl"/>
 
