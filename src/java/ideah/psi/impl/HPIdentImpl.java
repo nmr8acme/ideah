@@ -11,6 +11,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
 import com.intellij.util.IncorrectOperationException;
+import ideah.lexer.LexedIdentifier;
 import ideah.psi.api.HPIdent;
 import ideah.psi.api.util.HaskellPsiElementFactory;
 import ideah.util.DeclarationPosition;
@@ -34,7 +35,12 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     @Nullable
     public PsiElement setName(@NotNull @NonNls String name) throws IncorrectOperationException {
-        ASTNode newNode = HaskellPsiElementFactory.getInstance(getProject()).createIdentNodeFromText(name);
+        LexedIdentifier parsedOldName = LexedIdentifier.parse(getText());
+        if (parsedOldName == null)
+            return null;
+        String module = parsedOldName.module;
+        String newName = module == null ? name : module + "." + name;
+        ASTNode newNode = HaskellPsiElementFactory.getInstance(getProject()).createIdentNodeFromText(newName);
         if (newNode == null)
             return this;
         getParent().getNode().replaceChild(getNode(), newNode);
