@@ -1,8 +1,9 @@
 module Walker (
-    Where(..), Callback(..), defWalkCallback,
-    walk, walkDeclarations, walkGroup, walkModule
+    Where(..), WhereMod(..), Callback(..), defWalkCallback,
+    walk, walkDeclarations, walkGroup, walkModule, walkRenamed
     ) where
 
+import Control.Monad (when)
 import Data.Maybe (listToMaybe)
 
 import Bag
@@ -13,14 +14,19 @@ import DataCon
 data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule
     deriving (Show, Eq)
 
+data WhereMod = WMModule | WMImport
+    deriving (Show, Eq)
+
 data Callback a m = CB { ident      :: a -> SrcSpan -> Where -> m (),
                          name       :: Name -> SrcSpan -> Where -> m (),
+                         modName    :: ModuleName -> SrcSpan -> WhereMod -> m (),
                          braceOpen  :: SrcSpan -> String -> m (),
                          braceClose :: m () }
 
 defWalkCallback :: (Monad m) => Callback a m
 defWalkCallback = CB { ident      = \_ _ _ -> return (),
                        name       = \_ _ _ -> return (),
+                       modName    = \_ _ _ -> return (),
                        braceOpen  = \_ _ -> return (),
                        braceClose = return () }
 
@@ -475,6 +481,7 @@ walkDocD :: (Monad m) => Callback a m -> SrcSpan -> DocDecl -> m ()
 walkDocD _f _loc _ = return ()
 
 
+-- Use to walk TypecheckedSource tree
 walkDeclarations :: (Monad m) => Callback a m -> LHsBinds a -> m ()
 walkDeclarations f lbinds = walkLBinds f Nothing lbinds
 
@@ -518,18 +525,35 @@ walkGroup f (HsGroup valds tyclds instds derivds fixds defds fords warnds annds 
     mapM_ (walkLoc f walkDocD) docs
 
 
+walkModName :: (Monad m) => Callback a m -> Located ModuleName -> WhereMod -> m ()
+walkModName f name definition = (modName f) (unLoc name) (getLoc name) definition
+
+walkImport :: (Monad m) => Callback a m -> LImportDecl a -> m ()
+walkImport f imp = when isRealImport $ brace f loc "Import" $ walkModName f (ideclName imp') WMImport
+    where imp' = unLoc imp
+          loc = getLoc imp
+          isRealImport = isGoodSrcSpan loc
+
+-- Use to walk ParsedSource tree
 walkModule :: (Monad m) => Callback RdrName m -> ParsedSource -> m ()
 walkModule f src = brace f (getLoc src) "Module" $ do
     let md = unLoc src
     case hsmodName md of
-        (Just name) -> walkName name
+        (Just name) -> do
+            walkModName f name WMModule
+            walkName name
         _ -> return ()
     case hsmodExports md of
         (Just lies) -> mapM_ walkLIE lies
         _ -> return ()
-    mapM_ walkImport (hsmodImports md)
+    mapM_ (walkImport f) (hsmodImports md)
     mapM_ (walk f) (hsmodDecls md)
     where
         walkName name = brace f (getLoc name) "ModuleName" $ return ()
         walkLIE lie = brace f (getLoc lie) "Export" $ return ()
-        walkImport imp = brace f (getLoc imp) "Import" $ return ()
+
+-- Use to walk RenamedSource tree
+walkRenamed :: (Monad m) => Callback Name m -> RenamedSource -> m ()
+walkRenamed f (group, imps, _, _) = do
+    mapM_ (walkImport f) imps
+    walkGroup f group
