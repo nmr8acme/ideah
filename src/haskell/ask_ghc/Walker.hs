@@ -11,7 +11,7 @@ import GHC
 import BasicTypes
 import DataCon
 
-data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule
+data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule | WSig
     deriving (Show, Eq)
 
 data WhereMod = WMModule | WMImport
@@ -51,7 +51,9 @@ walkBinds :: (Monad m) => Callback a m -> Maybe a -> HsValBindsLR a a -> m ()
 walkBinds f outer (ValBindsIn binds sigs) = do
     walkLBinds f outer binds
     mapM_ (walkLSig f) sigs
-walkBinds f outer (ValBindsOut binds _sigs) = mapM_ (walkLBinds f outer) bags
+walkBinds f outer (ValBindsOut binds sigs) = do
+    mapM_ (walkLBinds f outer) bags
+    mapM_ (walkLSig defWalkCallback { ident = \n loc w -> (name f) n loc w }) sigs
     where bags = map snd binds -- list of bags
 
 walkLocals :: (Monad m) => Callback a m -> HsLocalBinds a -> m ()
@@ -431,7 +433,7 @@ walkLSig f sig = walkSigD f (getLoc sig) (unLoc sig)
 walkSigD :: (Monad m) => Callback a m -> SrcSpan -> Sig a -> m ()
 -- type signature
 walkSigD f loc (TypeSig name typ) = brace f loc "TypeSig" $ do
-    walkId f name WType
+    walkId f name WSig
     walkLType f typ
 -- fixity
 walkSigD f loc (FixSig fixSig) = brace f loc "FixSig" $ walkFixD f loc fixSig
