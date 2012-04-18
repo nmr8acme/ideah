@@ -53,7 +53,7 @@ walkBinds f outer (ValBindsIn binds sigs) = do
     mapM_ (walkLSig f) sigs
 walkBinds f outer (ValBindsOut binds sigs) = do
     mapM_ (walkLBinds f outer) bags
-    mapM_ (walkLSig defWalkCallback { ident = \n loc w -> (name f) n loc w }) sigs
+    mapM_ (walkLSig f { ident = \n loc w -> (name f) n loc w }) sigs
     where bags = map snd binds -- list of bags
 
 walkLocals :: (Monad m) => Callback a m -> HsLocalBinds a -> m ()
