@@ -18,6 +18,8 @@ final class HaskellRenameDialog extends RenameDialog {
         myPsiElement = element;
     }
 
+    // todo: использовать LexedIdent
+    // todo: рассматривать тип идентификатора: VarName, ConsName, VarSym, ConsSym
     @Override
     protected void doAction() {
         LOG.assertTrue(myPsiElement.isValid());
