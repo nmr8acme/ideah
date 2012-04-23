@@ -17,31 +17,56 @@ findUsages :: [String] -> String -> FilePath -> (Int, Int) -> FilePath -> [FileP
 findUsages compOpts srcPath ghcPath (line, col) srcFile files =
     runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col) files)
 
-extractDecl :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Id -> SrcSpan -> Where -> Ghc ()
-extractDecl line col checkedSrc srcFile files var loc _ =
+extractDecl walkFun otherModulesWalkFun line col src srcFile files _ loc _ =
     when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
-        let cb = defWalkCallback { ident = extractLocs (varName var) }
-        mapM_ (\file -> let walkDecls = walkDeclarations cb . typecheckedSource
-            in if equalFilePath srcFile file
-                then walkDecls checkedSrc
+        mapM_ (\file -> if equalFilePath srcFile file
+                then walkFun src
                 else do
                     modF     <- loadHsFile file
                     parsedF  <- parseModule modF
                     checkedF <- typecheckModule parsedF
-                    walkDecls checkedF) files
+                    walkFun $ otherModulesWalkFun checkedF) files
         liftIO exitSuccess
 
-extractLocs :: Name -> Id -> SrcSpan -> Where -> Ghc ()
-extractLocs name var span _ = let loc     = srcSpanStart span
-                                  varname = varName var
-    in liftIO $ when (isGoodSrcSpan span && name == varname && loc /= nameSrcLoc varname) $ do
+extractIdDecl :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Id -> SrcSpan -> Where -> Ghc ()
+extractIdDecl line col src srcFile files var =
+    let cb = defWalkCallback { ident = extractIdLocs (varName var) }
+        walkDecls = walkDeclarations cb . typecheckedSource
+    in extractDecl
+        walkDecls
+        id
+        line col src srcFile files var
+
+extractModDecl :: Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
+extractModDecl line col src srcFile files mod =
+    let cb = defWalkCallback { modName = extractModLocs mod }
+        walkMod = walkModule cb
+    in extractDecl
+        walkMod
+        parsedSource
+        line col src srcFile files mod
+
+extractLocs rightName span _ = let loc = srcSpanStart span
+    in liftIO $ when (isGoodSrcSpan span && rightName) $ liftIO $ do
         putStrLn $ locStr loc
         putStrLn $ unpackFS $ srcLocFile loc
 
-doExtractLocs :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Ghc ()
-doExtractLocs line col checkedSrc srcFile files = do
-    let cb = defWalkCallback { ident = extractDecl line col checkedSrc srcFile files }
+extractModLocs :: ModuleName -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
+extractModLocs name mod = extractLocs (name == mod) -- && loc /= nameSrcLoc varname)
+
+extractIdLocs :: Name -> Id -> SrcSpan -> Where -> Ghc ()
+extractIdLocs name var span = let varname = varName var
+    in extractLocs (name == varname && srcSpanStart span /= nameSrcLoc varname) span
+
+doExtractIdLocs :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Ghc ()
+doExtractIdLocs line col checkedSrc srcFile files = do
+    let cb = defWalkCallback { ident = extractIdDecl line col checkedSrc srcFile files }
     walkDeclarations cb (typecheckedSource checkedSrc)
+
+doExtractModLocs :: Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> Ghc ()
+doExtractModLocs line col parsedSrc srcFile files = do
+    let cb = defWalkCallback { modName = extractModDecl line col parsedSrc srcFile files }
+    walkModule cb parsedSrc
 
 doWalk :: [String] -> String -> FilePath -> Int -> Int -> [FilePath] -> Ghc ()
 doWalk compOpts srcPath srcFile line col files = do
@@ -49,4 +74,5 @@ doWalk compOpts srcPath srcFile line col files = do
     modSrc     <- loadHsFile srcFile
     parsedSrc  <- parseModule modSrc
     checkedSrc <- typecheckModule parsedSrc
-    doExtractLocs line col checkedSrc srcFile files
+    doExtractIdLocs line col checkedSrc srcFile files
+    doExtractModLocs line col (parsedSource checkedSrc) srcFile files

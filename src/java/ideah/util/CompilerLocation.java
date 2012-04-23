@@ -28,6 +28,7 @@ public final class CompilerLocation extends LocationUtil {
         super(exe, libPath, ghcOptions);
     }
 
+    @Nullable
     private static CompilerLocation doGet(@Nullable final Module module) {
         if (module == null)
             return null;
