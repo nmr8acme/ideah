@@ -30,9 +30,6 @@ extractIdPos line col var loc _ = liftIO $
         putStrLn $ unpackFS $ srcLocFile loc'
         exitSuccess
 
---extractModPos :: Int -> Int -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
---extractModPos line col mod span whereMod = e
-
 doExtractIdPos :: Int -> Int -> TypecheckedModule -> Ghc ()
 doExtractIdPos line col checked = do
     let cb = defWalkCallback { ident = extractIdPos line col }
@@ -40,7 +37,7 @@ doExtractIdPos line col checked = do
 
 doExtractModPos :: Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> Ghc ()
 doExtractModPos line col parsed srcFile files = do
-    let cb = defWalkCallback { modName = extractModDecl True line col parsed srcFile files } -- extractModPos line col parsedSrc srcFile files }
+    let cb = defWalkCallback { modName = extractModDecl True line col parsed srcFile files }
     walkModule cb parsed
 
 doWalk :: [String] -> String -> FilePath -> Int -> Int -> [FilePath] -> Ghc ()
