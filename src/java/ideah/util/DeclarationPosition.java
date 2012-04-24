@@ -2,16 +2,20 @@ package ideah.util;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileSystemItem;
+import ideah.compiler.HaskellCompiler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.List;
 
 public final class DeclarationPosition {
@@ -40,8 +44,19 @@ public final class DeclarationPosition {
             "-m", "GetDeclPos",
             "-s", sourcePath,
             "--line-number", String.valueOf(coord.line), "--column-number", String.valueOf(coord.column),
-            file.getPath()
+            "-f", file.getPath()
         );
+        final List<String> srcFiles = new ArrayList<String>();
+        ProjectFileIndex fileIndex = ProjectRootManager.getInstance(module.getProject()).getFileIndex();
+        fileIndex.iterateContent(new ContentIterator() {
+            public boolean processFile(VirtualFile virtualFile) {
+                if (HaskellCompiler.isCompilableFile(virtualFile)) {
+                    srcFiles.add(virtualFile.getPath());
+                }
+                return true;
+            }
+        });
+        args.addAll(srcFiles);
         ProcessLauncher launcher = new ProcessLauncher(false, null, args);
         BufferedReader reader = new BufferedReader(new StringReader(launcher.getStdOut()));
         String lineCol = reader.readLine();

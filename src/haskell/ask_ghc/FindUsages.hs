@@ -1,4 +1,4 @@
-module FindUsages (findUsages) where
+module FindUsages (findUsages, extractModDecl) where
 
 import Control.Monad (when)
 import System.Exit
@@ -29,30 +29,23 @@ extractDecl walkFun otherModulesWalkFun line col src srcFile files _ loc _ =
         liftIO exitSuccess
 
 extractIdDecl :: Int -> Int -> TypecheckedModule -> FilePath -> [FilePath] -> Id -> SrcSpan -> Where -> Ghc ()
-extractIdDecl line col src srcFile files var =
-    let cb = defWalkCallback { ident = extractIdLocs (varName var) }
-        walkDecls = walkDeclarations cb . typecheckedSource
-    in extractDecl
-        walkDecls
-        id
-        line col src srcFile files var
+extractIdDecl line col src srcFile files var = extractDecl
+        (walkDeclarations (defWalkCallback { ident = extractIdLocs (varName var) }) . typecheckedSource)
+        id line col src srcFile files var
 
-extractModDecl :: Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
-extractModDecl line col src srcFile files mod =
-    let cb = defWalkCallback { modName = extractModLocs mod }
-        walkMod = walkModule cb
-    in extractDecl
-        walkMod
-        parsedSource
-        line col src srcFile files mod
+extractModDecl :: Bool -> Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
+extractModDecl onlyDecl line col src srcFile files mod = extractDecl
+    (walkModule (defWalkCallback { modName = extractModLocs onlyDecl mod }))
+    parsedSource line col src srcFile files mod
 
 extractLocs rightName span _ = let loc = srcSpanStart span
     in liftIO $ when (isGoodSrcSpan span && rightName) $ liftIO $ do
         putStrLn $ locStr loc
         putStrLn $ unpackFS $ srcLocFile loc
 
-extractModLocs :: ModuleName -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
-extractModLocs name mod = extractLocs (name == mod) -- && loc /= nameSrcLoc varname)
+extractModLocs :: Bool -> ModuleName -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
+extractModLocs onlyDecl name mod span whereMod = extractLocs
+    (name == mod && (not onlyDecl || whereMod == WMModule)) span whereMod  -- && loc /= nameSrcLoc varname)
 
 extractIdLocs :: Name -> Id -> SrcSpan -> Where -> Ghc ()
 extractIdLocs name var span = let varname = varName var
@@ -65,7 +58,7 @@ doExtractIdLocs line col checkedSrc srcFile files = do
 
 doExtractModLocs :: Int -> Int -> ParsedSource -> FilePath -> [FilePath] -> Ghc ()
 doExtractModLocs line col parsedSrc srcFile files = do
-    let cb = defWalkCallback { modName = extractModDecl line col parsedSrc srcFile files }
+    let cb = defWalkCallback { modName = extractModDecl False line col parsedSrc srcFile files }
     walkModule cb parsedSrc
 
 doWalk :: [String] -> String -> FilePath -> Int -> Int -> [FilePath] -> Ghc ()

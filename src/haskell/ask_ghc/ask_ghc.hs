@@ -49,7 +49,7 @@ main = do
         Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
         CheckMain  -> checkMain compOpts ghcpath singleFile
         GetIdType  -> getIdType compOpts srcpath ghcpath singleFile pos
-        GetDeclPos -> getDeclPos compOpts srcpath ghcpath singleFile pos
+        GetDeclPos -> getDeclPos compOpts srcpath ghcpath pos (moduleFile opts) files
         ParseTree  -> parseTree compOpts ghcpath singleFile
         FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files
         Test       -> print compOpts
