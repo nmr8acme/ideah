@@ -19,7 +19,7 @@ public final class HaskellParser implements PsiParser, HaskellElementTypes {
             if (type == null)
                 break;
             if (!parseInfixPrefixIdent(builder, HaskellTokenTypes.L_PAREN, HaskellTokenTypes.R_PAREN, HaskellTokenTypes.OPERATORS)
-                && !parseInfixPrefixIdent(builder, HaskellTokenTypes.BACKQUOTE, HaskellTokenTypes.BACKQUOTE, HaskellTokenTypes.IDS)
+                && !parseInfixPrefixIdent(builder, HaskellTokenTypes.BACKQUOTE, HaskellTokenTypes.BACKQUOTE, HaskellTokenTypes.VAR_IDS)
                 && HaskellTokenTypes.IDS.contains(type)) {
                     PsiBuilder.Marker idMark = builder.mark();
                     builder.advanceLexer();

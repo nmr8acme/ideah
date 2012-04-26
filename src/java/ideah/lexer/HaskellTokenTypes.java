@@ -37,5 +37,6 @@ public interface HaskellTokenTypes {
     TokenSet WHITESPACES = TokenSet.create(WHITESPACE);
     TokenSet STRINGS = TokenSet.create(STRING, ERROR_STRING);
     TokenSet IDS = TokenSet.create(VAR_ID, VAR_SYM, CON_ID, CON_SYM, STD_FUNCTION);
+    TokenSet VAR_IDS = TokenSet.create(VAR_ID, CON_ID, STD_FUNCTION);
     TokenSet OPERATORS = TokenSet.create(CON_SYM, VAR_SYM);
 }
