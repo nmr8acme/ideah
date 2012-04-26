@@ -28,6 +28,7 @@ public interface HaskellTokenTypes {
     HaskellTokenType ERROR_STRING = new HaskellTokenType("wrong string");
     HaskellTokenType ERROR_NUMBER = new HaskellTokenType("wrong number");
     HaskellTokenType ERROR_UNDEFINED = new HaskellTokenType("wrong token");
+    HaskellTokenType BACKQUOTE = new HaskellTokenType("backquote");
     HaskellTokenType SPECIAL = new HaskellTokenType("special");
     HaskellTokenType STRING = new HaskellTokenType("string");
     HaskellTokenType CHAR = new HaskellTokenType("char");
@@ -36,4 +37,5 @@ public interface HaskellTokenTypes {
     TokenSet WHITESPACES = TokenSet.create(WHITESPACE);
     TokenSet STRINGS = TokenSet.create(STRING, ERROR_STRING);
     TokenSet IDS = TokenSet.create(VAR_ID, VAR_SYM, CON_ID, CON_SYM, STD_FUNCTION);
+    TokenSet OPERATORS = TokenSet.create(CON_SYM, VAR_SYM);
 }

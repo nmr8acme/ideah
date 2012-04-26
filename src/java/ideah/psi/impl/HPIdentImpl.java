@@ -10,8 +10,12 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.tree.IElementType;
 import com.intellij.util.IncorrectOperationException;
+import ideah.lexer.HaskellTokenType;
+import ideah.lexer.HaskellTokenTypes;
 import ideah.lexer.LexedIdentifier;
+import ideah.parser.HaskellElementTypes;
 import ideah.psi.api.HPIdent;
 import ideah.psi.api.util.HaskellPsiElementFactory;
 import ideah.util.DeclarationPosition;
@@ -20,7 +24,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent, PsiReference {
+public class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent, PsiReference {
 
     private static final Logger LOG = Logger.getInstance("ideah.psi.impl.HPIdentImpl");
 
@@ -35,16 +39,38 @@ public final class HPIdentImpl extends HaskellBaseElementImpl implements HPIdent
 
     @Nullable
     public PsiElement setName(@NotNull @NonNls String name) throws IncorrectOperationException {
+        LexedIdentifier parsedNewName = LexedIdentifier.parse(name);
         LexedIdentifier parsedOldName = LexedIdentifier.parse(getText());
-        if (parsedOldName == null)
-            return null;
+        LOG.assertTrue(!(parsedNewName == null || parsedOldName == null));
+        boolean newNameOperator = HaskellTokenTypes.OPERATORS.contains(parsedNewName.type);
+        String createdNewName;
+        ASTNode parentNode = getParent().getNode();
+        ASTNode grandParentNode = parentNode.getTreeParent();
+        HaskellTokenType infixPrefixIdentType = HaskellElementTypes.INFIX_PREFIX_IDENT;
+        IElementType parentType = grandParentNode.getElementType() == infixPrefixIdentType ? infixPrefixIdentType : parentNode.getElementType();
+        boolean isPrefixInfixIdent = parentType == infixPrefixIdentType;
+        boolean oldOrNewOperatorAndOneOfThemNot = !newNameOperator == HaskellTokenTypes.OPERATORS.contains(parsedOldName.type);
+
+        if (oldOrNewOperatorAndOneOfThemNot != isPrefixInfixIdent) {
+            if (newNameOperator) {
+                createdNewName = "(" + name + ")";
+            } else {
+                createdNewName = "`" + name + "`";
+            }
+        } else {
+            createdNewName = name;
+        }
+
         String module = parsedOldName.module;
-        String newName = module == null ? name : module + "." + name;
-        ASTNode newNode = HaskellPsiElementFactory.getInstance(getProject()).createIdentNodeFromText(newName);
-        if (newNode == null)
+        String newName = module == null ? createdNewName : module + "." + createdNewName;
+        HaskellPsiElementFactory factory = HaskellPsiElementFactory.getInstance(getProject());
+        ASTNode newIdentNode = factory.createIdentNodeFromText(newName);
+        if (newIdentNode == null)
             return this;
-        getParent().getNode().replaceChild(getNode(), newNode);
-        return newNode.getPsi();
+        ASTNode nodeToBeReplaced = isPrefixInfixIdent ? grandParentNode : parentNode;
+        ASTNode nodeToReplace = isPrefixInfixIdent ? getParent().getNode() : getNode();
+        nodeToBeReplaced.replaceChild(nodeToReplace, newIdentNode);
+        return newIdentNode.getPsi();
     }
 
     public PsiElement getElement() {

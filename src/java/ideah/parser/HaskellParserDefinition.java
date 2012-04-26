@@ -15,6 +15,7 @@ import ideah.HaskellFileType;
 import ideah.lexer.HaskellLexer;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.psi.impl.HPIdentImpl;
+import ideah.psi.impl.HPInfixPrefixIdentImpl;
 import ideah.psi.impl.HPModuleImpl;
 import ideah.psi.impl.HPOtherImpl;
 import org.jetbrains.annotations.NotNull;
@@ -54,8 +55,10 @@ public final class HaskellParserDefinition implements ParserDefinition, HaskellT
     @NotNull
     public PsiElement createElement(ASTNode node) {
         IElementType type = node.getElementType();
-        if (type == HaskellElementTypes.MODULE) {
+        if (type == HaskellElementTypes.MODULE) { // where is it initialized???
             return new HPModuleImpl(node);
+        } else if (type == HaskellElementTypes.INFIX_PREFIX_IDENT) {
+            return new HPInfixPrefixIdentImpl(node);
         } else if (HaskellTokenTypes.IDS.contains(type)) {
             return new HPIdentImpl(node);
         } else {

@@ -3,6 +3,8 @@ package ideah.psi.api.util;
 import com.intellij.lang.refactoring.NamesValidator;
 import com.intellij.openapi.project.Project;
 import ideah.lexer.HaskellLexer;
+import ideah.lexer.HaskellTokenTypes;
+import ideah.lexer.LexedIdentifier;
 
 public final class HaskellIdentNamesValidator implements NamesValidator {
 
@@ -10,14 +12,10 @@ public final class HaskellIdentNamesValidator implements NamesValidator {
         return HaskellLexer.getKeywords().contains(name);
     }
 
-    public boolean isIdentifier(String name, Project project) { // todo: use lexer
-        if (!Character.isJavaIdentifierStart(name.charAt(0)))
+    public boolean isIdentifier(String name, Project project) {
+        LexedIdentifier identifier = LexedIdentifier.parse(name);
+        if (identifier == null)
             return false;
-        for (int i = 1; i < name.length(); i++) {
-            char c = name.charAt(i);
-            if (!(Character.isLetterOrDigit(c) || c == '_' || c == '\''))
-                return false;
-        }
-        return !isKeyword(name, project);
+        return HaskellTokenTypes.IDS.contains(identifier.type) && !isKeyword(name, project);
     }
 }

@@ -806,6 +806,8 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
             return R_CURLY;
         case ',':
             return COMMA;
+        case '`':
+            return BACKQUOTE;
         }
         return SPECIAL;
     }
