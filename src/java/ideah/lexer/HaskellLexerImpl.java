@@ -1,6 +1,7 @@
 package ideah.lexer;
 
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -820,6 +821,7 @@ final class HaskellLexerImpl implements HaskellTokenTypes, Escaping {
         return tokenQueue.removeFirst();
     }
 
+    @Nullable
     public static LexedIdentifier parseIdent(String str) {
         HaskellLexerImpl lexer = new HaskellLexerImpl();
         lexer.init(str, 0, str.length());

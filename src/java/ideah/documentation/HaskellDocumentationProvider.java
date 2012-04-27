@@ -8,7 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import ideah.psi.api.HPIdent;
+import ideah.psi.api.HPAbstractIdent;
 import ideah.util.*;
 
 import java.io.BufferedReader;
@@ -28,9 +28,9 @@ public final class HaskellDocumentationProvider implements DocumentationProvider
     }
 
     public String generateDoc(PsiElement element, PsiElement originalElement) {
-        if (!(element instanceof HPIdent))
+        if (!(element instanceof HPAbstractIdent))
             return null;
-        HPIdent ident = (HPIdent) element;
+        HPAbstractIdent ident = (HPAbstractIdent) element;
         TextRange range = ident.getTextRange();
         PsiFile psiFile = element.getContainingFile();
         VirtualFile file = psiFile.getVirtualFile();

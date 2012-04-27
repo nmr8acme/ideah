@@ -5,18 +5,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.rename.RenameDialog;
 import com.intellij.refactoring.rename.RenamePsiElementProcessor;
-import com.intellij.util.containers.MultiMap;
-import ideah.parser.HaskellFile;
-import ideah.psi.api.HPIdent;
+import ideah.psi.api.HPAbstractIdent;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Map;
 
 public final class HaskellRenameProcessor extends RenamePsiElementProcessor {
 
     @Override
     public boolean canProcessElement(@NotNull PsiElement element) {
-        return element instanceof HPIdent;
+        return element instanceof HPAbstractIdent;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package ideah.lexer;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public final class LexedIdentifier {
 
@@ -18,8 +19,24 @@ public final class LexedIdentifier {
         this.text = text;
     }
 
+    @Nullable
     public static LexedIdentifier parse(String str) {
         return HaskellLexerImpl.parseIdent(str);
+    }
+
+    @Nullable
+    public static LexedIdentifier parseMaybeInfixPrefix(String str) {
+        return parse(removeInfixPrefixForm(str));
+    }
+
+    public static String removeInfixPrefixForm(String s) {
+        int size = s.length() - 1;
+        char first = s.charAt(0);
+        char last = s.charAt(size);
+        if (first == '(' && last == ')' || first == '`' && last == '`') {
+            return s.substring(1, size);
+        }
+        return s;
     }
 
     public static void main(String[] args) {
