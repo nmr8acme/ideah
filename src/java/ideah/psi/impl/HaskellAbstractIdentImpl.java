@@ -43,18 +43,14 @@ public abstract class HaskellAbstractIdentImpl extends HaskellBaseElementImpl im
         LOG.assertTrue(!(parsedNewName == null || parsedOldName == null));
         boolean newNameOperator = HaskellTokenTypes.OPERATORS.contains(parsedNewName.type);
         String createdNewName;
-        ASTNode parentNode = getParent().getNode();
-        ASTNode grandParentNode = parentNode.getTreeParent();
-        HaskellTokenType infixPrefixIdentType = HaskellElementTypes.INFIX_PREFIX_IDENT;
-        IElementType parentType = grandParentNode.getElementType() == infixPrefixIdentType ? infixPrefixIdentType : parentNode.getElementType();
 
         String module = parsedOldName.module;
         String nameWithModule = module == null ? name : module + "." + name;
 
-        boolean isPrefixInfixIdent = parentType == infixPrefixIdentType;
+        boolean prefixInfixIdent = isPrefixInfixIdent();
         boolean oldOrNewOperatorAndOneOfThemNot = !newNameOperator == HaskellTokenTypes.OPERATORS.contains(parsedOldName.type);
 
-        if (oldOrNewOperatorAndOneOfThemNot != isPrefixInfixIdent) {
+        if (oldOrNewOperatorAndOneOfThemNot != prefixInfixIdent) {
             if (newNameOperator) {
                 createdNewName = "(" + nameWithModule + ")";
             } else {
@@ -68,11 +64,17 @@ public abstract class HaskellAbstractIdentImpl extends HaskellBaseElementImpl im
         ASTNode newIdentNode = factory.createIdentNodeFromText(createdNewName);
         if (newIdentNode == null)
             return this;
-        ASTNode nodeToBeReplaced = isPrefixInfixIdent ? grandParentNode : parentNode;
-        ASTNode nodeToReplace = isPrefixInfixIdent ? getParent().getNode() : getNode();
-        nodeToBeReplaced.replaceChild(nodeToReplace, newIdentNode);
+        ASTNode nodeToBeInsertedTo = getNodeToBeInsertedTo();
+        ASTNode nodeToBeReplaced = getNodeToBeReplaced();
+        nodeToBeInsertedTo.replaceChild(nodeToBeReplaced, newIdentNode);
         return newIdentNode.getPsi();
     }
+
+    protected abstract ASTNode getNodeToBeReplaced();
+
+    protected abstract ASTNode getNodeToBeInsertedTo();
+
+    protected abstract boolean isPrefixInfixIdent();
 
     public PsiElement getElement() {
         return this;

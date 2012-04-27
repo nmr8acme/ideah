@@ -9,19 +9,22 @@ import org.jetbrains.annotations.NotNull;
 
 public final class HPInfixPrefixIdentImpl extends HaskellAbstractIdentImpl implements HPInfixPrefixIdent {
 
-    private final HPIdentImpl middleElement;
-
     public HPInfixPrefixIdentImpl(@NotNull ASTNode node) {
         super(node);
-        PsiElement firstChild = getFirstChild();
-        assert firstChild != null;
-        PsiElement nextSibling = firstChild.getNextSibling();
-        assert nextSibling instanceof HPIdentImpl;
-        middleElement = (HPIdentImpl) nextSibling;
     }
 
     @Override
-    public PsiElement setName(@NonNls @NotNull String name) throws IncorrectOperationException {
-        return middleElement.setName(name);
+    protected ASTNode getNodeToBeReplaced() {
+        return getNode();
+    }
+
+    @Override
+    protected ASTNode getNodeToBeInsertedTo() {
+        return getParent().getNode();
+    }
+
+    @Override
+    protected boolean isPrefixInfixIdent() {
+        return true;
     }
 }
