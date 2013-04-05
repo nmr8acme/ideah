@@ -2,7 +2,6 @@ module Compile (compile) where
 
 import Control.Monad (when)
 import Data.Char
-import Data.Maybe
 import Data.List (isPrefixOf, partition)
 import System.FilePath
 import System.Directory
@@ -76,41 +75,41 @@ compile outPath srcPath ghcPath compilerOptions files =
 doWalk :: [String] -> Bool -> [String] -> Ghc ()
 doWalk cmdFlags skipOut files = do
     setupFlags skipOut cmdFlags
+    flg <- getSessionDynFlags
+    setSessionDynFlags $ flg { log_action = output2 }
     mapM_ addTargetFile files
-    loadWithLogger logger LoadAllTargets `gcatch` catcher
-    warns <- getWarnings
-    outputBag warns
+    load LoadAllTargets `gcatch` catcher
     return ()
 
-msgStr :: Message -> PrintUnqualified -> String
-msgStr msg unqual = show $ msg (mkErrStyle unqual)
+output warn span shortMsg longMsg = do
+    putStrLn newMsgIndicator
+    putStrLn$ maybe "?" unpackFS (srcSpanFileName_maybe span)
+    putStrLn $ (if warn then "W" else "E") ++ spanStr span
+    putStrLn shortMsg
+    putStrLn longMsg
+
+msgStr :: PprStyle -> Message -> String
+msgStr = sdocToStringStyled
 
 output1 :: (MonadIO m) => ErrMsg -> m ()
 output1 msg = do
-    let span   = head $ errMsgSpans msg
-        unqual = errMsgContext msg
-        printy = liftIO . putStrLn
-        errMsg = msgStr (errMsgShortDoc msg) unqual
-        isWarn = "Warning:" `isPrefixOf` errMsg
-    printy newMsgIndicator
-    printy $ fromMaybe "?" (fmap unpackFS $ srcSpanFileName_maybe span)
-    printy $ (if isWarn then "W" else "E") ++ spanStr span
-    printy $ msgStr (errMsgShortDoc msg) unqual
-    printy $ msgStr (errMsgExtraInfo msg) unqual
+    let span     = head $ errMsgSpans msg
+        style    = mkErrStyle $ errMsgContext msg
+        shortMsg = msgStr style $ errMsgShortDoc msg
+        longMsg  = msgStr style $ errMsgExtraInfo msg
+        isWarn   = "Warning:" `isPrefixOf` shortMsg
+    liftIO $ output isWarn span shortMsg longMsg
 
-outputBag :: (MonadIO m) => Bag ErrMsg -> m ()
-outputBag msgs = do
-    mapBagM output1 msgs
-    return ()
-
-output :: (MonadIO m) => SourceError -> m ()
-output err = outputBag $ srcErrorMessages err
-
-logger :: WarnErrLogger
-logger Nothing = return ()
-logger (Just err) = output err
+output2 :: Severity -> SrcSpan -> PprStyle -> Message -> IO ()
+output2 severity span style msg = do
+    let isWarn  = case severity of
+            SevWarning -> True
+            SevInfo -> True
+            _ -> False
+        msgText = msgStr style msg
+    output isWarn span msgText msgText
 
 catcher :: SourceError -> Ghc SuccessFlag
 catcher err = do
-    output err
+    mapBagM output1 $ srcErrorMessages err
     return Failed

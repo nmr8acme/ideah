@@ -7,7 +7,7 @@ import ideah.parser.HaskellElementTypes;
 import ideah.psi.api.HPIdent;
 import org.jetbrains.annotations.NotNull;
 
-public final class HPIdentImpl extends HaskellAbstractIdentImpl  implements HPIdent {
+public final class HPIdentImpl extends HaskellAbstractIdentImpl implements HPIdent {
 
     public HPIdentImpl(@NotNull ASTNode node) {
         super(node);

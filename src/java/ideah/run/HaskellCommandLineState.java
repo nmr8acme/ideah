@@ -11,7 +11,7 @@ import com.intellij.execution.util.ProgramParametersUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
-import com.intellij.openapi.projectRoots.SdkType;
+import com.intellij.openapi.projectRoots.SdkTypeId;
 import com.intellij.openapi.util.Computable;
 import ideah.HaskellFileType;
 import ideah.sdk.HaskellSdkType;
@@ -73,8 +73,8 @@ final class HaskellCommandLineState extends CommandLineState {
                             throw new CantRunException(NO_GHC);
                         }
 
-                        SdkType sdkType = ghc.getSdkType();
-                        if (!(sdkType instanceof HaskellSdkType)) {
+                        SdkTypeId sdkTypeId = ghc.getSdkType();
+                        if (!(sdkTypeId instanceof HaskellSdkType)) {
                             throw new CantRunException(NO_GHC);
                         }
 

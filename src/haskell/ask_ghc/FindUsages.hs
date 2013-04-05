@@ -5,9 +5,9 @@ import System.Exit
 import System.FilePath
 
 import GHC
+import SrcLoc
 import MonadUtils
 import Name hiding (varName)
-import FastString (unpackFS)
 import Var (varName)
 
 import HUtil
@@ -18,7 +18,7 @@ findUsages compOpts srcPath ghcPath (line, col) srcFile files =
     runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col) files)
 
 extractDecl walkFun otherModulesWalkFun line col src srcFile files _ loc _ =
-    when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
+    when (isLoc loc line col) $ do
         mapM_ (\file -> if equalFilePath srcFile file
                 then walkFun src
                 else do
@@ -38,10 +38,12 @@ extractModDecl onlyDecl line col src srcFile files mod = extractDecl
     (walkModule (defWalkCallback { modName = extractModLocs onlyDecl mod }))
     parsedSource line col src srcFile files mod
 
-extractLocs rightName span _ = let loc = srcSpanStart span
-    in liftIO $ when (isGoodSrcSpan span && rightName) $ liftIO $ do
-        putStrLn $ locStr loc
-        putStrLn $ unpackFS $ srcLocFile loc
+extractLocs rightName (RealSrcSpan span) _ =
+    liftIO $ when rightName $ do
+        let loc = realSrcSpanStart span
+        putStrLn $ realLocStr loc
+        putStrLn $ realLocFileName loc
+extractLocs _ _ _ = return ()
 
 extractModLocs :: Bool -> ModuleName -> ModuleName -> SrcSpan -> WhereMod -> Ghc ()
 extractModLocs onlyDecl name mod span whereMod = extractLocs

@@ -104,25 +104,15 @@ walkType f loc (HsPArrTy typ) = brace f loc "HsPArrTy" $ walkLType f typ
 walkType f loc (HsTupleTy _ types) = brace f loc "HsTupleTy" $ mapM_ (walkLType f) types
 walkType f loc (HsOpTy typ1 name typ2) = brace f loc "HsOpTy" $ do
     walkLType f typ1
-    walkId f name WCon
     walkLType f typ2
 walkType f loc (HsParTy typ) = brace f loc "HsParTy" $ walkLType f typ
-walkType f loc (HsNumTy _) = brace f loc "HsNumTy" $ return ()
-walkType f loc (HsPredTy _) = brace f loc "HsPredTy" $ return ()
 walkType f loc (HsKindSig typ _) = brace f loc "HsKindSig" $ walkLType f typ
 walkType f loc (HsDocTy typ _) = brace f loc "HsDocTy" $ walkLType f typ
-#if __GLASGOW_HASKELL__ >= 700
 walkType f loc (HsSpliceTy _ _ _) = brace f loc "HsSpliceTy" $ return ()
-#else
-walkType f loc (HsSpliceTy _) = brace f loc "HsSpliceTy" $ return ()
-walkType f loc (HsSpliceTyOut _) = brace f loc "HsSpliceTyOut" $ return ()
-#endif
 walkType f loc (HsBangTy _ typ) = brace f loc "HsBangTy" $ walkLType f typ
 walkType f loc (HsRecTy _) = brace f loc "HsRecTy" $ return () -- todo
-#if __GLASGOW_HASKELL__ >= 700
 walkType f loc (HsQuasiQuoteTy _) = brace f loc "HsQuasiQuoteTy" $ return ()
 walkType f loc (HsCoreTy _) = brace f loc "HsCoreTy" $ return ()
-#endif
 
 ----------------------------------------------------------------------------------------------
 -- Statements
@@ -137,19 +127,13 @@ walkStmt f loc (BindStmt pat expr _ _) = brace f loc "BindStmt" $ do
     walkLPattern f pat
     walkLExpr f expr
 -- expr in do
-walkStmt f loc (ExprStmt expr _ _) = brace f loc "ExprStmt" $ walkLExpr f expr
+walkStmt f loc (ExprStmt expr _ _ _) = brace f loc "ExprStmt" $ walkLExpr f expr
 -- let in do
 walkStmt f loc (LetStmt binds) = brace f loc "LetStmt" $ walkLocals f binds
 -- ???
-walkStmt f loc (ParStmt _) = brace f loc "ParStmt" $ return ()
-#if __GLASGOW_HASKELL__ >= 700
-walkStmt f loc (TransformStmt _ _ _ _) = brace f loc "TransformStmt" $ return ()
-walkStmt f loc (GroupStmt _ _ _ _) = brace f loc "GroupStmt" $ return ()
-#else
-walkStmt f loc (TransformStmt _ _ _) = brace f loc "TransformStmt" $ return ()
-walkStmt f loc (GroupStmt _ _) = brace f loc "GroupStmt" $ return ()
-#endif
-walkStmt f loc (RecStmt _ _ _ _ _ _ _ _) = brace f loc "RecStmt" $ return ()
+walkStmt f loc (ParStmt _ _ _ _) = brace f loc "ParStmt" $ return ()
+walkStmt f loc (TransStmt _ _ _ _ _ _ _ _) = brace f loc "TransformStmt" $ return ()
+walkStmt f loc (RecStmt _ _ _ _ _ _ _ _ _) = brace f loc "RecStmt" $ return ()
 
 ----------------------------------------------------------------------------------------------
 -- Patterns
@@ -166,8 +150,6 @@ walkPattern :: (Monad m) => Callback a m -> SrcSpan -> Pat a -> m ()
 walkPattern f loc (WildPat _) = brace f loc "WildPat" $ return ()
 -- variable pattern (matches any value)
 walkPattern f loc (VarPat id) = brace f loc "VarPat" $ walkId' f id loc WParam
--- ???
-walkPattern f loc (VarPatOut id _) = brace f loc "VarPatOut" $ walkId' f id loc WParam
 -- lazy pattern
 walkPattern f loc (LazyPat pat) = brace f loc "LazyPat" $ walkLPattern f pat
 -- as pattern (@)
@@ -203,7 +185,6 @@ walkPattern f loc (LitPat _) = brace f loc "LitPat" $ return ()
 walkPattern f loc (NPat _ _ _) = brace f loc "NPat" $ return ()
 -- n+k pattern
 walkPattern f loc (NPlusKPat _ _ _ _) = brace f loc "NPlusKPat" $ return ()
-walkPattern f loc (TypePat typ) = brace f loc "TypePat" $ walkLType f typ
 walkPattern f loc (SigPatIn _ _) = brace f loc "SigPatIn" $ return ()
 walkPattern f loc (SigPatOut _ _) = brace f loc "SigPatOut" $ return ()
 walkPattern f loc (CoPat _ _ _) = brace f loc "CoPat" $ return ()
@@ -252,11 +233,7 @@ walkExpr f loc (HsCase expr mg) = brace f loc "HsCase" $ do
     walkLExpr f expr
     walkMatchGroup f Nothing mg
 -- if expression
-#if __GLASGOW_HASKELL__ >= 700
 walkExpr f loc (HsIf _ expr ethen eelse) =
-#else
-walkExpr f loc (HsIf expr ethen eelse) =
-#endif
     brace f loc "HsIf" $ do
         walkLExpr f expr
         walkLExpr f ethen
@@ -266,9 +243,7 @@ walkExpr f loc (HsLet locals expr) = brace f loc "HsLet" $ do
     walkLocals f locals
     walkLExpr f expr
 -- do expression (incl. list comprehensions)
-walkExpr f loc (HsDo _ stmts expr _) = brace f loc "HsDo" $ do
-    mapM_ (walkLStmt f) stmts
-    walkLExpr f expr
+walkExpr f loc (HsDo _ stmts _) =  brace f loc "HsDo" $ mapM_ (walkLStmt f) stmts
 -- list [a,b,c]
 walkExpr f loc (ExplicitList _ vals) = brace f loc "ExplicitList" $ mapM_ (walkLExpr f) vals
 -- parallel array [:a,b,c:]
@@ -309,7 +284,8 @@ walkExpr f loc (HsProc _ _) = brace f loc "HsProc" $ return ()
 walkExpr f loc (HsArrApp _ _ _ _ _) = brace f loc "HsArrApp" $ return ()
 walkExpr f loc (HsArrForm _ _ _) = brace f loc "HsArrForm" $ return ()
 -- Hpc support:
-walkExpr f loc (HsTick _ _ _) = brace f loc "HsTick" $ return ()
+walkExpr f loc (HsTick _ _) =
+    brace f loc "HsTick" $ return ()
 walkExpr f loc (HsBinTick _ _ _) = brace f loc "HsBinTick" $ return ()
 walkExpr f loc (HsTickPragma _ _) = brace f loc "HsTickPragma" $ return ()
 -- parser temporary:
@@ -359,15 +335,11 @@ walkValD f outer loc (FunBind funId _ mg _ _ _) = brace f loc "FunBind" $ do
     walkId f funId WFunDecl
     walkMatchGroup f (case outer of { Nothing -> Just $ unLoc funId; outerFunc -> outerFunc }) mg
 -- pattern declaration
-walkValD f _ loc (PatBind lhs rhss _ _) = brace f loc "PatBind" $ do
-    walkLPattern f lhs
-    walkRHSs f rhss
+walkValD f _ loc (PatBind lhs rhss _ _ _) = brace f loc "PatBind" $ do
+        walkLPattern f lhs
+        walkRHSs f rhss
 -- ???
-#if __GLASGOW_HASKELL__ >= 700
 walkValD f _ loc (VarBind _ _ _) =
-#else
-walkValD f _ loc (VarBind _ _) =
-#endif
      brace f loc "VarBind" $ return ()
 {-
 walkValD f _ loc (VarBind var expr) = brace f loc "VarBind" $ do
@@ -375,15 +347,10 @@ walkValD f _ loc (VarBind var expr) = brace f loc "VarBind" $ do
     walkLExpr f expr
 -}
 -- ???
-#if __GLASGOW_HASKELL__ >= 700
-walkValD f _ loc (AbsBinds _ _ exps _ binds) =
-#else
-walkValD f _ loc (AbsBinds _ _ exps binds) =
-#endif
-    brace f loc "AbsBinds" $ do
+walkValD f _ loc (AbsBinds _ _ exps _ binds) = brace f loc "AbsBinds" $ do
         mapM_ (\id -> walkId' f id loc WFunDecl2) ids
         walkLBinds f (listToMaybe ids) binds
-        where ids = [x | (_, x, _, _) <- exps]
+        where ids = [x | (ABE _ x _ _) <- exps]
 
 
 -- Type/class declarations
@@ -405,10 +372,11 @@ walkTyClD f loc (TySynonym name _ _ typ) = brace f loc "TySynonym" $ do
     walkId f name WTyDecl
     walkLType f typ
 -- type class declaration
-walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _) = brace f loc "ClassDecl" $ do
-    walkId f name WTyDecl
-    mapM_ (walkLSig f) sigs
-    walkLBinds f Nothing defs
+walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _ _) =
+    brace f loc "ClassDecl" $ do
+        walkId f name WTyDecl
+        mapM_ (walkLSig f) sigs
+        walkLBinds f Nothing defs
 
 
 -- Instance declarations
@@ -433,7 +401,7 @@ walkLSig f sig = walkSigD f (getLoc sig) (unLoc sig)
 walkSigD :: (Monad m) => Callback a m -> SrcSpan -> Sig a -> m ()
 -- type signature
 walkSigD f loc (TypeSig name typ) = brace f loc "TypeSig" $ do
-    walkId f name WSig
+    mapM_ (\n -> walkId f n WSig) name
     walkLType f typ
 -- fixity
 walkSigD f loc (FixSig fixSig) = brace f loc "FixSig" $ walkFixD f loc fixSig
@@ -454,8 +422,8 @@ walkDefD f loc (DefaultDecl _) = brace f loc "DefaultDecl" $ return ()
 
 -- Foreign declarations
 walkForD :: (Monad m) => Callback a m -> SrcSpan -> ForeignDecl a -> m ()
-walkForD f loc (ForeignImport _ _ _) = brace f loc "ForeignImport" $ return ()
-walkForD f loc (ForeignExport _ _ _) = brace f loc "ForeignExport" $ return ()
+walkForD f loc (ForeignImport _ _ _ _) = brace f loc "ForeignImport" $ return ()
+walkForD f loc (ForeignExport _ _ _ _) = brace f loc "ForeignExport" $ return ()
 
 
 -- Warnings
@@ -503,19 +471,13 @@ walkDecl f loc (RuleD ruleD) = brace f loc "RuleD" $ walkRuleD f loc ruleD
 walkDecl f loc (SpliceD spliceD) = brace f loc "SpliceD" $ walkSpliceD f loc spliceD
 walkDecl f loc (AnnD annD) = brace f loc "AnnD" $ walkAnnD f loc annD
 walkDecl f loc (DocD docD) = brace f loc "DocD" $ walkDocD f loc docD
-#if __GLASGOW_HASKELL__ >= 700
 walkDecl f loc (QuasiQuoteD _) = brace f loc "QuasiQuote" $ return ()
-#endif
 
 
 walkGroup :: (Monad m) => Callback a m -> HsGroup a -> m ()
-walkGroup f (HsGroup valds tyclds instds derivds fixds defds fords warnds annds ruleds docs) = do
+walkGroup f (HsGroup valds tyclds instds derivds fixds defds fords warnds annds ruleds _ docs) = do
     walkBinds f Nothing valds
-#if __GLASGOW_HASKELL__ >= 700
     mapM_ (walkLoc f walkTyClD) (concat tyclds)
-#else
-    mapM_ (walkLoc f walkTyClD) tyclds
-#endif
     mapM_ (walkLoc f walkInstD) instds
     mapM_ (walkLoc f walkDerivD) derivds
     mapM_ (walkLoc f walkFixD) fixds

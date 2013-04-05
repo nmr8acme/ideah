@@ -17,14 +17,14 @@ final class ProgramParamsPanel {
     private LabeledComponent<TextFieldWithBrowseButton> workingDirectoryComponent;
     private EnvironmentVariablesComponent environmentVariables;
     private LabeledComponent<RawCommandLineEditor> runtimeFlagsComponent;
-    private JComboBox moduleComboBox;
+    private JComboBox<Module> moduleComboBox;
 
     ProgramParamsPanel(Module[] modules) {
         mainFileComponent.getComponent().addBrowseFolderListener("Main file", "Main File", null,
             new FileChooserDescriptor(true, false, false, false, true, false));
         workingDirectoryComponent.getComponent().addBrowseFolderListener("Working directory", "Working Directory",
             null, new FileChooserDescriptor(false, true, false, false, true, false));
-        moduleComboBox.setModel(new DefaultComboBoxModel(modules));
+        moduleComboBox.setModel(new DefaultComboBoxModel<Module>(modules));
         moduleComboBox.setRenderer(new ModuleComboBoxRenderer());
     }
 

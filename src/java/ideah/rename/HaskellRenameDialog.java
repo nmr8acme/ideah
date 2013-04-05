@@ -2,22 +2,16 @@ package ideah.rename;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.codeStyle.SuggestedNameInfo;
-import com.intellij.refactoring.rename.NameSuggestionProvider;
 import com.intellij.refactoring.rename.RenameDialog;
-import com.intellij.usageView.UsageViewUtil;
-import com.intellij.util.ArrayUtil;
 import ideah.lexer.HaskellTokenType;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.lexer.LexedIdentifier;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 final class HaskellRenameDialog extends RenameDialog {

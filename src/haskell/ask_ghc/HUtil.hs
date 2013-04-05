@@ -4,7 +4,7 @@ import System.FilePath (equalFilePath)
 import System.Directory (canonicalizePath)
 import Control.Monad (filterM)
 import System.Console.GetOpt
-import Data.List (intersperse)
+import Data.List (intercalate)
 
 import GHC
 import Outputable
@@ -13,6 +13,7 @@ import Parser
 import Lexer
 import StringBuffer
 import FastString
+import SrcLoc
 
 data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help
     deriving (Show, Read, Enum, Bounded)
@@ -33,7 +34,7 @@ mainFuncModeOption =
         maxMode :: Mode
         maxMode = maxBound
     in Option ['m'] ["main-func-mode"] (ReqArg (\mod opt  -> opt {mode = read mod}) "Mode")
-            ("Compilation mode. Possible arguments:\n" ++ (concat $ intersperse ", " $ map show [minMode..maxMode]))
+            ("Compilation mode. Possible arguments:\n" ++ intercalate ", " (map show [minMode..maxMode]))
 moduleOption       = Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {moduleFile = modf}) "String") "Module for specified line and column numers"
 ghcpathOption      = Option ['g'] ["ghcpath"]        (ReqArg (\path opt -> opt {ghcPath = path}) "DIR") "GHC lib path"
 outpathOption      = Option ['o'] ["outpath"]        (ReqArg (\path opt -> opt {outputPath = path}) "DIR") "Output path"
@@ -55,22 +56,30 @@ defaultOpts = Options
 
 newMsgIndicator = "\f"
 
+sdocToStringStyled :: PprStyle -> SDoc -> String
+sdocToStringStyled style doc = show $ runSDoc doc (initSDocContext style)
+
+sdocToString :: SDoc -> String
+sdocToString doc = sdocToStringStyled defaultUserStyle doc
+
 toString :: (Outputable a) => a -> String
-toString x = show $ ppr x defaultUserStyle
+toString x = sdocToString $ ppr x
 
 setupFlags skipOut cmdFlags = do
     flg <- getSessionDynFlags
     (flg, _, _) <- parseDynamicFlags flg (map noLoc cmdFlags)
     setSessionDynFlags $ if skipOut
-       then flg { hscTarget = HscNothing, ghcLink = NoLink }
-       else flg
+        then flg { hscTarget = HscNothing, ghcLink = NoLink }
+        else flg
 
 addTargetFile file = 
     addTarget Target { targetId           = TargetFile file Nothing
                      , targetAllowObjCode = False
                      , targetContents     = Nothing }
 
-loadStdin = getContents >>= stringToStringBuffer
+loadStdin = do
+    str <- getContents
+    return $ stringToStringBuffer str
 
 -- todo: should be removed, use only loadStdin
 loadFile file = hGetStringBuffer file
@@ -94,17 +103,12 @@ loadHsFile file = do
 parseHsFile :: StringBuffer -> String -> Ghc (Either (SrcSpan, String) (Located (HsModule RdrName)))
 parseHsFile buffer fileName = do
     flags <- getSessionDynFlags
-    let loc = mkSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1)
-    let state =
-#if __GLASGOW_HASKELL__ >= 700
-           mkPState flags buffer loc
-#else
-           mkPState buffer loc flags
-#endif
+    let loc = mkRealSrcLoc (mkFastString fileName) (lineToGhc 1) (colToGhc 1)
+    let state = mkPState flags buffer loc
     let result = unP Parser.parseModule state
     case result of
         POk _ parsed -> return $ Right parsed
-        PFailed loc msg -> return $ Left (loc, show $ msg defaultUserStyle)
+        PFailed loc msg -> return $ Left (loc, sdocToString msg)
 
 lineToGhc :: Int -> Int
 lineToGhc line = line
@@ -112,22 +116,29 @@ lineToGhc line = line
 lineFromGhc :: Int -> Int
 lineFromGhc line = line
 
-#if __GLASGOW_HASKELL__ >= 700
+colToGhc :: Int -> Int
 colToGhc col = col
 
+colFromGhc :: Int -> Int
 colFromGhc col = col
-#else
--- from 1-based to 0-based (in GHC 6)
-colToGhc col = col - 1
 
--- from 0-based (in GHC 6) to 1-based
-colFromGhc col = col + 1
-#endif
+realLocStr :: RealSrcLoc -> String
+realLocStr loc = show (lineFromGhc $ srcLocLine loc) ++ ":" ++ show (colFromGhc $ srcLocCol loc) 
 
 locStr :: SrcLoc -> String
-locStr loc = if isGoodSrcLoc loc then 
-                 show (lineFromGhc $ srcLocLine loc) ++ ":" ++ show (colFromGhc $ srcLocCol loc) 
-                 else "?"
+locStr (RealSrcLoc loc) = realLocStr loc
+locStr (UnhelpfulLoc _) = "?"
+
+realLocFileName :: RealSrcLoc -> String
+realLocFileName loc = unpackFS $ srcLocFile loc
+
+locFileName :: SrcLoc -> String
+locFileName (RealSrcLoc loc) = realLocFileName loc
+locFileName (UnhelpfulLoc _) = "?"
 
 spanStr :: SrcSpan -> String
 spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
+
+isLoc :: SrcSpan -> Int -> Int -> Bool
+isLoc (RealSrcSpan loc) ghcLine ghcCol = srcSpanStartLine loc == ghcLine && srcSpanStartCol loc == ghcCol
+isLoc _ _ _ = False

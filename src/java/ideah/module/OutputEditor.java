@@ -30,10 +30,6 @@ final class OutputEditor extends ModuleElementsEditor {
         return "Paths";
     }
 
-    public Icon getIcon() {
-        return myCompilerOutputEditor.getIcon();
-    }
-
     public String getHelpTopic() {
         return myCompilerOutputEditor.getHelpTopic();
     }

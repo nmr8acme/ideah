@@ -19,8 +19,8 @@ unForall t = t
 
 extractTypes :: PprStyle -> Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
 extractTypes style line col var loc _ = liftIO $
-    when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
-        let ts = show $ pprType (unForall $ varType var) style
+    when (isLoc loc line col) $ do
+        let ts = sdocToStringStyled style $ pprType (unForall $ varType var)
         let ns = maybe "" (toString . moduleName) (nameModule_maybe $ varName var)
         putStrLn ns
         putStrLn newMsgIndicator

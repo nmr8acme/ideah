@@ -1,6 +1,6 @@
 module ParseTree (parseTree) where
 
-import IO
+import System.IO
 
 import GHC
 import MonadUtils

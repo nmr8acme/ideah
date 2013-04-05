@@ -1,10 +1,7 @@
 module GetDocu (getDocu) where
 
-#if __GLASGOW_HASKELL__ >= 700
-
 import Data.List (intersperse)
 import qualified Data.Map (keys, lookup)
-import Data.Graph.Inductive.Query.Monad ((><))
 import System.FilePath
 import FastString (unpackFS)
 import Control.Monad.State
@@ -15,7 +12,6 @@ import HsBinds
 import HsTypes
 import HsDecls
 import HsDoc
-import Outputable
 
 import HUtil
 
@@ -28,27 +24,30 @@ getDocu compOpts srcPath ghcPath loc modFile = do
     let (iface : _)       = filter (equalFilePath modFile . ifaceOrigFilename) ifaces
         ifaceMap          = ifaceDeclMap iface
         ifaceKeys         = Data.Map.keys ifaceMap
-        ifaceLocs         = map nameSrcLoc ifaceKeys
-        ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
-    case lookup loc ifaceLocsWithKeys of
-         Just name ->
-          case Data.Map.lookup name ifaceMap of
-               Just (lhsDecl, (maybeDoc, _), _) -> do
+        locNamePair name = case nameSrcLoc name of
+            RealSrcLoc loc -> [((srcLocLine loc, srcLocCol loc), name)]
+            _ -> []
+        ifaceLocs         = concatMap locNamePair ifaceKeys
+        --ifaceLocsWithKeys = zip (map (srcLocLine >< srcLocCol) (zip ifaceLocs ifaceLocs)) ifaceKeys
+    case lookup loc ifaceLocs of
+        Just name ->
+            case Data.Map.lookup name ifaceMap of
+                Just (lhsDecl:_) -> do
                     putStrLn newMsgIndicator
                     putStrLn $ argsDocToStr $ unLoc lhsDecl
-                    case maybeDoc of
-                         Just doc -> do
-                              putStrLn $ docToStr doc
-                         Nothing  -> return ()
-               Nothing -> return ()
-         Nothing       -> return ()
+                    case Data.Map.lookup name (ifaceDocMap iface) of
+                        Just doc -> do
+                            putStrLn $ docToStr doc
+                        Nothing -> return ()
+                _ -> return ()
+        Nothing -> return ()
 
 argsDocToStr :: HsDecl Name -> String
-argsDocToStr (SigD (TypeSig locName typeName)) = let (argDoc, hasArgDoc) = runState (hsDeclToStr typeName) False
+argsDocToStr (SigD (TypeSig (locName:_) typeName)) = let (argDoc, hasArgDoc) = runState (hsDeclToStr typeName) False
     in if hasArgDoc then mono (showName (unLoc locName) ++ " :: " ++ argDoc) else ""
 argsDocToStr _                                 = ""
 
-showName name = show $ (pprOccName $ nameOccName name) defaultUserStyle
+showName name = sdocToString $ pprOccName $ nameOccName name
 
 hsDeclToStr :: Located (HsType Name) -> State Bool String
 hsDeclToStr ldecl = do
@@ -57,49 +56,51 @@ hsDeclToStr ldecl = do
             dec' <- hsDeclToStr dec
             return $ surroundMono dec' open close
     case unLoc ldecl of
-              HsForAllTy _ _ _ dec -> hsDeclToStr dec
-              HsTyVar name         -> return $ mono $ showName name
-              HsAppTy decl1 decl2  -> do
+              HsForAllTy _ _ _ dec  -> hsDeclToStr dec
+              HsTyVar name          -> return $ mono $ showName name
+              HsAppTy decl1 decl2   -> do
                   decl1' <- hsDeclToStr decl1
                   decl2' <- hsDeclToStr decl2
                   return $ decl1' ++ " " ++ decl2'
-              HsFunTy arg rest     -> do
+              HsFunTy arg rest      -> do
                   arg'  <- hsDeclToStr arg
                   rest' <- hsDeclToStr rest
                   return $ arg' ++ mono " -> " ++ rest'
-              HsListTy dec         -> surroundMonoDec dec "[" "]"
-              HsPArrTy dec         -> surroundMonoDec dec "[:" ":]"
-              HsTupleTy _ decs     -> do
+              HsListTy dec          -> surroundMonoDec dec "[" "]"
+              HsPArrTy dec          -> surroundMonoDec dec "[:" ":]"
+              HsTupleTy _ decs      -> do
                   decs' <- mapM hsDeclToStr decs
                   return $ surroundMono (concat $ intersperse (mono ", ") decs') "(" ")"
-              HsOpTy _ _ _         -> return "op" -- todo: ???
-              HsParTy dec          -> surroundMonoDec dec "(" ")"
-              HsNumTy _            -> return "num" -- todo: ???
-              HsPredTy _           -> return "pred" -- todo: ???
-              HsKindSig _ _        -> return "kindsig" -- todo: compile with appropriate option?
-              HsQuasiQuoteTy _     -> return "quasi" -- todo: ???
-              HsSpliceTy _ _ _     -> return "splice" -- todo: ???
-              HsDocTy lhsType name -> do
+              HsOpTy _ _ _          -> return "op" -- todo: ???
+              HsParTy dec           -> surroundMonoDec dec "(" ")"
+              HsKindSig _ _         -> return "kindsig" -- todo: compile with appropriate option?
+              HsQuasiQuoteTy _      -> return "quasi" -- todo: ???
+              HsSpliceTy _ _ _      -> return "splice" -- todo: ???
+              HsDocTy lhsType name  -> do
                   let HsDocString str = unLoc name
                   put True
                   lhsType' <- hsDeclToStr lhsType
                   return $ lhsType' ++ " " ++ unpackFS str
-              HsBangTy _ _         -> return "bang" -- todo: ???
-              HsRecTy conFields    -> do
+              HsBangTy _ _          -> return "bang" -- todo: ???
+              HsRecTy conFields     -> do
                   fields <- mapM (\c -> do
                       fldType <- hsDeclToStr $ cd_fld_type c
                       return $ nl ++ monobold (showName $ unLoc $ cd_fld_name c)
                               ++ " :: " ++ fldType
-                              ++ show ((ppr_mbDoc $ cd_fld_doc c) defaultUserStyle))
+                              ++ sdocToString (ppr_mbDoc $ cd_fld_doc c))
                         conFields
                   return $ concat fields -- todo: test?!
-              HsCoreTy _           -> return "core" -- todo: ???
+              HsCoreTy _            -> return "core" -- todo: ???
+              HsWrapTy _ _          -> return "wrap" -- todo: ???
+              HsIParamTy _ _        -> return "param" -- todo: ???
+              HsEqTy _ _            -> return "eq" -- todo: ???
+              HsExplicitListTy _ _  -> return "list" -- todo: ???
+              HsExplicitTupleTy _ _ -> return "tuple" -- todo: ???
 
 mono s = "<tt>" ++ s ++ "</tt>"
 
-bold s = "<b>" ++ s ++ "</b>"
-
 monobold = mono . bold
+    where bold s = "<b>" ++ s ++ "</b>"
 
 nl = "<br>"
 
@@ -113,7 +114,7 @@ docToStr d =
         DocAppend d1 d2     -> docUnlines [docToStr d1, docToStr d2]
         DocString s         -> s
         DocParagraph par    -> docToStr par ++ nl
-        DocIdentifier ids   -> monobold (concat (intersperse ", " $ map showName ids)) -- todo: why list of identifiers???
+        DocIdentifier id   -> monobold $ showName id
           -- todo: make link to identifier
           -- todo: how to show ids?
         DocModule s         -> monobold s -- todo: link to module
@@ -127,10 +128,5 @@ docToStr d =
         DocPic s            -> s -- todo: ???
         DocAName s          -> s -- todo: ???
         DocExamples es      -> docUnlines $ map (\e -> mono (exampleExpression e) ++ nl ++ docUnlines (exampleResult e)) es
-
-#else
-
-getDocu :: [String] -> FilePath -> FilePath -> (Int, Int) -> FilePath -> IO ()
-getDocu _ _ _ _ _ = return ()
-
-#endif
+        DocIdentifierUnchecked _ -> "" -- todo: ???
+        DocWarning _        -> "" -- todo: ???

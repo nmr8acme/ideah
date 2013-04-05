@@ -6,7 +6,7 @@
 
     <property file="build.properties"/>
 
-    <property name="project.version" value="0.2.11"/>
+    <property name="project.version" value="0.2.12"/>
 
     <property name="src.dir" location="src/java"/>
     <property name="hs.dir" location="src/haskell/ask_ghc"/>

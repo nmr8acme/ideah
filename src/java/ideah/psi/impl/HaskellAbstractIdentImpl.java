@@ -10,9 +10,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.util.IncorrectOperationException;
-import ideah.lexer.HaskellTokenType;
 import ideah.lexer.HaskellTokenTypes;
 import ideah.lexer.LexedIdentifier;
 import ideah.parser.HaskellElementTypes;
@@ -25,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class HaskellAbstractIdentImpl extends HaskellBaseElementImpl implements PsiReference {
 
-    private static final Logger LOG = Logger.getInstance("ideah.psi.impl.HaskellAbstractIdentImpl");;
+    private static final Logger LOG = Logger.getInstance("ideah.psi.impl.HaskellAbstractIdentImpl");
 
     protected HaskellAbstractIdentImpl(@NotNull ASTNode node) {
         super(node);

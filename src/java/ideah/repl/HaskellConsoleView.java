@@ -9,7 +9,7 @@ public final class HaskellConsoleView extends LanguageConsoleViewImpl {
     HaskellConsoleView(Project project,
                        String title,
                        ConsoleHistoryModel historyModel) {
-        super(project, new HaskellConsole(project, title, historyModel));
+        super(new HaskellConsole(project, title, historyModel));
     }
 
     @Override

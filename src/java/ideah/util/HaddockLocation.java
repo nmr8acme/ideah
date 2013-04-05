@@ -110,7 +110,7 @@ public final class HaddockLocation extends LocationUtil {
             return null;
         try {
             if (ask.needRecompile()) {
-                cabalCheckAndInstall(cabalPath, indicator, 0.7, "haddock-2.9.2");
+                cabalCheckAndInstall(cabalPath, indicator, 0.7, "haddock-2.11.1");
                 if (!ask.compileHs(indicator, 1.0))
                     return null;
             }

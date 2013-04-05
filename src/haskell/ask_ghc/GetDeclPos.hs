@@ -6,7 +6,6 @@ import System.Exit
 import GHC
 import MonadUtils
 import Name (nameSrcLoc)
-import FastString (unpackFS)
 import Id
 import HUtil
 import Walker
@@ -17,17 +16,17 @@ getDeclPos compOpts srcPath ghcPath (line, col) srcFile files =
     runGhc (Just ghcPath) (doWalk compOpts srcPath srcFile (lineToGhc line) (colToGhc col) files)
 
 extractPos outputLoc line col var loc _ = liftIO $
-    when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
+    when (isLoc loc line col) $ do
         putStrLn $ locStr outputLoc
-        putStrLn $ unpackFS $ srcLocFile outputLoc
+        putStrLn $ locFileName outputLoc
         exitSuccess
 
 extractIdPos :: Int -> Int -> Id -> SrcSpan -> Where -> Ghc ()
 extractIdPos line col var loc _ = liftIO $
-    when (isGoodSrcSpan loc && srcSpanStartLine loc == line && srcSpanStartCol loc == col) $ do
+    when (isLoc loc line col) $ do
         let loc' = nameSrcLoc $ idName var
         putStrLn $ locStr loc'
-        putStrLn $ unpackFS $ srcLocFile loc'
+        putStrLn $ locFileName loc'
         exitSuccess
 
 doExtractIdPos :: Int -> Int -> TypecheckedModule -> Ghc ()
