@@ -113,6 +113,11 @@ walkType f loc (HsBangTy _ typ) = brace f loc "HsBangTy" $ walkLType f typ
 walkType f loc (HsRecTy _) = brace f loc "HsRecTy" $ return () -- todo
 walkType f loc (HsQuasiQuoteTy _) = brace f loc "HsQuasiQuoteTy" $ return ()
 walkType f loc (HsCoreTy _) = brace f loc "HsCoreTy" $ return ()
+walkType f loc (HsIParamTy _ _) = brace f loc "HsIParamTy" $ return ()
+walkType f loc (HsEqTy _ _) = brace f loc "HsEqTy" $ return ()
+walkType f loc (HsExplicitListTy _ types) = brace f loc "HsExplicitListTy" $ mapM_ (walkLType f) types
+walkType f loc (HsExplicitTupleTy _ types) = brace f loc "HsExplicitTupleTy" $ mapM_ (walkLType f) types
+walkType f loc (HsWrapTy _ _) = brace f loc "HsWrapTy" $ return ()
 
 ----------------------------------------------------------------------------------------------
 -- Statements
@@ -134,6 +139,7 @@ walkStmt f loc (LetStmt binds) = brace f loc "LetStmt" $ walkLocals f binds
 walkStmt f loc (ParStmt _ _ _ _) = brace f loc "ParStmt" $ return ()
 walkStmt f loc (TransStmt _ _ _ _ _ _ _ _) = brace f loc "TransformStmt" $ return ()
 walkStmt f loc (RecStmt _ _ _ _ _ _ _ _ _) = brace f loc "RecStmt" $ return ()
+walkStmt f loc (LastStmt expr _) = brace f loc "LastStmt" $ walkLExpr f expr
 
 ----------------------------------------------------------------------------------------------
 -- Patterns
@@ -413,6 +419,8 @@ walkSigD f loc (SpecSig _ _ _) = brace f loc "SpecSig" $ return ()
 walkSigD f loc (SpecInstSig typ) = brace f loc "SpecInstSig" $ walkLType f typ
 -- ???
 walkSigD f loc (IdSig _) = brace f loc "IdSig" $ return ()
+-- ???
+walkSigD f loc (GenericSig _ _) = brace f loc "GenericSig" $ return ()
 
 
 -- Default instance declarations
@@ -471,7 +479,8 @@ walkDecl f loc (RuleD ruleD) = brace f loc "RuleD" $ walkRuleD f loc ruleD
 walkDecl f loc (SpliceD spliceD) = brace f loc "SpliceD" $ walkSpliceD f loc spliceD
 walkDecl f loc (AnnD annD) = brace f loc "AnnD" $ walkAnnD f loc annD
 walkDecl f loc (DocD docD) = brace f loc "DocD" $ walkDocD f loc docD
-walkDecl f loc (QuasiQuoteD _) = brace f loc "QuasiQuote" $ return ()
+walkDecl f loc (QuasiQuoteD _) = brace f loc "QuasiQuoteD" $ return ()
+walkDecl f loc (VectD _) = brace f loc "VectD" $ return ()
 
 
 walkGroup :: (Monad m) => Callback a m -> HsGroup a -> m ()
