@@ -14,6 +14,7 @@ import Lexer
 import StringBuffer
 import FastString
 import SrcLoc
+import DynFlags (tracingDynFlags)
 
 data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help
     deriving (Show, Read, Enum, Bounded)
@@ -57,7 +58,7 @@ defaultOpts = Options
 newMsgIndicator = "\f"
 
 sdocToStringStyled :: PprStyle -> SDoc -> String
-sdocToStringStyled style doc = show $ runSDoc doc (initSDocContext style)
+sdocToStringStyled style doc = show $ runSDoc doc (initSDocContext tracingDynFlags style)
 
 sdocToString :: SDoc -> String
 sdocToString doc = sdocToStringStyled defaultUserStyle doc
@@ -81,7 +82,7 @@ loadStdin = do
     str <- getContents
     return $ stringToStringBuffer str
 
--- todo: should be removed, use only loadStdin
+-- todo: should be removed, use only loadStd    in
 loadFile file = hGetStringBuffer file
 
 loadHsFile :: FilePath -> Ghc ModSummary

@@ -17,6 +17,7 @@ import SrcLoc
 import FastString
 
 import HUtil
+import DynFlags (tracingDynFlags)
 
 compile outPath srcPath ghcPath compilerOptions files =
     let 
@@ -88,20 +89,20 @@ output warn span shortMsg longMsg = do
     putStrLn shortMsg
     putStrLn longMsg
 
-msgStr :: PprStyle -> Message -> String
+msgStr :: PprStyle -> SDoc -> String
 msgStr = sdocToStringStyled
 
 output1 :: (MonadIO m) => ErrMsg -> m ()
 output1 msg = do
     let span     = head $ errMsgSpans msg
-        style    = mkErrStyle $ errMsgContext msg
+        style    = mkErrStyle tracingDynFlags $ errMsgContext msg
         shortMsg = msgStr style $ errMsgShortDoc msg
         longMsg  = msgStr style $ errMsgExtraInfo msg
         isWarn   = "Warning:" `isPrefixOf` shortMsg
     liftIO $ output isWarn span shortMsg longMsg
 
-output2 :: Severity -> SrcSpan -> PprStyle -> Message -> IO ()
-output2 severity span style msg = do
+output2 :: DynFlags -> Severity -> SrcSpan -> PprStyle -> SDoc -> IO ()
+output2 _ severity span style msg = do
     let isWarn  = case severity of
             SevWarning -> True
             SevInfo -> True

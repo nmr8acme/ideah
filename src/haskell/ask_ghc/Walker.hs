@@ -60,9 +60,10 @@ walkLocals :: (Monad m) => Callback a m -> HsLocalBinds a -> m ()
 walkLocals f (HsValBinds binds) = walkBinds f Nothing binds
 walkLocals f (HsIPBinds (IPBinds binds _)) = mapM_ walkIP binds
     where walkIP lip = do
-              walkId' f id (getLoc lip) WParam
-              walkLExpr f expr
-              where (IPBind (IPName id) expr) = unLoc lip
+            case unLoc lip of
+              IPBind _ expr -> do
+                  walkLExpr f expr
+
 walkLocals _f EmptyLocalBinds = return ()
 
 walkRHSs :: (Monad m) => Callback a m -> GRHSs a -> m ()
@@ -136,7 +137,7 @@ walkStmt f loc (ExprStmt expr _ _ _) = brace f loc "ExprStmt" $ walkLExpr f expr
 -- let in do
 walkStmt f loc (LetStmt binds) = brace f loc "LetStmt" $ walkLocals f binds
 -- ???
-walkStmt f loc (ParStmt _ _ _ _) = brace f loc "ParStmt" $ return ()
+walkStmt f loc (ParStmt _ _ _) = brace f loc "ParStmt" $ return ()
 walkStmt f loc (TransStmt _ _ _ _ _ _ _ _) = brace f loc "TransformStmt" $ return ()
 walkStmt f loc (RecStmt _ _ _ _ _ _ _ _ _) = brace f loc "RecStmt" $ return ()
 walkStmt f loc (LastStmt expr _) = brace f loc "LastStmt" $ walkLExpr f expr
@@ -206,7 +207,7 @@ walkExpr :: (Monad m) => Callback a m -> SrcSpan -> HsExpr a -> m ()
 -- named reference
 walkExpr f loc (HsVar var) = brace f loc "HsVar" $ walkId' f var loc WVal
 -- implicit parameter
-walkExpr f loc (HsIPVar (IPName id)) = brace f loc "HsIPVar" $ walkId' f id loc WVal
+walkExpr f loc (HsIPVar _) = brace f loc "HsIPVar" $ return ()
 -- overloaded literal (number)
 walkExpr f loc (HsOverLit _) = brace f loc "HsOverLit" $ return ()
 -- simple literal ("string", etc)
@@ -366,7 +367,7 @@ walkTyClD f loc (ForeignType name _) = brace f loc "ForeignType" $ walkId f name
 -- type family declaration
 walkTyClD f loc (TyFamily _ name _ _) = brace f loc "TyFamily" $ walkId f name WTyDecl
 -- data type declaration
-walkTyClD f loc (TyData _ _ name _ _ _ cons _) = brace f loc "TyData" $ do
+walkTyClD f loc (TyDecl name _ (TyData{td_cons=cons}) _) = brace f loc "TyData" $ do
     walkId f name WTyDecl
     mapM_ walkCons cons
     where walkCons lcon = brace f (getLoc lcon) "ConDecl" $ do
@@ -374,11 +375,11 @@ walkTyClD f loc (TyData _ _ name _ _ _ cons _) = brace f loc "TyData" $ do
               mapM_ (walkLType f) (hsConDeclArgTys details)
               where (ConDecl cname _ _ _ details _ _ _) = unLoc lcon -- todo
 -- type synonym declaration
-walkTyClD f loc (TySynonym name _ _ typ) = brace f loc "TySynonym" $ do
+walkTyClD f loc (TyDecl name _ (TySynonym typ) _) = brace f loc "TySynonym" $ do
     walkId f name WTyDecl
     walkLType f typ
 -- type class declaration
-walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _ _) =
+walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _ _ _) =
     brace f loc "ClassDecl" $ do
         walkId f name WTyDecl
         mapM_ (walkLSig f) sigs
@@ -387,7 +388,8 @@ walkTyClD f loc (ClassDecl _ name _ _ sigs defs _ _ _) =
 
 -- Instance declarations
 walkInstD :: (Monad m) => Callback a m -> SrcSpan -> InstDecl a -> m ()
-walkInstD f loc (InstDecl _ _ _ _) = brace f loc "InstDecl" $ return ()
+walkInstD f loc (ClsInstD _ _ _ _) = brace f loc "InstDecl" $ return ()
+walkInstD f loc (FamInstD _) = brace f loc "InstDecl" $ return ()
 
 
 -- Deriving declarations

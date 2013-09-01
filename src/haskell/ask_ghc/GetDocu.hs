@@ -124,7 +124,7 @@ docToStr d =
         DocOrderedList l    -> list "ol" l
         DocDefList l        -> concatMap (\(id, def) -> monoDoc id ++ "<blockquote>" ++ docToStr def ++ "</blockquote>") l
         DocCodeBlock b      -> monoDoc b -- todo: syntax highlighting?
-        DocURL u            -> "<a href=" ++ u ++ ">" ++ u ++ "</a>" -- todo: ???
+        DocHyperlink (Hyperlink u txt) -> "<a href=" ++ u ++ ">" ++ u ++ "</a>"
         DocPic s            -> s -- todo: ???
         DocAName s          -> s -- todo: ???
         DocExamples es      -> docUnlines $ map (\e -> mono (exampleExpression e) ++ nl ++ docUnlines (exampleResult e)) es
