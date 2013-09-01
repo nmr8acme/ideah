@@ -106,7 +106,7 @@ public final class HaddockLocation extends LocationUtil {
         if (ask == null)
             return null;
         String cabalPath = ask.getCabalPath();
-        if (cabalPath == null)
+        if (cabalPath == null || cabalPath.isEmpty())
             return null;
         try {
             if (ask.needRecompile()) {

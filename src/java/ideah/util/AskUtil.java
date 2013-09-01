@@ -98,6 +98,9 @@ final class AskUtil {
 
     private static void listHaskellSources(HsCallback callback) throws IOException {
         InputStream is = AskUtil.class.getResourceAsStream("/ask_ghc.jar");
+        if (is == null)
+            throw new FileNotFoundException("<classpath>/ask_ghc.jar");
+
         ZipInputStream zis = new ZipInputStream(is);
         while (true) {
             ZipEntry entry = zis.getNextEntry();
