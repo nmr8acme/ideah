@@ -1,5 +1,6 @@
 package ideah.annotator;
 
+import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
@@ -50,18 +51,24 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                 TextRange range = lcRange.getRange(psiFile);
                 String message = ghcMessage.getErrorMessage();
                 CompilerMessageCategory category = ghcMessage.getCategory();
+
+                Annotation out = null;
                 switch (category) {
                 case ERROR:
-                    annotationHolder.createErrorAnnotation(range, message);
+                    out = annotationHolder.createErrorAnnotation(range, message);
                     break;
                 case WARNING:
-                    annotationHolder.createWarningAnnotation(range, message);
+                    out = annotationHolder.createWarningAnnotation(range, message);
                     break;
                 case INFORMATION:
-                    annotationHolder.createInfoAnnotation(range, message);
+                    out = annotationHolder.createInfoAnnotation(range, message);
                     break;
                 case STATISTICS:
                     break;
+                }
+
+                if (out != null) {
+                    out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
                 }
             }
         }
