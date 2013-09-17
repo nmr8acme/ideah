@@ -104,7 +104,7 @@ final class HaskellCommandLineState extends CommandLineState {
                         //GHCUtil.getGhcOptions(null, options); // todo!!!
                         commandLine.addParameters(options);
                         commandLine.addParameter(mainFile); // todo
-
+                        commandLine.addParameters(parameters.getProgramParametersList().getParameters());
                         // todo: set other parameters/rt flags
 
                         return commandLine;
