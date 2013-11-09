@@ -29,7 +29,17 @@ public final class GHCMessage {
         }
         range = new LineColRange(posString);
 
-        errorMessage = ghcError.substring(nextNewLineIndex + newLine.length());
+        String err = ghcError.substring(nextNewLineIndex + newLine.length());
+
+        // strange bug workaround: error message is shown twice
+        if (err.length() % 2 == 0) {
+            int half = err.length() / 2;
+            String halfS = err.substring(0, half);
+            if (err.endsWith(halfS))
+                err = halfS;
+        }
+        errorMessage = err;
+
         category = cmc;
     }
 
