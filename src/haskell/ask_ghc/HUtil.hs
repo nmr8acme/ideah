@@ -16,7 +16,7 @@ import FastString
 import SrcLoc
 import DynFlags (tracingDynFlags)
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help | AutoImport
     deriving (Show, Read, Enum, Bounded)
 
 data Options = Options
@@ -27,6 +27,7 @@ data Options = Options
     , compilerOptions :: [String]
     , position        :: (Int, Int)
     , moduleFile      :: FilePath
+    , identifier      :: String
     }
 
 mainFuncModeOption =
@@ -43,6 +44,7 @@ sourcepathOption   = Option ['s'] ["sourcepath"]     (ReqArg (\path opt -> opt {
 ghcoptionsOption   = Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = compilerOptions opt  ++ [opts]}) "String") "GHC options"
 lineNumberOption   = Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "Line number"
 columnNumberOption = Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "Column number"
+nameOption         = Option ['n'] ["identifier"]     (ReqArg (\name opt -> opt {identifier = name}) "String") "Name of unresolved identifier to be looked up in other modules"
 
 defaultOpts :: Options
 defaultOpts = Options
@@ -53,6 +55,7 @@ defaultOpts = Options
     , compilerOptions = []
     , position        = (0, 0)
     , moduleFile      = ""
+    , identifier      = ""
     }
 
 newMsgIndicator = "\f"
@@ -65,6 +68,8 @@ sdocToString doc = sdocToStringStyled defaultUserStyle doc
 
 toString :: (Outputable a) => a -> String
 toString x = sdocToString $ ppr x
+
+unqualified x flgs = (sdocToStringStyled (defaultErrStyle flgs)) $ ppr x
 
 setupFlags skipOut cmdFlags = do
     flg <- getSessionDynFlags

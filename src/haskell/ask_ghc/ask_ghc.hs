@@ -5,6 +5,7 @@ import System.Environment
 import System.Console.GetOpt
 
 import HUtil
+import AutoImport
 import Compile
 import CheckMain
 import GetIdType
@@ -21,18 +22,20 @@ import FindUsages
 --    -c "<options>"      # compiler options
 --    -l <line>           # line number
 --    -r <column>         # column number
+--    -n <identifier>     # name of unresolved identifier to be looked up in other modules
 --    <files>             # files to be compiled
 
 options :: [OptDescr (Options -> Options)]
 options = [ mainFuncModeOption
-        , moduleOption
-        , ghcpathOption
-        , outpathOption
-        , sourcepathOption
-        , ghcoptionsOption
-        , lineNumberOption
-        , columnNumberOption
-        ]
+          , moduleOption
+          , ghcpathOption
+          , outpathOption
+          , sourcepathOption
+          , ghcoptionsOption
+          , lineNumberOption
+          , columnNumberOption
+          , nameOption
+          ]
 
 main = do
     args <- getArgs
@@ -44,12 +47,15 @@ main = do
         singleFile = head files
         pos        = position opts
         compOpts   = compilerOptions opts
+        ident      = identifier opts
     case mode opts of
         Help       -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files...\n" options
+        AutoImport -> autoImport ident ghcpath singleFile
         Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
         CheckMain  -> checkMain compOpts ghcpath singleFile
         GetIdType  -> getIdType compOpts srcpath ghcpath singleFile pos
         GetDeclPos -> getDeclPos compOpts srcpath ghcpath pos (moduleFile opts) files
         ParseTree  -> parseTree compOpts ghcpath singleFile
         FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files
+        ParseTree  -> parseTree compOpts ghcpath singleFile
         Test       -> print compOpts
