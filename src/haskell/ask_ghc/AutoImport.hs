@@ -7,7 +7,7 @@ import MonadUtils
 
 import HUtil
 
-inspect name module' = do -- todo: module name comparison!
+inspect name module' = do
     (Just mi)   <- getModuleInfo module'
     let exports  = modInfoExports mi
     let filtered = getModule name `mapMaybe` exports
@@ -19,8 +19,8 @@ autoImport name ghcPath srcFile = runGhc (Just ghcPath) $ do
     setSessionDynFlags $ flg { hscTarget = HscNothing, ghcLink = NoLink }
     modules <- packageDbModules True
     mapM_ (inspect name) (filteredModules modules)
-        where filteredModules = filter ((/= srcFile) . toString)    -- todo: exclude imported modules as well
-                                                                    -- todo: currently, user code is not being seen anyway
+        where filteredModules = filter ((/= srcFile) . toString)    -- todo: exclude imported modules as well, and do proper module comparison (not just based on string equality)
+                                                                    -- todo: currently, user code is not seen anyway, so filterModules is useless
 
 getModule functionName module' =
     let fullNameStr = toString module'
