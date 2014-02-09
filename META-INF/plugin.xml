@@ -4,7 +4,7 @@
     <description>Support for Haskell language</description>
     <category>Custom Languages</category>
     <version>VERSION</version>
-    <vendor logo="/ideah/haskell_16x16.png" url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">
+    <vendor url="http://code.google.com/p/ideah/" email="ideah.plugin@gmail.com">
         ideah.plugin@gmail.com
     </vendor>
     <idea-version since-build="111.69"/>

@@ -1,12 +1,11 @@
 package ideah.run;
 
-import com.intellij.execution.Location;
-import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.actions.ConfigurationContext;
-import com.intellij.execution.junit.RuntimeConfigurationProducer;
+import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -17,7 +16,7 @@ import ideah.util.ProcessLauncher;
 import java.io.IOException;
 import java.util.List;
 
-public final class HaskellRunConfigurationProducer extends RuntimeConfigurationProducer {
+public final class HaskellRunConfigurationProducer extends RunConfigurationProducer<HaskellRunConfiguration> {
 
     private HaskellFile runFile;
 
@@ -31,33 +30,64 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         return runFile;
     }
 
-    protected RunnerAndConfigurationSettings createConfigurationByElement(Location location, ConfigurationContext context) {
-        PsiFile file = location.getPsiElement().getContainingFile();
+    protected boolean setupConfigurationFromContext(HaskellRunConfiguration configuration, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+        PsiElement psiElement = sourceElement.get();
+        PsiFile file = psiElement.getContainingFile();
         if (!(file instanceof HaskellFile))
-            return null;
+            return false;
         HaskellFile hsFile = (HaskellFile) file;
         try {
             VirtualFile virtualFile = file.getVirtualFile();
             if (virtualFile == null)
-                return null;
+                return false;
             if (!hasMain(virtualFile, context.getModule()))
-                return null;
+                return false;
             runFile = hsFile;
             Project project = file.getProject();
-            RunnerAndConfigurationSettings settings = cloneTemplateConfiguration(project, context);
-            HaskellRunConfiguration configuration = (HaskellRunConfiguration) settings.getConfiguration();
             configuration.setMainFile(runFile);
             VirtualFile baseDir = project.getBaseDir();
             if (baseDir != null) {
                 configuration.setWorkingDirectory(baseDir.getPath());
             }
-            configuration.setName(configuration.getGeneratedName());
-            return settings;
+            configuration.setName(configuration.suggestedName());
+            return true;
         } catch (Exception ex) {
             LOG.error(ex);
         }
-        return null;
+        return false;
     }
+
+    public boolean isConfigurationFromContext(HaskellRunConfiguration configuration, ConfigurationContext context) {
+        return false; // todo
+    }
+
+//    protected RunnerAndConfigurationSettings createConfigurationByElement(Location location, ConfigurationContext context) {
+//        PsiFile file = location.getPsiElement().getContainingFile();
+//        if (!(file instanceof HaskellFile))
+//            return null;
+//        HaskellFile hsFile = (HaskellFile) file;
+//        try {
+//            VirtualFile virtualFile = file.getVirtualFile();
+//            if (virtualFile == null)
+//                return null;
+//            if (!hasMain(virtualFile, context.getModule()))
+//                return null;
+//            runFile = hsFile;
+//            Project project = file.getProject();
+//            RunnerAndConfigurationSettings settings = cloneTemplateConfiguration(project, context);
+//            HaskellRunConfiguration configuration = (HaskellRunConfiguration) settings.getConfiguration();
+//            configuration.setMainFile(runFile);
+//            VirtualFile baseDir = project.getBaseDir();
+//            if (baseDir != null) {
+//                configuration.setWorkingDirectory(baseDir.getPath());
+//            }
+//            configuration.setName(configuration.suggestedName());
+//            return settings;
+//        } catch (Exception ex) {
+//            LOG.error(ex);
+//        }
+//        return null;
+//    }
 
     static boolean hasMain(VirtualFile file, Module module) throws IOException, InterruptedException {
         CompilerLocation compiler = CompilerLocation.get(module);
@@ -73,7 +103,7 @@ public final class HaskellRunConfigurationProducer extends RuntimeConfigurationP
         return stdOut != null && stdOut.contains("t");
     }
 
-    public int compareTo(Object o) {
-        return PREFERED;
-    }
+//    public int compareTo(Object o) {
+//        return PREFERED;
+//    }
 }

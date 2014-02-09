@@ -20,7 +20,7 @@ import java.util.List;
 public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, AnnotationResult> {
 
     @Override
-    public PsiFile collectionInformation(@NotNull PsiFile file) {
+    public PsiFile collectInformation(@NotNull PsiFile file) {
         return file;
     }
 

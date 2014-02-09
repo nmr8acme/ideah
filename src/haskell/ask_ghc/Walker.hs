@@ -8,7 +8,6 @@ import Data.Maybe (listToMaybe)
 
 import Bag
 import GHC
-import BasicTypes
 import DataCon
 
 data Where = WTyDecl | WConDecl | WFunDecl | WFunDecl2 | WParam | WVal | WCon | WType | WMatch | WModule | WSig

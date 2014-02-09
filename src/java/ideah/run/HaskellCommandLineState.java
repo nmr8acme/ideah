@@ -93,8 +93,8 @@ final class HaskellCommandLineState extends CommandLineState {
 
                         Map<String, String> env = parameters.getEnv();
                         if (env != null) {
-                            commandLine.setEnvParams(env);
-                            commandLine.setPassParentEnvs(parameters.isPassParentEnvs());
+                            commandLine.getEnvironment().putAll(env);
+                            commandLine.setPassParentEnvironment(parameters.isPassParentEnvs());
                         }
 
                         commandLine.setWorkDirectory(parameters.getWorkingDirectory());
