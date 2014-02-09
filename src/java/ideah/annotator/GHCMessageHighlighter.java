@@ -6,6 +6,7 @@ import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import ideah.compiler.GHCMessage;
@@ -46,7 +47,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
     private static void showMessages(PsiFile psiFile, AnnotationHolder annotationHolder, VirtualFile file, List<GHCMessage> ghcMessages) {
         File mainFile = new File(file.getPath());
         for (GHCMessage ghcMessage : ghcMessages) {
-            if (new File(ghcMessage.getFileName()).equals(mainFile)) {
+            if (FileUtil.filesEqual(new File(ghcMessage.getFileName()), mainFile)) {
                 LineColRange lcRange = ghcMessage.getRange();
                 TextRange range = lcRange.getRange(psiFile);
                 String message = ghcMessage.getErrorMessage();
