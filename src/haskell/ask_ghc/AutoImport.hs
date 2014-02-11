@@ -7,20 +7,22 @@ import MonadUtils
 
 import HUtil
 
+-- ask_ghc.exe -m AutoImport -n intersperse -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" test.hs
+
 inspect name module' = do
-    (Just mi)   <- getModuleInfo module'
-    let exports  = modInfoExports mi
-    let filtered = getModule name `mapMaybe` exports
+    (Just mi)    <- getModuleInfo module'
+    let exports   = modInfoExports mi
+    let filtered  = getModule name `mapMaybe` exports
     mapM_ printModExports filtered
 
-autoImport name ghcPath srcFile = runGhc (Just ghcPath) $ do
-    flg         <- getSessionDynFlags
-    (flg, _, _) <- parseDynamicFlags flg (map noLoc [])
-    setSessionDynFlags $ flg { hscTarget = HscNothing, ghcLink = NoLink }
-    modules <- packageDbModules True
-    mapM_ (inspect name) (filteredModules modules)
-        where filteredModules = filter ((/= srcFile) . toString)    -- todo: exclude imported modules as well, and do proper module comparison (not just based on string equality)
-                                                                    -- todo: currently, user code is not seen anyway, so filterModules is useless
+-- 'files' consists of all user files that should be looked for identifier.
+-- It should not contain the source file.
+autoImport compOpts name ghcPath srcPath files = runGhc (Just ghcPath) $ do
+    setupFlags True $ ("-i" ++ srcPath) : compOpts
+    pkgModules  <- packageDbModules True
+    userModSums <- mapM loadHsFile files
+    let userMods = ms_mod `map` userModSums
+    mapM_ (inspect name) $ userMods ++ pkgModules
 
 getModule functionName module' =
     let fullNameStr = toString module'
