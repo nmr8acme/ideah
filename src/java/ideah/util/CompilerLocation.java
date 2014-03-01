@@ -50,8 +50,7 @@ public final class CompilerLocation extends LocationUtil {
                             public void run() {
                                 // run() is invoked in worker thread
                                 try {
-                                    ProgressIndicator indicator =
-                                        ProgressManager.getInstance().getProgressIndicator();
+                                    ProgressIndicator indicator = ProgressManager.getInstance().getProgressIndicator();
                                     indicator.setText("Please wait while building " + description + "...");
                                     indicator.setText2("Preparing compilation of " + MAIN_FILE + "...");
                                     indicator.setFraction(0.1);

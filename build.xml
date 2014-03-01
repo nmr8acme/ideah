@@ -23,6 +23,16 @@
         <pathelement path="${lib.dir}/extensions.jar"/>
         <pathelement path="${lib.dir}/util.jar"/>
         <pathelement path="${lib.dir}/idea.jar"/>
+        <pathelement path="${lib.dir}/velocity.jar"/>
+    </path>
+    
+    <path id="javac2.classpath">
+        <pathelement location="${lib.dir}/javac2.jar"/>
+        <pathelement location="${lib.dir}/jdom.jar"/>
+        <pathelement location="${lib.dir}/asm.jar"/>
+        <pathelement location="${lib.dir}/asm-commons.jar"/>
+        <pathelement location="${lib.dir}/asm4-all.jar"/>
+        <pathelement location="${lib.dir}/jgoodies-forms.jar"/>
     </path>
 
     <path id="idea.classpath">
@@ -48,9 +58,14 @@
         <zip destfile="${classes.dir}/ask_ghc.jar" basedir="${hs.dir}" includes="**/*.hs"/>
     </target>
 
-    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.classpath"/>
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
 
     <target name="compile" depends="init">
+        <unjar src="${lib.dir}/forms_rt.jar" dest="${classes.dir}">
+            <patternset>
+                <include name="**/*.class"/>
+            </patternset>
+        </unjar>
         <javac2 srcdir="${src.dir}" destdir="${classes.dir}" debug="true" includeantruntime="false">
             <classpath refid="project.classpath"/>
             <compilerarg line="${javac.options}"/>

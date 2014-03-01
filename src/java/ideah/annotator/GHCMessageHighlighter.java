@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import ideah.compiler.GHCMessage;
 import ideah.compiler.LaunchGHC;
+import ideah.intentions.AutoImportIntention;
 import ideah.util.DeclarationPosition;
 import ideah.util.LineColRange;
 import org.jetbrains.annotations.NotNull;
@@ -69,6 +70,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                 }
 
                 if (out != null) {
+                    out.registerFix(new AutoImportIntention(), range); // todo: check if it is really 'not in scope' error
                     out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
                 }
             }

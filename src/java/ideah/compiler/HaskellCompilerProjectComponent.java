@@ -24,6 +24,7 @@ public final class HaskellCompilerProjectComponent extends AbstractProjectCompon
         HashSet<FileType> inputSet = new HashSet<FileType>(Arrays.asList(HaskellFileType.INSTANCE));
         HashSet<FileType> outputSet = new HashSet<FileType>(Arrays.asList(HiFileType.INSTANCE));
         manager.addTranslatingCompiler(new HaskellCompiler(myProject), inputSet, outputSet);
+        //CompilerWorkspaceConfiguration.getInstance(myProject).USE_OUT_OF_PROCESS_BUILD = false;
     }
 
     @NotNull

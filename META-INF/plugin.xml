@@ -50,7 +50,6 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </group>
 
-
         <action id="Haskell.Console.Execute"
                 class="com.intellij.openapi.actionSystem.EmptyAction"
                 text="Execute Current Haskell Statement">
