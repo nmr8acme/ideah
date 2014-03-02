@@ -15,12 +15,13 @@ import Outputable
 import MonadUtils
 import SrcLoc
 import FastString
+import Unbounds
 
 import HUtil
 import DynFlags (tracingDynFlags)
 
-compile outPath srcPath ghcPath compilerOptions files =
-    let 
+compile outPath srcPath ghcPath compilerOptions files = -- todo flag for unbound identifier search, used for autoimport. on by default
+    let
         skipOut = null outPath
 
         options = compilerOptions ++ ["--make"] 
@@ -78,6 +79,7 @@ doWalk cmdFlags skipOut files = do
     setupFlags skipOut cmdFlags
     flg <- getSessionDynFlags
     setSessionDynFlags $ flg { log_action = output2 }
+    detectUnbounds $ head files
     mapM_ addTargetFile files
     load LoadAllTargets `gcatch` catcher
     return ()
