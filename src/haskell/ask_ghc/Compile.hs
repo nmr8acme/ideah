@@ -15,7 +15,6 @@ import Outputable
 import MonadUtils
 import SrcLoc
 import FastString
-import Unbounds
 
 import HUtil
 import DynFlags (tracingDynFlags)
