@@ -4,22 +4,32 @@ import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.projectRoots.SdkAdditionalData;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ModuleFileIndex;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import ideah.HaskellFileType;
 import ideah.compiler.GHCMessage;
 import ideah.compiler.LaunchGHC;
 import ideah.intentions.AutoImportIntention;
-import ideah.util.DeclarationPosition;
-import ideah.util.LineColRange;
+import ideah.sdk.HaskellSdkAdditionalData;
+import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.List;
+import java.util.*;
 
 public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, AnnotationResult> {
+
+    private static final Logger LOG = Logger.getInstance("ideah.compiler.GHCMessageHighlighter");
 
     @Override
     public PsiFile collectInformation(@NotNull PsiFile file) {
@@ -47,6 +57,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
 
     private static void showMessages(PsiFile psiFile, AnnotationHolder annotationHolder, VirtualFile file, List<GHCMessage> ghcMessages) {
         File mainFile = new File(file.getPath());
+        Map<String, SortedSet<String>> userImports = null;
         for (GHCMessage ghcMessage : ghcMessages) {
             if (FileUtil.filesEqual(new File(ghcMessage.getFileName()), mainFile)) {
                 LineColRange lcRange = ghcMessage.getRange();
@@ -68,12 +79,74 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                 case STATISTICS:
                     break;
                 }
-
                 if (out != null) {
-                    out.registerFix(new AutoImportIntention(), range); // todo: check if it is really 'not in scope' error
+                    if (message.startsWith("Not in scope")) {
+                        Module module = DeclarationPosition.getDeclModule(psiFile);
+                        String symbol = psiFile.getText().substring(range.getStartOffset(), range.getEndOffset());
+                        if (userImports == null) {
+                            userImports = listUserImports(module);
+                        }
+                        List<String> imports = new ArrayList<String>();
+                        addImports(imports, userImports, symbol);
+                        addStandardImports(module, symbol, imports);
+                        out.registerFix(new AutoImportIntention(module.getProject(), range, imports.toArray(new String[imports.size()])), range);
+                    }
                     out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
                 }
             }
+        }
+    }
+
+    private static Map<String, SortedSet<String>> listUserImports(Module module) {
+        CompilerLocation compiler = CompilerLocation.get(module);
+        if (compiler == null)
+            return Collections.emptyMap();
+        ModuleFileIndex index = ModuleRootManager.getInstance(module).getFileIndex();
+        final List<String> files = new ArrayList<String>();
+        index.iterateContent(new ContentIterator() {
+            public boolean processFile(VirtualFile fileOrDir) {
+                if (!fileOrDir.isDirectory()) {
+                    FileType fileType = fileOrDir.getFileType();
+                    if (HaskellFileType.INSTANCE.equals(fileType)) {
+                        files.add(fileOrDir.getPath());
+                    }
+                }
+                return true;
+            }
+        });
+        List<String> args = compiler.getCompileOptionsList(
+            "-m", "AutoImport",
+            "-s", GHCUtil.rootsAsString(module, false)
+        );
+        args.addAll(files);
+        try {
+            ProcessLauncher launcher = new ProcessLauncher(false, null, args);
+            String stdOut = launcher.getStdOut();
+            return ParseAutoImports.parseAutoImports(stdOut);
+        } catch (Exception ex) {
+            LOG.error(ex);
+        }
+        return Collections.emptyMap();
+    }
+
+    private static void addStandardImports(Module module, String symbol, List<String> imports) {
+        Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
+        if (sdk == null)
+            return;
+        SdkAdditionalData sdkAdditionalData = sdk.getSdkAdditionalData();
+        if (!(sdkAdditionalData instanceof HaskellSdkAdditionalData))
+            return;
+        HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
+        Map<String, SortedSet<String>> autoImports = data.getAutoImports();
+        addImports(imports, autoImports, symbol);
+    }
+
+    private static void addImports(List<String> imports, Map<String, SortedSet<String>> autoImports, String symbol) {
+        if (autoImports == null)
+            return;
+        SortedSet<String> modules = autoImports.get(symbol);
+        if (modules != null) {
+            imports.addAll(modules);
         }
     }
 }

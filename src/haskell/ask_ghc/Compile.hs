@@ -1,7 +1,6 @@
 module Compile (compile) where
 
 import Control.Monad (when)
-import Data.Char
 import Data.List (isPrefixOf, partition)
 import System.FilePath
 import System.Directory
@@ -68,7 +67,7 @@ compile outPath srcPath ghcPath compilerOptions files =
                         clearOutput "hi"
                         renameOutput srcFile
 
-        (modules, nonModules) = partition (isUpper . head . takeBaseName) files
+        (modules, nonModules) = partition isModuleFile files
     in do
         mapM_ compileFile modules
         mapM_ compileNonModule nonModules

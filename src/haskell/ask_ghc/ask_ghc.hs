@@ -34,7 +34,6 @@ options = [ mainFuncModeOption
           , ghcoptionsOption
           , lineNumberOption
           , columnNumberOption
-          , nameOption
           ]
 
 main = do
@@ -47,9 +46,9 @@ main = do
         singleFile = head files
         pos        = position opts
         compOpts   = compilerOptions opts
-        ident      = identifier opts
     case mode opts of
-        AutoImport -> autoImport compOpts ident ghcpath srcpath (tail files)
+        AutoImport -> if null files then allImports ghcpath
+                                    else autoImport compOpts ghcpath srcpath files
         Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
         CheckMain  -> checkMain compOpts ghcpath singleFile
         FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files

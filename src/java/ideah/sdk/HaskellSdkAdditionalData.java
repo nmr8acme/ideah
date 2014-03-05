@@ -7,6 +7,8 @@ import ideah.util.GHCUtil;
 import org.jdom.Element;
 
 import java.io.File;
+import java.util.Map;
+import java.util.SortedSet;
 
 public final class HaskellSdkAdditionalData implements SdkAdditionalData {
 
@@ -17,6 +19,7 @@ public final class HaskellSdkAdditionalData implements SdkAdditionalData {
     private String libPath;
     private String cabalPath;
     private String ghcOptions;
+    private volatile Map<String, SortedSet<String>> autoImports = null;
 
     public HaskellSdkAdditionalData(String libPath, String cabalPath, String ghcOptions) {
         this.libPath = libPath;
@@ -80,5 +83,13 @@ public final class HaskellSdkAdditionalData implements SdkAdditionalData {
 
     public void setGhcOptions(String ghcOptions) {
         this.ghcOptions = ghcOptions;
+    }
+
+    public Map<String, SortedSet<String>> getAutoImports() {
+        return autoImports;
+    }
+
+    public void setAutoImports(Map<String, SortedSet<String>> autoImports) {
+        this.autoImports = autoImports;
     }
 }

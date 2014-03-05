@@ -1,5 +1,6 @@
 package ideah.util;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -13,6 +14,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,8 +41,10 @@ final class AskUtil {
     private final File exe;
     @NotNull
     private final String mainFile;
+    private final HaskellSdkAdditionalData data;
 
-    private AskUtil(@NotNull VirtualFile ghcHome, @NotNull String libDir, String cabalPath, String ghcOptions, @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile) {
+    private AskUtil(@NotNull VirtualFile ghcHome, @NotNull String libDir, String cabalPath, String ghcOptions,
+                    @NotNull File pluginPath, @NotNull File exe, @NotNull String mainFile, HaskellSdkAdditionalData data) {
         this.ghcHome = ghcHome;
         this.libDir = libDir;
         this.cabalPath = cabalPath;
@@ -46,6 +52,7 @@ final class AskUtil {
         this.pluginPath = pluginPath;
         this.exe = exe;
         this.mainFile = mainFile;
+        this.data = data;
     }
 
     @Nullable
@@ -68,7 +75,7 @@ final class AskUtil {
         File pluginPath = new File(new File(System.getProperty("user.home"), ".ideah"), sdk.getVersionString());
         pluginPath.mkdirs();
         File exe = new File(pluginPath, GHCUtil.getExeName(mainFile));
-        return new AskUtil(ghcHome, libDir, data.getCabalPath(), data.getGhcOptions(), pluginPath, exe, mainFile);
+        return new AskUtil(ghcHome, libDir, data.getCabalPath(), data.getGhcOptions(), pluginPath, exe, mainFile, data);
     }
 
     String getLibDir() {
@@ -188,5 +195,25 @@ final class AskUtil {
                 indicator.setText2(message);
             }
         }
+    }
+
+    void loadAutoImport(final CompilerLocation compiler) {
+        if (data.getAutoImports() != null)
+            return;
+        ApplicationManager.getApplication().executeOnPooledThread(new Runnable() {
+            public void run() {
+                List<String> args = compiler.getCompileOptionsList(
+                    "-m", "AutoImport"
+                );
+                try {
+                    ProcessLauncher launcher = new ProcessLauncher(false, null, args);
+                    String stdOut = launcher.getStdOut();
+                    Map<String, SortedSet<String>> autoImports = ParseAutoImports.parseAutoImports(stdOut);
+                    data.setAutoImports(autoImports);
+                } catch (Exception ex) {
+                    LOG.error(ex);
+                }
+            }
+        });
     }
 }

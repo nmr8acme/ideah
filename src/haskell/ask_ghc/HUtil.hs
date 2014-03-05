@@ -1,9 +1,10 @@
 module HUtil where
 
-import System.FilePath (equalFilePath)
+import System.FilePath (equalFilePath, takeBaseName)
 import System.Directory (canonicalizePath)
 import Control.Monad (filterM)
 import System.Console.GetOpt
+import Data.Char (isUpper)
 import Data.List (intercalate)
 
 import GHC
@@ -27,7 +28,6 @@ data Options = Options
     , compilerOptions :: [String]
     , position        :: (Int, Int)
     , moduleFile      :: FilePath
-    , identifier      :: String
     }
 
 mainFuncModeOption =
@@ -37,14 +37,13 @@ mainFuncModeOption =
         maxMode = maxBound
     in Option ['m'] ["main-func-mode"] (ReqArg (\mod opt  -> opt {mode = read mod}) "Mode")
             ("Compilation mode. Possible arguments:\n" ++ intercalate ", " (map show [minMode..maxMode]))
-moduleOption       = Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {moduleFile = modf}) "String") "Module for specified line and column numers"
+moduleOption       = Option ['f'] ["module"]         (ReqArg (\modf opt -> opt {moduleFile = modf}) "String") "Module for specified line and column numbers"
 ghcpathOption      = Option ['g'] ["ghcpath"]        (ReqArg (\path opt -> opt {ghcPath = path}) "DIR") "GHC lib path"
 outpathOption      = Option ['o'] ["outpath"]        (ReqArg (\path opt -> opt {outputPath = path}) "DIR") "Output path"
 sourcepathOption   = Option ['s'] ["sourcepath"]     (ReqArg (\path opt -> opt {sourcePath = path}) "DIR") "Source path"
 ghcoptionsOption   = Option ['c'] ["ghcoptions"]     (ReqArg (\opts opt -> opt {compilerOptions = compilerOptions opt  ++ [opts]}) "String") "GHC options"
 lineNumberOption   = Option ['l'] ["line-number"]    (ReqArg (\line opt -> opt {position = (read line, snd $ position opt)}) "Num") "Line number"
 columnNumberOption = Option ['r'] ["column-number"]  (ReqArg (\col opt  -> opt {position = (fst $ position opt, read col)}) "Num") "Column number"
-nameOption         = Option ['n'] ["identifier"]     (ReqArg (\name opt -> opt {identifier = name}) "String") "Name of unresolved identifier to be looked up in other modules"
 
 defaultOpts :: Options
 defaultOpts = Options
@@ -55,7 +54,6 @@ defaultOpts = Options
     , compilerOptions = []
     , position        = (0, 0)
     , moduleFile      = ""
-    , identifier      = ""
     }
 
 newMsgIndicator = "\f"
@@ -148,3 +146,6 @@ spanStr span = locStr (srcSpanStart span) ++ "-" ++ locStr (srcSpanEnd span)
 isLoc :: SrcSpan -> Int -> Int -> Bool
 isLoc (RealSrcSpan loc) ghcLine ghcCol = srcSpanStartLine loc == ghcLine && srcSpanStartCol loc == ghcCol
 isLoc _ _ _ = False
+
+isModuleFile :: String -> Bool
+isModuleFile fileName = isUpper $ head $ takeBaseName fileName
