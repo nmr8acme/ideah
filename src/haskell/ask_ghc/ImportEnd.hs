@@ -1,4 +1,4 @@
-module ImportStart (getImportStart) where
+module ImportEnd (getImportEnd) where
 
 import Data.List (find)
 import Data.Maybe (catMaybes)
@@ -10,18 +10,18 @@ import SrcLoc (advanceSrcLoc)
 import HUtil
 
 -- Run example:
--- ask_ghc.exe -m ImportStart -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" -n "Data.List" test.hs
+-- ask_ghc.exe -m ImportEnd -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" -n "Data.List" test.hs
 
 -- Find the position where a given module should be imported
-getImportStart compOpts ghcPath moduleName file = runGhc (Just ghcPath) getImportStart'
-    where getImportStart' = do
+getImportEnd compOpts ghcPath moduleName file = runGhc (Just ghcPath) getImportEnd'
+    where getImportEnd' = do
             setupFlags True compOpts
             mod    <- loadHsFile file
             parsed <- parseModule mod
-            findStart moduleName parsed
+            findEnd moduleName parsed
 
-findStart :: String -> ParsedModule -> Ghc ()
-findStart moduleName parsed =
+findEnd :: String -> ParsedModule -> Ghc ()
+findEnd moduleName parsed =
     let sourceImports = ms_textual_imps $ pm_mod_summary parsed -- todo test with no imports (does implicit Prelude import have location?)
         imports       = unLoc `map` sourceImports
     in printImport $ case existingImport imports moduleName of
