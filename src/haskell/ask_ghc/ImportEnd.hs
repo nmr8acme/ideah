@@ -23,12 +23,12 @@ getImportEnd compOpts ghcPath moduleName file = runGhc (Just ghcPath) getImportE
 findEnd :: String -> ParsedModule -> Ghc ()
 findEnd moduleName parsed =
     let sourceImports = ms_textual_imps $ pm_mod_summary parsed -- todo test with no imports (does implicit Prelude import have location?)
-        imports       = unLoc `map` sourceImports
+        imports       = map unLoc sourceImports
     in printImport $ case existingImport imports moduleName of
           Just existing -> existing
           Nothing       -> nextImportLine imports
 
--- If the module isn't imported, return the line followring the last import
+-- If the module isn't imported, return the line following the last import
 nextImportLine :: [ImportDecl RdrName] -> RealSrcLoc
 nextImportLine imports =
     let spans      = map (getLoc . ideclName) imports
