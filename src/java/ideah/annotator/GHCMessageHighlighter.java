@@ -23,6 +23,7 @@ import ideah.intentions.AutoImportIntention;
 import ideah.sdk.HaskellSdkAdditionalData;
 import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
@@ -89,7 +90,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                         List<String> imports = new ArrayList<String>();
                         addImports(imports, userImports, symbol);
                         addStandardImports(module, symbol, imports);
-                        out.registerFix(new AutoImportIntention(module.getProject(), range, imports.toArray(new String[imports.size()])), range);
+                        out.registerFix(new AutoImportIntention(psiFile, range, imports.toArray(new String[imports.size()]), symbol), range);
                     }
                     out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
                 }
