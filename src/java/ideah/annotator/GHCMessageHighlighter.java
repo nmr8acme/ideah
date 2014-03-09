@@ -23,7 +23,6 @@ import ideah.intentions.AutoImportIntention;
 import ideah.sdk.HaskellSdkAdditionalData;
 import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
