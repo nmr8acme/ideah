@@ -113,7 +113,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                 if (!fileOrDir.isDirectory()) {
                     FileType fileType = fileOrDir.getFileType();
                     String path = fileOrDir.getPath();
-                    if (HaskellFileType.INSTANCE.equals(fileType) && !Paths.get(path).equals(except)) { // todo equals works for path comparison?
+                    if (HaskellFileType.INSTANCE.equals(fileType) && !Paths.get(path).equals(except)) {
                         files.add(path);
                     }
                 }
