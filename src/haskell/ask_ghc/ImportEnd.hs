@@ -22,7 +22,7 @@ getImportEnd compOpts ghcPath moduleName file = runGhc (Just ghcPath) getImportE
 
 findEnd :: String -> ParsedModule -> Ghc ()
 findEnd moduleName parsed =
-    let sourceImports = ms_textual_imps $ pm_mod_summary parsed -- todo test with no imports (does implicit Prelude import have location?)
+    let sourceImports = ms_textual_imps $ pm_mod_summary parsed
         imports       = map unLoc sourceImports
     in printImport $ case existingImport imports moduleName of
           Just existing -> existing

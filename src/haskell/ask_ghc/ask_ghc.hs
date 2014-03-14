@@ -5,6 +5,7 @@ import System.Environment
 import System.Console.GetOpt
 
 import HUtil
+import AllImports
 import AutoImport
 import Compile
 import CheckMain
@@ -50,14 +51,16 @@ main = do
         compOpts   = compilerOptions opts
         ident      = identifier opts
     case mode opts of
-        AutoImport -> if null files then allImports ghcpath
-                                    else autoImport compOpts ghcpath srcpath files
-        Compile    -> compile (outputPath opts) srcpath ghcpath compOpts files
-        CheckMain  -> checkMain compOpts ghcpath singleFile
-        FindUsages -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files
-        GetDeclPos -> getDeclPos compOpts srcpath ghcpath pos (moduleFile opts) files
-        GetIdType  -> getIdType compOpts srcpath ghcpath singleFile pos
-        Help       -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files...\n" options
-        ImportEnd  -> getImportEnd compOpts ghcpath ident singleFile
-        ParseTree  -> parseTree compOpts ghcpath singleFile
-        Test       -> print compOpts
+        AllImports         -> allImportsInFile compOpts ghcpath singleFile
+        AllImportsWithPkgs -> importNamesInFiles compOpts ghcpath files
+        AutoImport         -> if null files then allImports ghcpath
+                                            else autoImport compOpts ghcpath srcpath files
+        Compile            -> compile (outputPath opts) srcpath ghcpath compOpts files
+        CheckMain          -> checkMain compOpts ghcpath singleFile
+        FindUsages         -> findUsages compOpts srcpath ghcpath pos (moduleFile opts) files
+        GetDeclPos         -> getDeclPos compOpts srcpath ghcpath pos (moduleFile opts) files
+        GetIdType          -> getIdType compOpts srcpath ghcpath singleFile pos
+        Help               -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files...\n" options
+        ImportEnd          -> getImportEnd compOpts ghcpath ident singleFile
+        ParseTree          -> parseTree compOpts ghcpath singleFile
+        Test               -> print compOpts

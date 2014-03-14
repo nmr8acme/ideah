@@ -98,7 +98,7 @@
 
         <renamePsiElementProcessor implementation="ideah.rename.HaskellRenameProcessor"/>
 
-        <lang.importOptimizer implementationClass="ideah.imports.HaskellImportOptimizer"/>
+        <lang.importOptimizer implementationClass="ideah.imports.HaskellImportOptimizer" language="Haskell"/>
 
         <projectService serviceInterface="ideah.psi.api.util.HaskellPsiElementFactory"
                         serviceImplementation="ideah.psi.api.util.HaskellPsiElementFactoryImpl"/>

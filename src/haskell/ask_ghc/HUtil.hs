@@ -17,7 +17,7 @@ import FastString
 import SrcLoc
 import DynFlags (tracingDynFlags)
 
-data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help | AutoImport | ImportEnd
+data Mode = Compile | CheckMain | GetIdType | GetDeclPos | ParseTree | FindUsages | Test | Help | AutoImport | ImportEnd | AllImports | AllImportsWithPkgs
     deriving (Show, Read, Enum, Bounded)
 
 data Options = Options

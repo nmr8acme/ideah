@@ -2,6 +2,7 @@ package ideah.util;
 
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiFile;
+import org.jetbrains.annotations.NotNull;
 
 public final class LineColRange {
 
@@ -22,7 +23,7 @@ public final class LineColRange {
         return new LineColRange(1, 1, 1, 1);
     }
 
-    public LineColRange(String str) {
+    public LineColRange(@NotNull String str) {
         int p = str.indexOf('-');
         String start = str.substring(0, p);
         String end = str.substring(p + 1);
