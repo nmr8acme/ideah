@@ -25,6 +25,8 @@ import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, AnnotationResult> {
@@ -56,7 +58,8 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
     }
 
     private static void showMessages(PsiFile psiFile, AnnotationHolder annotationHolder, VirtualFile file, List<GHCMessage> ghcMessages) {
-        File mainFile = new File(file.getPath());
+        String path = file.getPath();
+        File mainFile = new File(path);
         Map<String, SortedSet<String>> userImports = null;
         for (GHCMessage ghcMessage : ghcMessages) {
             if (FileUtil.filesEqual(new File(ghcMessage.getFileName()), mainFile)) {
@@ -87,8 +90,9 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                             userImports = listUserImports(module);
                         }
                         List<String> imports = new ArrayList<String>();
-                        addImports(imports, userImports, symbol);
-                        addStandardImports(module, symbol, imports);
+                        ImportTrie importTrie = ImportTrie.get(module, path, getAllFiles(module));
+                        addImports(imports, userImports, symbol, importTrie);
+                        addStandardImports(module, symbol, imports, importTrie);
                         out.registerFix(new AutoImportIntention(psiFile, range, imports.toArray(new String[imports.size()]), symbol), range);
                     }
                     out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
@@ -97,23 +101,33 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
         }
     }
 
-    private static Map<String, SortedSet<String>> listUserImports(Module module) {
-        CompilerLocation compiler = CompilerLocation.get(module);
-        if (compiler == null)
-            return Collections.emptyMap();
+    private static List<String> getAllFiles(Module module) {
+        return getAllFiles(module, null);
+    }
+
+    private static List<String> getAllFiles(Module module, final Path except) {
         ModuleFileIndex index = ModuleRootManager.getInstance(module).getFileIndex();
         final List<String> files = new ArrayList<String>();
         index.iterateContent(new ContentIterator() {
             public boolean processFile(VirtualFile fileOrDir) {
                 if (!fileOrDir.isDirectory()) {
                     FileType fileType = fileOrDir.getFileType();
-                    if (HaskellFileType.INSTANCE.equals(fileType)) {
-                        files.add(fileOrDir.getPath());
+                    String path = fileOrDir.getPath();
+                    if (HaskellFileType.INSTANCE.equals(fileType) && !Paths.get(path).equals(except)) { // todo equals works for path comparison?
+                        files.add(path);
                     }
                 }
                 return true;
             }
         });
+        return files;
+    }
+
+    private static Map<String, SortedSet<String>> listUserImports(Module module) {
+        CompilerLocation compiler = CompilerLocation.get(module);
+        if (compiler == null)
+            return Collections.emptyMap();
+        final List<String> files = getAllFiles(module);
         List<String> args = compiler.getCompileOptionsList(
             "-m", "AutoImport",
             "-s", GHCUtil.rootsAsString(module, false)
@@ -129,7 +143,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
         return Collections.emptyMap();
     }
 
-    private static void addStandardImports(Module module, String symbol, List<String> imports) {
+    private static void addStandardImports(Module module, String symbol, List<String> imports, ImportTrie importTrie) {
         Sdk sdk = ModuleRootManager.getInstance(module).getSdk();
         if (sdk == null)
             return;
@@ -138,15 +152,27 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
             return;
         HaskellSdkAdditionalData data = (HaskellSdkAdditionalData) sdkAdditionalData;
         Map<String, SortedSet<String>> autoImports = data.getAutoImports();
-        addImports(imports, autoImports, symbol);
+        addImports(imports, autoImports, symbol, importTrie);
     }
 
-    private static void addImports(List<String> imports, Map<String, SortedSet<String>> autoImports, String symbol) {
+    private static void addImports(List<String> imports, Map<String, SortedSet<String>> autoImports, String symbol, ImportTrie importTrie) {
         if (autoImports == null)
             return;
         SortedSet<String> modules = autoImports.get(symbol);
         if (modules != null) {
-            imports.addAll(modules);
+            List<String> sortedModules = sortImportsByUsage(modules, importTrie);
+            imports.addAll(sortedModules);
         }
+    }
+
+    private static List<String> sortImportsByUsage(SortedSet<String> modules, final ImportTrie importTrie) {
+        List<String> moduleList = new ArrayList<String>(modules);
+        Collections.sort(moduleList, new Comparator<String>() {
+            @Override
+            public int compare(String i1, String i2) {
+                return Double.compare(importTrie.getScore(i2), importTrie.getScore(i1));
+            }
+        });
+        return moduleList;
     }
 }

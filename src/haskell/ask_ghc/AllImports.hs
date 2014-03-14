@@ -1,5 +1,6 @@
 module AllImports (allImportsInFile, importNamesInFiles) where
 
+import Control.Monad (when)
 import Data.Maybe (fromMaybe)
 
 import GHC
@@ -27,18 +28,23 @@ allImportsInFile compOpts ghcPath file = runGhc (Just ghcPath) getImportLocs
             printImports parsed True
 
 -- Run example:
--- ask_ghc.exe -m AllImportsWithPkgs -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" test1.hs test2.hs
+-- ask_ghc.exe -m AllImportsWithPkgs -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" test.hs Testi.hs
 
 -- Print out imported modules in the following format:
--- package name
--- module name
+-- names of first package.module separated by new lines
+-- new-msg indicator
+-- names of 2nd package.module
+-- names of 3nd package.module
+-- ...
 importNamesInFiles compOpts ghcPath files = runGhc (Just ghcPath) $ do
     setupFlags True compOpts
-    mapM_ printImportNames files
-        where printImportNames file = do
+    printImportNames True $ head files
+    mapM_ (printImportNames False) $ tail files
+        where printImportNames isFirst file = do
                 mod    <- loadHsFile file
                 parsed <- parseModule mod
                 printImports parsed False
+                when isFirst $ liftIO $ putStrLn newMsgIndicator
 
 -- when true, prints locations and newMsgIndicator and doesn't print package name (needed for optimize imports)
 -- when false, doesn't print locations and newMsgIndicator, and prints package name (needed for creating import usage tree to prioritize imports for auto-importing)
