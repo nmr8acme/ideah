@@ -13,9 +13,9 @@ import HUtil
 -- ask_ghc.exe -m ImportEnd -g "C:\Program Files (x86)\Haskell Platform\2013.2.0.0\lib" -n "Data.List" test.hs
 
 -- Find the position where a given module should be imported
-getImportEnd compOpts ghcPath moduleName file = runGhc (Just ghcPath) getImportEnd'
+getImportEnd compOpts ghcPath srcPath moduleName file = runGhc (Just ghcPath) getImportEnd'
     where getImportEnd' = do
-            setupFlags True compOpts
+            setupFlags True $ ("-i" ++ srcPath) : compOpts
             mod    <- loadHsFile file
             parsed <- parseModule mod
             findEnd moduleName parsed

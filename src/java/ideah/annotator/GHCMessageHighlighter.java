@@ -86,14 +86,18 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
                     if (message.startsWith("Not in scope")) {
                         Module module = DeclarationPosition.getDeclModule(psiFile);
                         String symbol = psiFile.getText().substring(range.getStartOffset(), range.getEndOffset());
+                        int dotIndex = symbol.lastIndexOf('.');
+                        String unqualifiedSymbol = dotIndex >= 0 ? symbol.substring(dotIndex + 1) : symbol;
                         if (userImports == null) {
-                            userImports = listUserImports(module);
+                            userImports = listUserImports(module, Paths.get(path));
                         }
                         List<String> imports = new ArrayList<String>();
                         ImportTrie importTrie = ImportTrie.get(module, path, getAllFiles(module));
-                        addImports(imports, userImports, symbol, importTrie);
-                        addStandardImports(module, symbol, imports, importTrie);
-                        out.registerFix(new AutoImportIntention(psiFile, range, imports.toArray(new String[imports.size()]), symbol), range);
+                        addImports(imports, userImports, unqualifiedSymbol, importTrie);
+                        addStandardImports(module, unqualifiedSymbol, imports, importTrie);
+                        if (!imports.isEmpty()) {
+                            out.registerFix(new AutoImportIntention(psiFile, range, imports.toArray(new String[imports.size()]), unqualifiedSymbol), range);
+                        }
                     }
                     out.setTooltip(out.getTooltip().replaceAll("\\n", "<br/>").replaceAll("`(\\w+?)'", "<b>$1</b>"));
                 }
@@ -123,11 +127,11 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
         return files;
     }
 
-    private static Map<String, SortedSet<String>> listUserImports(Module module) {
+    private static Map<String, SortedSet<String>> listUserImports(Module module, Path currentFile) {
         CompilerLocation compiler = CompilerLocation.get(module);
         if (compiler == null)
             return Collections.emptyMap();
-        final List<String> files = getAllFiles(module);
+        final List<String> files = getAllFiles(module, currentFile);
         List<String> args = compiler.getCompileOptionsList(
             "-m", "AutoImport",
             "-s", GHCUtil.rootsAsString(module, false)
@@ -159,6 +163,7 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
         if (autoImports == null)
             return;
         SortedSet<String> modules = autoImports.get(symbol);
+
         if (modules != null) {
             List<String> sortedModules = sortImportsByUsage(modules, importTrie);
             imports.addAll(sortedModules);
@@ -170,7 +175,10 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
         Collections.sort(moduleList, new Comparator<String>() {
             @Override
             public int compare(String i1, String i2) {
-                return Double.compare(importTrie.getScore(i2), importTrie.getScore(i1));
+                int compareScores = Double.compare(importTrie.getScore(i2), importTrie.getScore(i1));
+                return compareScores == 0
+                    ? Integer.compare(i1.length(), i2.length())
+                    : compareScores;
             }
         });
         return moduleList;

@@ -6,6 +6,7 @@ import com.intellij.codeInspection.HintAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.PopupStep;
@@ -14,10 +15,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.IncorrectOperationException;
-import ideah.util.CompilerLocation;
-import ideah.util.DeclarationPosition;
-import ideah.util.LineCol;
-import ideah.util.ProcessLauncher;
+import ideah.util.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,10 +58,10 @@ public final class AutoImportIntention implements HintAction {
         createAddImportAction(editor).execute();
     }
 
-    private void addImport(final Editor editor, final String moduleToInsert) {
+    private void addImport(final Editor editor, final String moduleToInsert, final Module module) {
         ApplicationManager.getApplication().runWriteAction(new Runnable() {
             public void run() {
-                LineCol insertPos = getInsertPos(moduleToInsert);
+                LineCol insertPos = getInsertPos(moduleToInsert, module);
                 if (insertPos == null)
                     return;
                 int offset = insertPos.getOffset(psiFile);
@@ -77,13 +75,14 @@ public final class AutoImportIntention implements HintAction {
     }
 
     @Nullable
-    private LineCol getInsertPos(String moduleToInsert) {
+    private LineCol getInsertPos(String moduleToInsert, Module module) {
         CompilerLocation compiler = CompilerLocation.get(DeclarationPosition.getDeclModule(psiFile));
         if (compiler == null)
             return null; // todo
         List<String> args = compiler.getCompileOptionsList(
             "-m", "ImportEnd",
             "-n", moduleToInsert,
+            "-s", GHCUtil.rootsAsString(module, false),
             psiFile.getVirtualFile().getPath()
         );
         try {
@@ -115,7 +114,8 @@ public final class AutoImportIntention implements HintAction {
     private QuestionAction createAddImportAction(final Editor editor) {
         return new QuestionAction() {
             public boolean execute() {
-                final Project project = DeclarationPosition.getDeclModule(psiFile).getProject();
+                final Module module = DeclarationPosition.getDeclModule(psiFile);
+                final Project project = module.getProject();
                 PsiDocumentManager.getInstance(project).commitAllDocuments();
                 final BaseListPopupStep<String> step = new BaseListPopupStep<String>("Module to import", modules) {
 
@@ -130,7 +130,7 @@ public final class AutoImportIntention implements HintAction {
                     public PopupStep onChosen(String selectedValue, boolean finalChoice) {
                         if (finalChoice && selectedValue != null) {
                             PsiDocumentManager.getInstance(project).commitAllDocuments();
-                            addImport(editor, selectedValue);
+                            addImport(editor, selectedValue, module);
                         }
                         return FINAL_CHOICE;
                     }

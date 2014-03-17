@@ -61,6 +61,6 @@ main = do
         GetDeclPos         -> getDeclPos compOpts srcpath ghcpath pos (moduleFile opts) files
         GetIdType          -> getIdType compOpts srcpath ghcpath singleFile pos
         Help               -> putStrLn $ usageInfo "Usage: ask_ghc [OPTION...] files...\n" options
-        ImportEnd          -> getImportEnd compOpts ghcpath ident singleFile
+        ImportEnd          -> getImportEnd compOpts ghcpath srcpath ident singleFile
         ParseTree          -> parseTree compOpts ghcpath singleFile
         Test               -> print compOpts
