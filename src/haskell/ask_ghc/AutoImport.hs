@@ -9,8 +9,9 @@ import MonadUtils
 import HUtil
 
 inspect module' = do
-    (Just mi)    <- getModuleInfo module'
-    let exports   = map toString $ modInfoExports mi
+    (Just mi)  <- getModuleInfo module'
+    let modName = toString (moduleName module') ++ "."
+    let exports = map (\e -> modName ++ toStringSimple e) $ modInfoExports mi
     -- temporary solution to
     -- "Control.Category.Unicode.ask_ghc.exe: <stdout>: commitBuffer: invalid argument (invalid character)
     let unicodePackages = ["Control.Category.Unicode", "Control.Applicative.Unicode", "Control.Arrow.Unicode", "Control.Monad.Unicode", "Data.Bool.Unicode", "Data.Eq.Unicode", "Data.Foldable.Unicode", "Data.Function.Unicode", "Data.List.Unicode", "Data.Monoid.Unicode", "Data.Ord.Unicode", "Prelude.Unicode"]

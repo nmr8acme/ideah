@@ -3,8 +3,11 @@ package ideah.annotator;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.projectRoots.Sdk;
@@ -40,6 +43,13 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
 
     @Override
     public AnnotationResult doAnnotate(PsiFile psiFile) {
+        ApplicationManager.getApplication().invokeAndWait(new Runnable() {
+            public void run() {
+                FileDocumentManager fdm = FileDocumentManager.getInstance();
+                fdm.saveAllDocuments();
+            }
+        }, ModalityState.any());
+
         VirtualFile file = psiFile.getVirtualFile();
         if (file == null)
             return null;
@@ -173,7 +183,6 @@ public final class GHCMessageHighlighter extends ExternalAnnotator<PsiFile, Anno
     private static List<String> sortImportsByUsage(SortedSet<String> modules, final ImportTrie importTrie) {
         List<String> moduleList = new ArrayList<String>(modules);
         Collections.sort(moduleList, new Comparator<String>() {
-            @Override
             public int compare(String i1, String i2) {
                 int compareScores = Double.compare(importTrie.getScore(i2), importTrie.getScore(i1));
                 return compareScores == 0

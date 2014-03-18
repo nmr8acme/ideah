@@ -70,7 +70,8 @@ sdocToString doc = sdocToStringStyled defaultUserStyle doc
 toString :: (Outputable a) => a -> String
 toString x = sdocToString $ ppr x
 
-unqualified x flgs = (sdocToStringStyled (defaultErrStyle flgs)) $ ppr x
+toStringSimple :: (Outputable a) => a -> String
+toStringSimple x = sdocToStringStyled (mkUserStyle neverQualify AllTheWay) $ ppr x
 
 setupFlags skipOut cmdFlags = do
     flg <- getSessionDynFlags
